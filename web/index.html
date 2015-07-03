@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link type="text/css" href="styles.css" rel="stylesheet" />
+    <link href="https://d3nkxvtkt5c8vi.cloudfront.net/4.0.0/sp-bootstrap.min.css" rel="stylesheet">
+    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.1.0/sp-bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="images/favicon.png">
+    <title>Smarter Playlists</title>
+    <!-- Custom styles for this template -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+  <body >
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="?auth=1">
+            <span class="navbar-logo">Spotify</span>
+            <span class="navbar-title">Smarter Playlists</span>
+          </a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav navbar-right">
+            <li class=""> <a href="explore.html">Explore</a> </li>
+            <li class=""> <a href="play.html">Play</a> </li>
+            <li> <a href="About">About</a> </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="top" id='intro'>
+      <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
+
+    <div id="content">
+        <div id="#info"> </div>
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#work" data-toggle="tab">Builder</a></li>
+            <li><a href="#ttracks" data-toggle="tab" 
+                    id="track-tab-text">Tracks 
+                    <span class="badge" id="tab-track-count">0</span></a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="work">
+              <div class="row">
+                <div id="controls"> </div>
+                <div id="sources"> </div>
+                <div id="filters"> </div>
+              </div>
+              <div id="workspace-parent">
+                  <div id="workspace"> </div>
+              </div> 
+            </div>
+
+
+            <div class="tab-pane" id="ttracks">
+                <h4 id='playlist-title'> </h4>
+                <div class="container" id='playlist-div'>
+                    <button id="save" class='btn btn-primary'> Save </button>
+                    <table class="table">
+                        <thead> <tr> <th> # <th>title <th> artist <th> src </tr> </thead>
+                        <tbody id='playlist-body'> </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+ 
+    <div id='edit-modal' class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"
+    aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            <div class="description"> description </div>
+            <b> params </b>
+            <div class="params form"> 
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default done"
+                data-dismiss="modal">Cancel</button>
+            <button type="button" data-dismiss="modal" 
+                class="btn btn-primary  done save">Save</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <br clear='both'>
+    <div id="footer">
+      <div class="container text-center">
+        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+      </div>
+    </div>
+    <script src="lib/jquery-1.11.1.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="lib/underscore-min.js"></script>
+    <script src="lib/raphael-min.js"></script>
+    <script src="lib/graffle.js"></script>
+    <script src="program.js?v1"></script>
+    <script src="editor.js?v1"></script>
+    <script src="playlist.js?v1"></script>
+<script>
+"use strict";
+
+var inventory = null
+var apiPath = 'http://localhost:5000/'
+var paper;
+
+
+
+function error(s) {
+    console.log('ERROR ' + s);
+    $("#info").text(s);
+}
+
+function info(s) {
+    $("#info").text(s);
+}
+
+function fetchInventory(callback) {
+    $.getJSON(apiPath + 'inventory').then(
+        function(data) {
+            var inventoryMap = {};
+            _.each(data.inventory.components, function(component) {
+                component.hasInputs = component.type != "source";
+                inventoryMap[component.name] = component;
+            });
+            console.log('fi', data, inventoryMap);
+            callback(inventoryMap);
+        },
+        function() {
+            callback(null);
+        }
+    );
+}
+
+
+function initApp() {    
+    $("#save").on("click", function() {
+        savePlaylist(function(ok) {
+            if (ok) {
+                info("Saved!");
+            } else {
+                error("not saved!");
+            }
+        });
+    });
+    $('#tabs').tab();
+    fetchInventory(function(inventoryMap) {
+        if (inventoryMap == null) {
+            alert("Uh Oh - Having trouble phoning home");
+        } else {
+            inventory = inventoryMap;
+            createEditor("workspace", inventoryMap);
+        }
+    });
+
+
+}
+
+
+$(document).ready(
+    function() {
+        initApp();
+    }
+);
+
+</script>
+
+</body>
+</html>

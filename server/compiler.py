@@ -44,8 +44,13 @@ OK = 'ok'
 def convert_val_to_type(val, type, program):
     if type == 'string':
         return OK, str(val)
+    if type == 'uri':
+        return OK, str(val)
+    if type == 'uri_list':
+        return OK, val
     elif type == 'number':
-        return OK, float(val)
+        #return OK, float(val)
+        return OK, val
     elif type == 'bool':
         return OK, bool(val)
     elif type == 'source':
@@ -94,6 +99,7 @@ def compile_object(objname, program):
                     if param == '_type':
                         continue
                     status, cval = get_param_val(param, val, spec, program)
+                    print status, param, cval, val, spec
                     if status == OK:
                         params[param] = cval
                     else:
@@ -103,6 +109,8 @@ def compile_object(objname, program):
                     symbols[objname] = obj
                     return OK, obj
                 except:
+                    print 'params', params
+                    raise
                     return 'trouble creating ' + objname, None
             else:
                 return 'unknown type ' + comp['_type'] + ' for ' + objname, None
@@ -110,7 +118,7 @@ def compile_object(objname, program):
             return 'missing object ' + objname, None
     
 def compile(program):
-    if 'main' in program:
+    if 'main' in program and program['main']:
         program['symbols'] = {}
         status, compiled_program = compile_object(program['main'], program)
         return status, compiled_program

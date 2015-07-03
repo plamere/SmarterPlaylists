@@ -1,0 +1,63 @@
+body {
+    height: 100%;
+}
+
+.top {
+    margin-top:40px;
+}
+
+#search-field {
+    width:400px;
+}
+
+#cover-art {
+    width:80px;
+}
+
+#table-div {
+    display:inline-block;
+}
+
+#plot-scrubs .active {
+}
+
+.play-buttons {
+    margin-top:10px;
+}
+
+#results-body {
+    cursor:pointer;
+}
+
+#explore-table {
+}
+
+.sparkline {
+    position:relative;
+    bottom:0px;
+}
+
+#plot-scrubs .active {
+    background-color: #9bf0e1;
+}
+
+#plot-starts a .active {
+    background-color: #cdf564 !important;
+}
+
+#plot-stops .active a {
+    background-color: #cdf564 !important;
+}
+
+#workspace {
+    height: 800px;
+    width: 100%;
+    background-color:black;
+}
+
+
+.component-button {
+    text-transform:none !important;
+    font-weight:normal !important;
+    margin-right:10px !important;
+}
