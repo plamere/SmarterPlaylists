@@ -2,19 +2,18 @@
 var curTracks = [];
 var curTitle = "your playlist"
 
-function showPlaylist(data) {
+function showPlaylist(name, data) {
     var tbody = $("#playlist-body");
     tbody.empty();
-    console.log('showplaylist', data);
     $("#tab-track-count").text(data.tracks.length);
     $("#playlist-title").text(data.name);
 
     curTracks = data.tracks;
     curTitle = data.name;
+    curTitle = name;
 
     _.each(data.tracks, function(track, i) {
         var tr = $("<tr>");
-        console.log('track', track);
         var count = $("<td>").text(i + 1);
         var title = $("<td>").text(track.title);
         var artist = $("<td>").text(track.artist);
@@ -28,14 +27,14 @@ function showPlaylist(data) {
 }
 
 
-function savePlaylist() {
+function savePlaylist(name) {
     if (curTracks && curTracks.length > 0) {
         var tids = [];
         _.each(curTracks, function(track) {
             tids.push('spotify:track:' + track.id);
         });
         localStorage.setItem('playlist-tids', JSON.stringify(tids));
-        localStorage.setItem('playlist-title', curTitle);
+        localStorage.setItem('playlist-title', name);
         loginWithSpotify();
     }
 }

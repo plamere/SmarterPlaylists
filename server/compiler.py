@@ -44,9 +44,11 @@ OK = 'ok'
 def convert_val_to_type(val, type, program):
     if type == 'string':
         return OK, str(val)
-    if type == 'uri':
+    elif type == 'string_list':
+        return OK, val
+    elif type == 'uri':
         return OK, str(val)
-    if type == 'uri_list':
+    elif type == 'uri_list':
         return OK, val
     elif type == 'number':
         #return OK, float(val)

@@ -49,6 +49,10 @@ body {
     background-color: #cdf564 !important;
 }
 
+#workspace-parent {
+    margin-top:10px;
+}
+
 #workspace {
     height: 800px;
     width: 100%;
@@ -60,4 +64,12 @@ body {
     text-transform:none !important;
     font-weight:normal !important;
     margin-right:10px !important;
+}
+
+#controls {
+    margin-left:20px;
+    margin-right:20px;
+    margin-bottom:10px;
+    margin-top:10px;
+    padding-bottom:20px;
 }

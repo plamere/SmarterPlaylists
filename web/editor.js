@@ -15,12 +15,14 @@ var createEditor = function(canvasElem, inventory) {
     var connections = [];
     var controlled = false;
     var shifted = false;
-    var program = createProgram(inventory, 'my program');
+    var program = new Program(inventory, 'my program');
     var previousComponent = null;
     var curSelected = null;
     var altSelected = null;
     var paper = null;
     var editing = false;
+
+    var nameToRect = {}
 
     function initPaper() {
         var top = 100;
@@ -41,7 +43,6 @@ var createEditor = function(canvasElem, inventory) {
         rect.ox = rect.type == "rect" ? rect.attr("x") : rect.attr("cx");
         rect.oy = rect.type == "rect" ? rect.attr("y") : rect.attr("cy");
         rect.animate({"fill-opacity": .2}, 500);
-
     }
 
     function deleteCur() {
@@ -62,6 +63,21 @@ var createEditor = function(canvasElem, inventory) {
         program.removeComponent(comp.name);
         comp.label.remove();
         comp.remove();
+    }
+
+    function moveTo(rect, x, y) {
+        var att = rect.type == "rect" ? 
+            {x: x, y: y} : 
+            {cx: x, cy: y};
+
+        rect.attr(att);
+        rect.component.extra.x = x;
+        rect.component.extra.y = y;
+
+        if (rect.label) {
+            var lattr = { x: x + textXOffset, y: y + textYOffset }
+            rect.label.attr(lattr);
+        }
     }
 
     function keydown(evt) {
@@ -107,15 +123,17 @@ var createEditor = function(canvasElem, inventory) {
 
         var newX = rect.ox + dx;
         var newY = rect.oy + dy;
+
+        /*
         var att = rect.type == "rect" ? 
             {x: newX, y: newY} : 
             {cx: newX, cy: newY};
 
         rect.attr(att);
-        if (rect.label) {
-            var lattr = { x: newX + textXOffset, y: newY + textYOffset }
-            rect.label.attr(lattr);
-        }
+        rect.component.extra.x = newX;
+        rect.component.extra.y = newY;
+        */
+        moveTo(rect, newX, newY);
 
         for (var i = connections.length; i--;) {
             paper.connection(connections[i]);
@@ -192,6 +210,7 @@ var createEditor = function(canvasElem, inventory) {
         }
 
         console.log('editing', rect.name);
+        console.log('editing', rect.name, rect);
         console.log(rect);
         editing = true;
         var component = rect.component;
@@ -228,6 +247,21 @@ var createEditor = function(canvasElem, inventory) {
                 div.append(inp);
             }
             if (param.type  == 'uri_list') {
+                var label =  $('<label for="' + name + '">').text(name);
+                label.attr('title', param.description);
+                var val = component.params[name];
+                if (val) {
+                    val = val.join(',')
+                }
+                var inp = $("<input class='form-control'>").val(val);
+                inp.attr('id', name);
+
+                inp.on('change', function() {
+                    curParams[name] = inp.val().split(',');
+                });
+                div.append(label);
+                div.append(inp);
+            } else if (param.type  == 'string_list') {
                 var label =  $('<label for="' + name + '">').text(name);
                 label.attr('title', param.description);
                 var val = component.params[name];
@@ -373,7 +407,6 @@ var createEditor = function(canvasElem, inventory) {
 
 
     function connectComponent(source, dest) {
-
         if (dest.component.maxInputs == 0) {
             return;
         }
@@ -383,13 +416,19 @@ var createEditor = function(canvasElem, inventory) {
         }
         disconnectOutputs(source);
 
-        var edge = paper.connection(source, dest, "#f33");
-        connections.push(edge);
-        edge.source = source
-        edge.dest = dest;
+        var edge = addVisualConnection(source, dest);
         program.addConnection(source.name, dest.name);
-        source.outEdges[dest.name] = edge;
-        dest.inEdges[source.name] = edge;
+    }
+
+    function addVisualConnection(srcRect, destRect) {
+        console.log('add vis', srcRect, destRect);
+        var edge = paper.connection(srcRect, destRect, "#f33");
+        connections.push(edge);
+        edge.source = srcRect;
+        edge.dest = destRect;
+        srcRect.outEdges[destRect.name] = edge;
+        destRect.inEdges[srcRect.name] = edge;
+        return edge;
     }
 
 
@@ -428,13 +467,13 @@ var createEditor = function(canvasElem, inventory) {
     }
 
 
-    function addNewComponent(component) {
+    function addNewComponent(componentType, comp) {
         var col = widgetCount % widgetsPerRow;
         var row = Math.floor(widgetCount / widgetsPerRow);
         var xpos = xMargin + col * (tileWidth + xMargin);
         var ypos = yMargin + row * (tileHeight + yMargin)
 
-        var name = nextComponentName(component);
+        var name = nextComponentName(componentType);
         var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
         var color = Raphael.getColor();
 
@@ -448,8 +487,9 @@ var createEditor = function(canvasElem, inventory) {
             });
 
 
+        console.log('comp', col, row);
         rect.label = paper.text(xpos + textXOffset, 
-            ypos + textYOffset, component.name);
+            ypos + textYOffset, componentType.name);
         rect.label.parent = rect;
 
 
@@ -460,7 +500,7 @@ var createEditor = function(canvasElem, inventory) {
             "font-size": 12
         });
 
-        addLabel(rect, component.name);
+        //addLabel(rect, componentType.name);
 
         rect.inEdges = {};
         rect.outEdges = {};
@@ -473,24 +513,28 @@ var createEditor = function(canvasElem, inventory) {
         rect.click(select);
         rect.label.click(select);
 
-        rect.component = program.addComponent(name, component.name, {}, {});
-
-        if (previousComponent) {
-            connectComponent(previousComponent, rect);
+        if (comp) {
+            rect.component = comp;
+            moveTo(rect, comp.extra.x, comp.extra.y);
+        } else {
+            rect.component = program.addComponent(name, componentType.name, {}, {});
+            _.each(rect.component.cls.params, function(param, name) {
+                if ('default' in param) {
+                    rect.component.params[name] = param['default'];
+                } else if (param.type == 'bool') {
+                    rect.component.params[name] = false;
+                }
+            });
+            moveTo(rect, xpos, ypos);
         }
-        previousComponent = rect;
-        console.log('adding component', component.name, rect);
+        renameComponent(rect);
+
+        console.log('adding component', componentType.name, rect);
 
         // Set component param defaults and rename
         // component
-        _.each(rect.component.cls.params, function(param, name) {
-            if ('default' in param) {
-                rect.component.params[name] = param['default'];
-            } else if (param.type == 'bool') {
-                rect.component.params[name] = false;
-            }
-        });
-        renameComponent(rect);
+        nameToRect[rect.name] = rect;
+        return rect;
     }
 
     function addLabel(rect, text) {
@@ -519,7 +563,12 @@ var createEditor = function(canvasElem, inventory) {
             var sourceComponent = $("<button class='component-button label label-primary'>").text(source.name);
             sourceList.append(sourceComponent);
             sourceComponent.on('click', function() {
-                addNewComponent(source);
+                var newComponent = addNewComponent(source);
+                if (previousComponent) {
+                    connectComponent(previousComponent, newComponent);
+                }
+                previousComponent = newComponent;
+                select.apply(newComponent);
             });
         });
 
@@ -528,7 +577,12 @@ var createEditor = function(canvasElem, inventory) {
             var filterComponent = $("<button class='component-button label label-info'>").text(filter.name);
             filterList.append(filterComponent);
             filterComponent.on('click', function() {
-                addNewComponent(filter);
+                var newComponent = addNewComponent(filter);
+                if (previousComponent) {
+                    connectComponent(previousComponent, newComponent);
+                }
+                previousComponent = newComponent;
+                select.apply(newComponent);
             });
         });
     }
@@ -551,29 +605,49 @@ var createEditor = function(canvasElem, inventory) {
         });
     }
 
-    function addButtons() {
-        console.log('addbut');
-        var button = $("<button class='btn primary'>").text("run");
-        button.on('click', function() {
+    function addControls() {
+        var titleInput = $("#program-name");
+        titleInput.val('untitled');
+        var runButton = $("#run-button");
+        runButton.on('click', function() {
+            var title = $("#program-name").val();
+            var saveToSpotify = $('#save-playlist').is(':checked');
+            program.name = title;
+            console.log('run', curSelected);
             if (curSelected) {
                 var main = curSelected.name;
-                var jsonProgram = program.toJson(main);
-                console.log('json program', jsonProgram);
-                postProgram(jsonProgram, function(data) {
+                program.run(main, function(data) {
                     if (data) {
-                        showPlaylist(data);
+                        showPlaylist(program.name, data);
+                        if (saveToSpotify) {
+                            console.log('save to spotify');
+                            savePlaylist(program.name);
+                        }
                     }
                 });
             } else {
                 alert("select a component to run");
             }
         });
-        $("#controls").append(button);
+
+        var newButton = $("#new-button");
+        newButton.on('click', function() {
+            var name = 'untitled';
+            initNewProgram(new Program(inventory, name));
+        });
+
+        var saveButton = $("#save-button");
+        saveButton.on('click', function() {
+            var title = $("#program-name").val();
+            program.name = title;
+            program.save();
+            info("Saved " + title);
+        });
     }
 
 
     function initUI() {
-        addButtons();
+        addControls();
         showInventoryUI();
     }
 
@@ -586,8 +660,54 @@ var createEditor = function(canvasElem, inventory) {
         $(document).keyup(keyup);
     }
 
+    function initNewProgram(newProgram) {
+        widgetCount = 0;
+        paper.clear();
+        connections = [];
+        nameToRect = {};
+        program = newProgram;
+        previousComponent = null;
+        curSelected = null;
+        altSelected = null;
+        editing = false;
+    }
+
     initEditor();
     return {    
+        load:function(newProgram) {
+            console.log('loading program');
+            initNewProgram(newProgram);
+
+            _.each(program.components, function(comp, id) {
+                addNewComponent(comp.cls, comp);
+            });
+
+            // add connections
+
+            _.each(program.components, function(comp, id) {
+                var destRect = nameToRect[comp.name];
+                if (comp.source) {
+                    var srcRect = nameToRect[comp.source];
+                    addVisualConnection(srcRect, destRect);
+                } else if (comp.source_list) {
+                    _.each(comp.source_list, function(source) {
+                        var srcRect = nameToRect[source];
+                        addVisualConnection(srcRect, destRect);
+                    });
+                }
+            });
+            // select main
+            if (program.main&& program.main in nameToRect) {
+                curSelected = nameToRect[program.main];
+                selectRect(curSelected, true);
+            }
+            $("#program-name").val(program.name);
+        },
+
+        newProgram: function() {
+            var name = 'untitled';
+            initNewProgram(new Program(inventory, name));
+        }
     }
 }
 

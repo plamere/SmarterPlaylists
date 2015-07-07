@@ -78,6 +78,24 @@ inventory = {
             }
         },
         {
+            "name" : "ArtistFilter",
+            "class": pbl.ArtistFilter,
+            "type" : "filter",
+            "description": "removes tracks by the given artist",
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "artistNames": {
+                    "type" : "string_list",
+                    "optional" : False,
+                    "description": "a list of artist names",
+                },
+            }
+        },
+        {
             "name" : "ArtistTopTracks",
             "class": pbl.ArtistTopTracks,
             "type" : "source",

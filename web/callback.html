@@ -48,13 +48,38 @@ function createPlaylist(username, name, callback) {
     });
 }
 
+function removeTracksFromPlaylist(username, playlist, callback) {
+    var url = 'https://api.spotify.com/v1/users/' + username +
+        '/playlists/' + playlist +
+        '/tracks';
+
+    var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
+
+    // PUT replaces all tracks, POST appends
+    $.ajax(url, {
+        type: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + g_access_token,
+            'Content-Type': 'application/json'
+        },
+        success: function(r) {
+            callback('ok');
+        },
+        error: function(r, status, err) {
+            callback(null);
+        }
+    });
+}
+
 function addTracksToPlaylist(username, playlist, tracks, start, callback) {
         var maxTracksPerPlaylistAdd = 100;
     var url = 'https://api.spotify.com/v1/users/' + username +
         '/playlists/' + playlist +
         '/tracks';
-        var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
 
+    var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
+
+    // PUT replaces all tracks, POST appends
     $.ajax(url, {
         type: 'POST',
         data: JSON.stringify(thisTracks),
@@ -83,6 +108,33 @@ function status(msg) {
     $("#status").text(msg);
 }
 
+
+function tracksAddedCallback(ok) {
+}
+
+function addedTracks(ok, username, pid, name) {
+
+    var uri = 'spotify:user:' + username + ':playlist:' + pid
+    if (ok) {
+        $('#playlistlink').attr('href', uri);
+        $("#title").text(name);
+        $('#done').show();
+        $('#creating').hide();
+    } else {
+        $('#error').show();
+        $('#creating').hide();
+    }
+
+    var savedData = {
+        name: name,
+        uri: uri,
+        status: ok ? 'ok' : 'error'
+    }
+    console.log('localstorage', savedData);
+    localStorage.setItem('playlist-save-status', JSON.stringify(savedData, null, 4));
+}
+
+
 function doit() {
     // parse hash
     var hash = location.hash.replace(/#/g, '');
@@ -104,30 +156,36 @@ function doit() {
 
     g_name = localStorage.getItem('playlist-title');
     g_tracks = JSON.parse(localStorage.getItem('playlist-tids'));
-
-    var remaining = g_tracks.length;
+    g_uri = localStorage.getItem('playlist-uri');
     var tracks = g_tracks;
 
-    getUsername(function(username) {
-        createPlaylist(username, g_name, function(playlist) {
-            if (playlist) {
-                addTracksToPlaylist(username, playlist, tracks, 0, function(ok) {
-                    if (ok) {
-                        $('#playlistlink').attr('href', 'spotify:user:'+username+':playlist:'+playlist);
-                        $("#title").text(g_name);
-                        $('#done').show();
-                        $('#creating').hide();
-                    } else {
-                        $('#error').show();
-                        $('#creating').hide();
-                    }
+    if (g_uri) {
+        var username = g_uri.split(':')[2];
+        var pid = g_uri.split(':')[4];
+        removeTracksFromPlaylist(username, pid, function(ok) {
+            if (ok) {
+                addTracksToPlaylist(username, pid, tracks, 0, function(ok) {
+                    addedTracks(ok, username, pid, g_name);
                 });
             } else {
                 $("#error").show();
                 $('#creating').hide();
             }
         });
-    });
+    } else {
+        getUsername(function(username) {
+            createPlaylist(username, g_name, function(playlist) {
+                if (playlist) {
+                    addTracksToPlaylist(username, playlist, tracks, 0, function(ok){
+                        addedTracks(ok, username, playlist, g_name);
+                    });
+                } else {
+                    $("#error").show();
+                    $('#creating').hide();
+                }
+            });
+        });
+    }
 }
 
 </script>
