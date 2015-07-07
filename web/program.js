@@ -154,6 +154,7 @@ Program.prototype = {
             that.save()
             console.log('run done', data);
             callback(data)
+            localStorage.setItem('sp-last-run', getKey(that.name));
         });
     },
 
@@ -176,7 +177,6 @@ Program.prototype = {
         var json = JSON.stringify(obj, null, 4);
         console.log('SAVE ' + json);
         localStorage.setItem(getKey(this.name), json);
-        localStorage.setItem('sp-last-run', getKey(this.name));
     }
 }
 
@@ -194,26 +194,29 @@ function loadMostRecentProgram(inventory) {
 }
 
 function loadProgram(inventory, key) {
+    var program = null;
     var json = localStorage.getItem(key);
-    var sprog = JSON.parse(json);
-    console.log('sprog', sprog);
-    var program = new Program(inventory, sprog.name);
-    program.name = sprog.name;
-    program.main = sprog.main;
-    program.extra = sprog.extra;
-    _.each(sprog.components, function(comp, name) {
-        program.addComponent(name, comp.type, comp.params, comp.extra);
-    });
+    if (json) {
+        var sprog = JSON.parse(json);
+        console.log('sprog', sprog);
+        var program = new Program(inventory, sprog.name);
+        program.name = sprog.name;
+        program.main = sprog.main;
+        program.extra = sprog.extra;
+        _.each(sprog.components, function(comp, name) {
+            program.addComponent(name, comp.type, comp.params, comp.extra);
+        });
 
-    _.each(sprog.components, function(comp, name) {
-        if (comp.source) {
-            program.addConnection(comp.source, name);
-        } else if (comp.source_list) {
-            _.each(comp.source_list, function(source) {
-                program.addConnection(source, name);
-            });
-        }
-    });
+        _.each(sprog.components, function(comp, name) {
+            if (comp.source) {
+                program.addConnection(comp.source, name);
+            } else if (comp.source_list) {
+                _.each(comp.source_list, function(source) {
+                    program.addConnection(source, name);
+                });
+            }
+        });
+    }
     return program;
 }
 

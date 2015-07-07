@@ -27,14 +27,20 @@ function showPlaylist(name, data) {
 }
 
 
-function savePlaylist(name) {
-    if (curTracks && curTracks.length > 0) {
+function savePlaylist(program, data) {
+    var tracks = data.tracks;
+    if (tracks && tracks.length > 0) {
         var tids = [];
-        _.each(curTracks, function(track) {
+        _.each(tracks, function(track) {
             tids.push('spotify:track:' + track.id);
         });
         localStorage.setItem('playlist-tids', JSON.stringify(tids));
-        localStorage.setItem('playlist-title', name);
+        localStorage.setItem('playlist-title', program.name);
+        if (program.extra.uri) {
+            localStorage.setItem('playlist-uri', program.extra.uri);
+        } else {
+            localStorage.removeItem('playlist-uri');
+        }
         loginWithSpotify();
     }
 }

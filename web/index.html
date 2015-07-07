@@ -45,7 +45,7 @@
     <div id="content">
         <div id="#info"> </div>
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class=""><a href="#dir" data-toggle="tab">Programs</a></li>
+            <li class="not-active"><a href="#dir" data-toggle="tab">Programs</a></li>
             <li class="active"><a href="#work" data-toggle="tab">Builder</a></li>
             <li><a href="#ttracks" data-toggle="tab" 
                     id="track-tab-text">Tracks 
@@ -53,8 +53,10 @@
         </ul>
         <div id="my-tab-content" class="tab-content">
 
-            <div class="tab-pane" id="dir">
+            <div class="tab-pane not-active" id="dir">
               <h2> Your Programs </h2>
+                    <button id='new-button' 
+                        class='btn btn-primary btn-primary'> New Program </button>
                 <table class="table">
                     <thead> <tr> <th> # <th>Title <th> Created <th> Last run
                     <th> Runs <th> Errors <th> # Components </tr> </thead>
@@ -67,9 +69,6 @@
                 <div id="controls" class='form-inline'> 
                     <button id='save-button' 
                         class='btn btn-primary btn-xs pull-left'> save </button>
-                    <button id='new-button' 
-                        class='btn btn-primary btn-xs pull-left'> clear </button>
-
                     <label> 
                         Program Name 
                         <input id='program-name' class='input apull-left nform-control'>
@@ -169,6 +168,7 @@ function info(s) {
 function fetchInventory(callback) {
     $.getJSON(apiPath + 'inventory').then(
         function(data) {
+            console.log('inventory here');
             var inventoryMap = {};
             _.each(data.inventory.components, function(component) {
                 component.hasInputs = component.type != "source";
@@ -178,6 +178,7 @@ function fetchInventory(callback) {
             callback(inventoryMap);
         },
         function() {
+            console.log('inventory trouble');
             callback(null);
         }
     );
@@ -188,6 +189,10 @@ function fmtDate(ts) {
     d.setUTCSeconds(ts);
     var out = d.toString().substring(0,21);
     return out;
+}
+
+function showBuilder() {
+    $('#tabs a[href="#work"]').tab('show') // Select tab by name
 }
 
 function showDirectory() {
@@ -207,8 +212,7 @@ function showDirectory() {
         tr.append( $("<td>").text( _.keys(entry.components).length));
         tr.on('click', function() {
             console.log('open', entry.name);
-            $('#tabs a[href="#work"]').tab('show') // Select tab by name
-
+            showBuilder();
             editor.load(entry);
         });
         body.append(tr);
@@ -234,6 +238,16 @@ function initApp() {
             }
         });
     });
+
+    var newButton = $("#new-button");
+    newButton.on('click', function() {
+        var name = 'untitled';
+        var program = new Program(inventory, name);
+        showBuilder();
+        editor.load(program);
+    });
+
+
     $('#tabs').tab();
     console.log('fetching inventory ...');
     fetchInventory(function(inventoryMap) {

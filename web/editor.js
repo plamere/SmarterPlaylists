@@ -10,7 +10,6 @@ var createEditor = function(canvasElem, inventory) {
     var tWidth = (tileWidth + xMargin);
     var widgetsPerRow = 0;
 
-    var widgets = [];
     var widgetCount = 0;
     var connections = [];
     var controlled = false;
@@ -20,7 +19,7 @@ var createEditor = function(canvasElem, inventory) {
     var curSelected = null;
     var altSelected = null;
     var paper = null;
-    var editing = false;
+    var canvasHasFocus = true;
 
     var nameToRect = {}
 
@@ -29,9 +28,13 @@ var createEditor = function(canvasElem, inventory) {
         var w = $(window).width();
         var h = $(window).height() - top;
 
-        console.log('width', w, 'height', h);
+        console.log('width/height', w,h);
         paper = Raphael(canvasElem, w, h);
         widgetsPerRow = Math.floor(paper.canvas.offsetWidth / tWidth);
+    }
+
+    function canvasFocus(state) {
+        canvasHasFocus = state;
     }
 
     var dragger = function () {
@@ -82,7 +85,7 @@ var createEditor = function(canvasElem, inventory) {
 
     function keydown(evt) {
 
-        if (editing) {
+        if (!canvasHasFocus) {
             return;
         }
         console.log('key', evt.which);
@@ -124,21 +127,11 @@ var createEditor = function(canvasElem, inventory) {
         var newX = rect.ox + dx;
         var newY = rect.oy + dy;
 
-        /*
-        var att = rect.type == "rect" ? 
-            {x: newX, y: newY} : 
-            {cx: newX, cy: newY};
-
-        rect.attr(att);
-        rect.component.extra.x = newX;
-        rect.component.extra.y = newY;
-        */
         moveTo(rect, newX, newY);
 
         for (var i = connections.length; i--;) {
             paper.connection(connections[i]);
         }
-        console.log('shifted', shifted);
     };
 
     var up = function () {
@@ -209,12 +202,8 @@ var createEditor = function(canvasElem, inventory) {
             rect = this.parent;
         }
 
-        console.log('editing', rect.name);
-        console.log('editing', rect.name, rect);
-        console.log(rect);
-        editing = true;
+        canvasFocus(false);
         var component = rect.component;
-        console.log('edit', rect.name, component.cls);
 
         $("#edit-modal .modal-title").text(component.type);
         $("#edit-modal .description").text(component.cls.description);
@@ -223,7 +212,6 @@ var createEditor = function(canvasElem, inventory) {
 
         function addParam(pdiv, name, param) {
             var div = $("<div class='form-group'>");
-            console.log('add param', name, param);
 
             if ('default' in param) {
                 curParams[name] = param['default'];
@@ -293,7 +281,6 @@ var createEditor = function(canvasElem, inventory) {
                     } else {
                         curParams[name] = parseInt(inp.val());
                     }
-                    console.log('nmber', name, curParams);
                 });
                 div.append(label);
                 div.append(inp);
@@ -313,7 +300,6 @@ var createEditor = function(canvasElem, inventory) {
             pdiv.append(div);
         }
 
-        console.log('b4', component.params);
         
         var pdiv = $("#edit-modal .params");
         pdiv.empty();
@@ -327,25 +313,19 @@ var createEditor = function(canvasElem, inventory) {
 
 
         $('#edit-modal').on('hidden.bs.modal', function () {
-            editing = false;
-            console.log('done editing');
+            canvasFocus(true);
         });
 
         $("#edit-modal .save").on('click', function() {
-            console.log('saving', curParams);
             _.each(curParams, function(val, name) {
                 component.params[name] = val;
             });
-            console.log('after', component.params);
             renameComponent(rect);
-            console.log('editing', rect.name);
         });
 
     }
 
     function renameComponent(rect) {
-        console.log('renamec', rect, rect.component);
-
         var title = rect.component.cls.title || rect.component.cls.name;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);
@@ -373,7 +353,6 @@ var createEditor = function(canvasElem, inventory) {
             }
         }
         _.each(title.split(' '), function(word, i) {
-            console.log('word', word);
             if (word.indexOf('$') == 0) {
                 word = makeSub(word, component);
             }
@@ -421,7 +400,6 @@ var createEditor = function(canvasElem, inventory) {
     }
 
     function addVisualConnection(srcRect, destRect) {
-        console.log('add vis', srcRect, destRect);
         var edge = paper.connection(srcRect, destRect, "#f33");
         connections.push(edge);
         edge.source = srcRect;
@@ -473,11 +451,9 @@ var createEditor = function(canvasElem, inventory) {
         var xpos = xMargin + col * (tileWidth + xMargin);
         var ypos = yMargin + row * (tileHeight + yMargin)
 
-        var name = nextComponentName(componentType);
         var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
         var color = Raphael.getColor();
 
-        rect.name = name;
         rect.attr({
             fill: color, 
             stroke: color, 
@@ -487,7 +463,6 @@ var createEditor = function(canvasElem, inventory) {
             });
 
 
-        console.log('comp', col, row);
         rect.label = paper.text(xpos + textXOffset, 
             ypos + textYOffset, componentType.name);
         rect.label.parent = rect;
@@ -515,9 +490,11 @@ var createEditor = function(canvasElem, inventory) {
 
         if (comp) {
             rect.component = comp;
+            rect.name = comp.name;
             moveTo(rect, comp.extra.x, comp.extra.y);
         } else {
-            rect.component = program.addComponent(name, componentType.name, {}, {});
+            rect.name = nextComponentName(componentType);
+            rect.component = program.addComponent(rect.name, componentType.name, {}, {});
             _.each(rect.component.cls.params, function(param, name) {
                 if ('default' in param) {
                     rect.component.params[name] = param['default'];
@@ -529,7 +506,6 @@ var createEditor = function(canvasElem, inventory) {
         }
         renameComponent(rect);
 
-        console.log('adding component', componentType.name, rect);
 
         // Set component param defaults and rename
         // component
@@ -588,7 +564,6 @@ var createEditor = function(canvasElem, inventory) {
     }
 
     function sortComponents() {
-        console.log('sort', inventory);
         _.each(inventory, function(component, name) {
             if (component.type == 'filter') {
                 filters.push(component);
@@ -612,16 +587,17 @@ var createEditor = function(canvasElem, inventory) {
         runButton.on('click', function() {
             var title = $("#program-name").val();
             var saveToSpotify = $('#save-playlist').is(':checked');
-            program.name = title;
-            console.log('run', curSelected);
+            if (program.name != title) {
+                program.name = title;
+                program.extra.uri = null;
+            }
             if (curSelected) {
                 var main = curSelected.name;
                 program.run(main, function(data) {
                     if (data) {
                         showPlaylist(program.name, data);
                         if (saveToSpotify) {
-                            console.log('save to spotify');
-                            savePlaylist(program.name);
+                            savePlaylist(program, data);
                         }
                     }
                 });
@@ -630,11 +606,6 @@ var createEditor = function(canvasElem, inventory) {
             }
         });
 
-        var newButton = $("#new-button");
-        newButton.on('click', function() {
-            var name = 'untitled';
-            initNewProgram(new Program(inventory, name));
-        });
 
         var saveButton = $("#save-button");
         saveButton.on('click', function() {
@@ -655,9 +626,24 @@ var createEditor = function(canvasElem, inventory) {
         initPaper()
         sortComponents();
         initUI();
-        var elemName = "#" + canvasElem + '-parent';
+        var elemName = "#" + canvasElem;
         $(document).keydown(keydown);
         $(document).keyup(keyup);
+
+        $(window).bind('storage', function (e) {
+            var evt = e.originalEvent;
+            if (evt.key == 'playlist-save-status') {
+                var obj = JSON.parse(evt.newValue);
+                if (program.name == obj.name) {
+                    program.extra.uri = obj.uri;
+                    program.save();
+                }
+            }
+        });
+
+        // TODO:  Instead of always saving programs, we might add
+        //  and onbeforeunload event that will save just the dirty ones
+        //  before we exit.
     }
 
     function initNewProgram(newProgram) {
@@ -669,13 +655,12 @@ var createEditor = function(canvasElem, inventory) {
         previousComponent = null;
         curSelected = null;
         altSelected = null;
-        editing = false;
+        canvasFocus(true);
     }
 
     initEditor();
     return {    
         load:function(newProgram) {
-            console.log('loading program');
             initNewProgram(newProgram);
 
             _.each(program.components, function(comp, id) {
@@ -686,6 +671,7 @@ var createEditor = function(canvasElem, inventory) {
 
             _.each(program.components, function(comp, id) {
                 var destRect = nameToRect[comp.name];
+                console.log('dest', comp.name, destRect, nameToRect);
                 if (comp.source) {
                     var srcRect = nameToRect[comp.source];
                     addVisualConnection(srcRect, destRect);

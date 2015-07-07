@@ -48,29 +48,6 @@ function createPlaylist(username, name, callback) {
     });
 }
 
-function removeTracksFromPlaylist(username, playlist, callback) {
-    var url = 'https://api.spotify.com/v1/users/' + username +
-        '/playlists/' + playlist +
-        '/tracks';
-
-    var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
-
-    // PUT replaces all tracks, POST appends
-    $.ajax(url, {
-        type: 'DELETE',
-        headers: {
-            'Authorization': 'Bearer ' + g_access_token,
-            'Content-Type': 'application/json'
-        },
-        success: function(r) {
-            callback('ok');
-        },
-        error: function(r, status, err) {
-            callback(null);
-        }
-    });
-}
-
 function addTracksToPlaylist(username, playlist, tracks, start, callback) {
         var maxTracksPerPlaylistAdd = 100;
     var url = 'https://api.spotify.com/v1/users/' + username +
@@ -78,20 +55,21 @@ function addTracksToPlaylist(username, playlist, tracks, start, callback) {
         '/tracks';
 
     var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
+    var uris = { 'uris': thisTracks };
 
     // PUT replaces all tracks, POST appends
     $.ajax(url, {
         type: 'POST',
-        data: JSON.stringify(thisTracks),
+        data: JSON.stringify(uris),
         dataType: 'json',
-                processData:false,
+        processData:false,
         headers: {
             'Authorization': 'Bearer ' + g_access_token,
             'Content-Type': 'application/json'
         },
         success: function(r) {
             if (start + maxTracksPerPlaylistAdd >= tracks.length) {
-                    callback('good');
+                    callback(true);
             } else {
                 status(Math.round(100 * start / tracks.length)  + "% saved");
                 addTracksToPlaylist(username, playlist, tracks,
@@ -100,6 +78,51 @@ function addTracksToPlaylist(username, playlist, tracks, start, callback) {
         },
         error: function(r, status, err) {
             callback(null);
+        }
+    });
+}
+
+function replaceTracksInPlaylist(username, playlist, tracks, callback) {
+    var maxTracksPerPlaylistAdd = 100;
+    var url = 'https://api.spotify.com/v1/users/' + username +
+        '/playlists/' + playlist + '/tracks';
+    var start = 0;
+    var thisTracks = tracks.slice(start, start + maxTracksPerPlaylistAdd);
+    var uris = { 'uris': thisTracks };
+
+    // PUT replaces all tracks, POST appends
+    $.ajax(url, {
+        type: 'PUT',
+        data: JSON.stringify(uris),
+        dataType: 'json',
+        processData:false,
+        headers: {
+            'Authorization': 'Bearer ' + g_access_token,
+            'Content-Type': 'application/json'
+        },
+        success: function(r) {
+            console.log('replace success');
+            if (start + maxTracksPerPlaylistAdd >= tracks.length) {
+                callback(true);
+            } else {
+                status(Math.round(100 * start / tracks.length)  + "% saved");
+                addTracksToPlaylist(username, playlist, tracks,
+                    start + maxTracksPerPlaylistAdd, callback);
+            }
+        },
+        error: function(r, status, err) {
+            console.log('replace error', r, status, err);
+            if (r.status >= 200 && r.status <= 299) {
+                if (start + maxTracksPerPlaylistAdd >= tracks.length) {
+                    callback(true);
+                } else {
+                    status(Math.round(100 * start / tracks.length)  + "% saved");
+                    addTracksToPlaylist(username, playlist, tracks,
+                        start + maxTracksPerPlaylistAdd, callback);
+                }
+            } else {
+                callback(null);
+            }
         }
     });
 }
@@ -162,16 +185,11 @@ function doit() {
     if (g_uri) {
         var username = g_uri.split(':')[2];
         var pid = g_uri.split(':')[4];
-        removeTracksFromPlaylist(username, pid, function(ok) {
-            if (ok) {
-                addTracksToPlaylist(username, pid, tracks, 0, function(ok) {
-                    addedTracks(ok, username, pid, g_name);
-                });
-            } else {
-                $("#error").show();
-                $('#creating').hide();
-            }
+
+        replaceTracksInPlaylist(username, pid, tracks, function(ok) {
+            addedTracks(ok, username, pid, g_name);
         });
+
     } else {
         getUsername(function(username) {
             createPlaylist(username, g_name, function(playlist) {
