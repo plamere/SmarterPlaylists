@@ -6,7 +6,9 @@ function showPlaylist(name, data) {
     var tbody = $("#playlist-body");
     tbody.empty();
     $("#tab-track-count").text(data.tracks.length);
-    $("#playlist-title").text(data.name);
+    $("#tab-track-count").addClass('tc-fresh');
+    $("#playlist-title").text(name);
+    $("#playlist-description").text(data.name);
 
     curTracks = data.tracks;
     curTitle = data.name;
@@ -24,6 +26,10 @@ function showPlaylist(name, data) {
         tr.append(src);
         tbody.append(tr);
     });
+}
+
+function playlistShown() {
+    $("#tab-track-count").removeClass('tc-fresh');
 }
 
 

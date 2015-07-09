@@ -45,8 +45,8 @@
     <div id="content">
         <div id="#info"> </div>
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="not-active"><a href="#dir" data-toggle="tab">Programs</a></li>
             <li class="active"><a href="#work" data-toggle="tab">Builder</a></li>
+            <li class="not-active"><a href="#dir" data-toggle="tab">Programs</a></li>
             <li><a href="#ttracks" data-toggle="tab" 
                     id="track-tab-text">Tracks 
                     <span class="badge" id="tab-track-count">0</span></a></li>
@@ -67,8 +67,10 @@
             <div class="tab-pane active" id="work">
               <div class="row">
                 <div id="controls" class='form-inline'> 
+                    <!--
                     <button id='save-button' 
                         class='btn btn-primary btn-xs pull-left'> save </button>
+                    -->
                     <label> 
                         Program Name 
                         <input id='program-name' class='input apull-left nform-control'>
@@ -83,19 +85,29 @@
                         </label>
                     </span>
                 </div>
-                <div class="well">
-                    <div id="sources" class=""> </div>
-                    <div id="filters" class=""> </div>
-                </div>
               </div>
-              <div id="workspace-parent">
-                  <div id="workspace"> </div>
-              </div> 
+
+              <div class="row">
+                  <div class="col-sm-2" id="mybuttons">
+                      <h4> Sources </h4>
+                      <ul id="sources" class="nav-inverse nav-tabs nav-stacked">
+                        <li class="active"><a href="#">Overview</a></li>
+                        <li><a href="#">Reports</a></li>
+                      </ul>
+                      <h4> Filters </h4>
+                      <ul id="filters" class="nav-inverse nav-tabs nav-stacked">
+                      </ul>
+                  </div> 
+                  <div class="col-sm-10" id="workspace-parent">
+                      <div id="workspace"> </div>
+                  </div> 
+            </div>
             </div>
 
 
             <div class="tab-pane" id="ttracks">
-                <h4 id='playlist-title'> </h4>
+                <h2 id='playlist-title'> </h2>
+                <p id='playlist-description'> </p>
                 <div class="container" id='playlist-div'>
                     <button id="save" class='btn btn-primary'> Save to Spotify</button>
                     <table class="table">
@@ -105,7 +117,6 @@
                 </div>
             </div>
         </div>
-
     </div>
  
     <div id='edit-modal' class="modal fade">
@@ -114,13 +125,12 @@
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"
     aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Modal title</h4>
+            <h2 class="modal-title">Modal title</h2>
           </div>
           <div class="modal-body">
             <div class="description"> description </div>
-            <b> params </b>
-            <div class="params form"> 
-            </div>
+            <h3> Parameters </h3>
+            <div class="params form"> </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default done"
@@ -152,8 +162,6 @@
 var inventory = null
 var editor = null;
 var apiPath = 'http://localhost:5000/'
-var paper;
-
 
 
 function error(s) {
@@ -226,6 +234,9 @@ function initApp() {
         if ($(e.target).attr('href') == '#dir') {
             showDirectory();
             console.log('showing dir');
+        } else if ($(e.target).attr('href') == '#ttracks') {
+            playlistShown();
+            console.log('showing tracks');
         }
     });
 

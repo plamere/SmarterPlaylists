@@ -46,11 +46,12 @@ inventory = {
             "class": pbl.AlbumSource,
             "type" : "source",
             "description": "generates a series of tracks given an album",
+            "title": "$title",
             "params": {
                 "title": {
                     "type" : "string",
                     "optional" : True,
-                    "description": "the title of the artist",
+                    "description": "the title of the album",
                 },
                 "artist": {
                     "type" : "string",
@@ -140,6 +141,26 @@ inventory = {
             "type" : "source",
             "description": "tracks by the given artist and similar artists",
             "title" : "$artist radio",
+            "params": {
+                "artist": {
+                    "type" : "string",
+                    "optional" : False,
+                    "description": "the seed artist",
+                },
+                "count": {
+                    "type" : "number",
+                    "optional" : True,
+                    "default" : 20,
+                    "description": "The number of tracks to generate",
+                },
+            }
+        },
+        {
+            "name" : "EchoNestArtist",
+            "class": pbl.EchoNestArtistPlaylist,
+            "type" : "source",
+            "description": "tracks by the given artist",
+            "title" : "$artist",
             "params": {
                 "artist": {
                     "type" : "string",

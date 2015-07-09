@@ -1,5 +1,6 @@
 body {
     height: 100%;
+    background-color:#000;
 }
 
 .top {
@@ -72,4 +73,27 @@ body {
     margin-bottom:10px;
     margin-top:10px;
     padding-bottom:20px;
+}
+
+#playlist-title {
+    text-transform:capitalize;
+}
+
+
+.btn-custom {
+  padding-right:4px;
+  background-color:#111;
+  padding:6px;
+  font-size:18px;
+}
+
+.tc-fresh {
+    background-color:#21D05F !important;
+}
+
+.tc-normal {
+    background-color:#d9dadc !important;
+}
+#workspace {
+    background-color:#EEEEEE;
 }

@@ -1,5 +1,6 @@
 var createEditor = function(canvasElem, inventory) {
-    var tileWidth = 100;
+    var spotifyGreen = '#1ED760';
+    var tileWidth = 140;
     var tileHeight = 80;
     var textXOffset = tileWidth / 2;
     var textYOffset = 30;
@@ -30,6 +31,8 @@ var createEditor = function(canvasElem, inventory) {
 
         console.log('width/height', w,h);
         paper = Raphael(canvasElem, w, h);
+        paper.canvas.className += ' raphael-canvas';
+        paper.canvas.baseVal += ' raphael-canvas';
         widgetsPerRow = Math.floor(paper.canvas.offsetWidth / tWidth);
     }
 
@@ -45,7 +48,7 @@ var createEditor = function(canvasElem, inventory) {
 
         rect.ox = rect.type == "rect" ? rect.attr("x") : rect.attr("cx");
         rect.oy = rect.type == "rect" ? rect.attr("y") : rect.attr("cy");
-        rect.animate({"fill-opacity": .2}, 500);
+        // rect.animate({"fill-opacity": .2}, 500);
     }
 
     function deleteCur() {
@@ -85,10 +88,17 @@ var createEditor = function(canvasElem, inventory) {
 
     function keydown(evt) {
 
+
         if (!canvasHasFocus) {
             return;
         }
-        console.log('key', evt.which);
+
+        if ($(evt.target).is('input')) {
+            console.log('is input');
+            return;
+        }
+
+        console.log('key', evt.which, evt);
         if (evt.which == 17) {
             controlled = true;
         }
@@ -139,7 +149,7 @@ var createEditor = function(canvasElem, inventory) {
         if (this.parent) {
             rect = this.parent;
         }
-        rect.animate({"fill-opacity": 0}, 500);
+        // rect.animate({"fill-opacity": 0}, 500);
     };
 
     function selectRect(rect, state) {
@@ -148,6 +158,7 @@ var createEditor = function(canvasElem, inventory) {
         } else {
             curSelected.attr({'stroke-width' : 1});
         }
+        console.log(rect.component.cls.color);
     }
 
     function altSelectRect(rect, state) {
@@ -400,7 +411,7 @@ var createEditor = function(canvasElem, inventory) {
     }
 
     function addVisualConnection(srcRect, destRect) {
-        var edge = paper.connection(srcRect, destRect, "#f33");
+        var edge = paper.connection(srcRect, destRect, spotifyGreen);
         connections.push(edge);
         edge.source = srcRect;
         edge.dest = destRect;
@@ -440,8 +451,13 @@ var createEditor = function(canvasElem, inventory) {
 
 
     function nextComponentName(component) {
-        widgetCount++;
-        return component.name + '-' + widgetCount
+        while (true) {
+            widgetCount++;
+            var nextName =  component.name + '-' + widgetCount
+            if (! (nextName in nameToRect) ) {
+                return nextName;
+            }
+        }
     }
 
 
@@ -454,10 +470,11 @@ var createEditor = function(canvasElem, inventory) {
         var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
         var color = Raphael.getColor();
 
+        color = componentType.color;
+
         rect.attr({
-            fill: color, 
+            fill: "#ffffff", 
             stroke: color, 
-            "fill-opacity": .5, 
             "stroke-width": 2, 
             cursor: "move",
             });
@@ -472,7 +489,10 @@ var createEditor = function(canvasElem, inventory) {
             fill: color, 
             stroke: color, 
             cursor: "move",
-            "font-size": 12
+            "stroke-width": 0,
+            "font-family":"Arial",
+            "font-size": 18,
+            "font-weight": 'lighter'
         });
 
         //addLabel(rect, componentType.name);
@@ -536,7 +556,10 @@ var createEditor = function(canvasElem, inventory) {
         var sourceList = $("#sources");
         sourceList.empty();
         _.each(sources, function(source) {
-            var sourceComponent = $("<button class='component-button label label-primary'>").text(source.name);
+            var sourceComponent = $("<li class='abtn-custom'>")
+                .text(source.name)
+                //.css('color', source.color)
+                .attr('title', source.description);
             sourceList.append(sourceComponent);
             sourceComponent.on('click', function() {
                 var newComponent = addNewComponent(source);
@@ -550,7 +573,10 @@ var createEditor = function(canvasElem, inventory) {
 
         var filterList = $("#filters");
         _.each(filters, function(filter) {
-            var filterComponent = $("<button class='component-button label label-info'>").text(filter.name);
+            var filterComponent = $("<li class='abtn-custom'>")
+                .text(filter.name)
+                //.css('color', filter.color)
+                .attr('title', filter.description);
             filterList.append(filterComponent);
             filterComponent.on('click', function() {
                 var newComponent = addNewComponent(filter);
@@ -622,9 +648,28 @@ var createEditor = function(canvasElem, inventory) {
         showInventoryUI();
     }
 
+    function getNextColor() {
+        var badColors = ['#0c00ff'];
+        while (true) {
+            color = Raphael.getColor(.1);
+            if (badColors.indexOf(color) == -1) {
+                return color;
+            }
+        }
+
+        return "#000000";
+    }
+
+    function assignColorsToInventory() {
+        _.each(inventory, function(component, name) {
+            component.color = getNextColor();
+        });
+    }
+
     function initEditor() {
         initPaper()
         sortComponents();
+        assignColorsToInventory();
         initUI();
         var elemName = "#" + canvasElem;
         $(document).keydown(keydown);
