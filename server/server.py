@@ -19,7 +19,8 @@ def inventory():
     print 'inventory'
     results = {
         'status': 'ok',
-        'inventory': components.exported_inventory
+        'inventory': components.exported_inventory,
+        'types': components.inventory['types']
     }
     print 'inventory', time.time() - start
     return jsonify(results)

@@ -26,18 +26,25 @@ Program.prototype = {
 
         if (component.cls.type == 'source') {
             component.maxInputs = 0;
+            component.minInputs = 0;
+        } else if (component.cls.type == 'bool-filter') {
+            component.maxInputs = 2;
+            component.minInputs = 2;
         } else if (component.cls.type == 'multi-in-filter') {
             component.maxInputs = 20;
+            component.minInputs = 1;
             component.source_list = [];
         } else {
             component.maxInputs = 1;
+            component.minInputs = 1;
             component.source =  null;
         }
         return component;
     },
 
     hasMultiSource: function(component) {
-        return component.maxInputs > 1;
+        //return component.maxInputs > 1;
+        return component.source_list != undefined;
     },
 
     extract: function(c) {
@@ -47,6 +54,14 @@ Program.prototype = {
 
         if (c.source) {
             out.source = c.source;
+        }
+
+        if (c.true_source) {
+            out.true_source = c.true_source;
+        }
+
+        if (c.false_source) {
+            out.false_source = c.false_source;
         }
 
         if (c.source_list) {
@@ -84,10 +99,16 @@ Program.prototype = {
         }
     },
 
-    addConnection: function(name1, name2) {
+    addConnection: function(name1, name2, type) {
         console.log('ac', name1, name2);
         var c2 = this.components[name2];
-        if (this.hasMultiSource(c2)) {
+        if (c2.cls.type == 'bool-filter') {
+            if (type == 0) {
+                c2.true_source = name1;
+            } else {
+                c2.false_source = name1;
+            }
+        } else if (this.hasMultiSource(c2)) {
             c2.source_list.push(name1);
         } else {
             c2.source = name1;
@@ -96,6 +117,15 @@ Program.prototype = {
 
     removeConnection: function(name1, name2) {
         var c2 = this.components[name2];
+
+        if (c2.true_source && c2.true_source == name1) {
+            c2.true_source = null;
+        }
+
+        if (c2.false_source && c2.false_source == name1) {
+            c2.false_source = null;
+        }
+
         if (this.hasMultiSource(c2)) {
             var idx = c2.source_list.indexOf(name1);
             if (idx >= 0) {
@@ -208,11 +238,19 @@ function loadProgram(inventory, key) {
         });
 
         _.each(sprog.components, function(comp, name) {
+            if (comp.true_source) {
+                program.addConnection(comp.true_source, name, 0);
+            } 
+
+            if (comp.false_source) {
+                program.addConnection(comp.false_source, name, 1);
+            } 
+
             if (comp.source) {
-                program.addConnection(comp.source, name);
+                program.addConnection(comp.source, name, 0);
             } else if (comp.source_list) {
                 _.each(comp.source_list, function(source) {
-                    program.addConnection(source, name);
+                    program.addConnection(source, name, 0);
                 });
             }
         });

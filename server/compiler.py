@@ -42,6 +42,8 @@ OK = 'ok'
 '''
 
 def convert_val_to_type(val, type, program):
+    if type in inventory['types']:
+        return OK, val
     if type == 'string':
         return OK, str(val)
     elif type == 'string_list':

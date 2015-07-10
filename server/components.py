@@ -1,9 +1,21 @@
 import pbl
+import plugs
 import copy
 
 exported_inventory = None
 
 inventory = {
+    "types" : {
+        "day_of_week": [
+            { "name": "Monday", "value": 0 },
+            { "name": "Tuesday", "value": 1 },
+            { "name": "Wednesday", "value": 2 },
+            { "name": "Thursday", "value": 3 },
+            { "name": "Friday", "value": 4 },
+            { "name": "Saturday", "value": 5 },
+            { "name": "Sunday", "value": 6 }
+        ]
+    },
     "components" : [
         {
             "name" : "Annotator",
@@ -38,6 +50,71 @@ inventory = {
                     "type" : "bool",
                     "optional" : True,
                     "description": " if True also match by name in addition to the regular ID match",
+                },
+            }
+        },
+        {
+            "name" : "YesNo",
+            "class": plugs.YesNo,
+            "type" : "bool-filter",
+            "description": "selects a stream based on a boolean",
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when yes",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when no",
+                },
+                "yes": {
+                    "type" : "bool",
+                    "optional" : False,
+                    "description": "if true chose the yes stream",
+                },
+            }
+        },
+        {
+            "name" : "IsWeekend",
+            "class": plugs.IsWeekend,
+            "type" : "bool-filter",
+            "description": "selects a stream based on whether or not today is a weekend",
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when it is a weekend",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when it is not a weekend",
+                },
+            }
+        },
+        {
+            "name" : "IsDayOfWeek",
+            "class": plugs.IsDayOfWeek,
+            "type" : "bool-filter",
+            "title": "is $day?",
+            "description": "selects a stream based on whether is is the given day of the week",
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when the day matches",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks when the day doesn't match",
+                },
+                "day": {
+                    "type" : "day_of_week",
+                    "optional" : False,
+                    "description": "the day of the week",
                 },
             }
         },

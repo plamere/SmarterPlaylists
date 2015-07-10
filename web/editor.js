@@ -1,5 +1,6 @@
-var createEditor = function(canvasElem, inventory) {
+var createEditor = function(canvasElem, inventory, types) {
     var spotifyGreen = '#1ED760';
+    var spotifyRed = '#D71E60';
     var tileWidth = 140;
     var tileHeight = 80;
     var textXOffset = tileWidth / 2;
@@ -8,6 +9,7 @@ var createEditor = function(canvasElem, inventory) {
     var yMargin = 80;
     var sources = []
     var filters = []
+    var conditionals = []
     var tWidth = (tileWidth + xMargin);
     var widgetsPerRow = 0;
 
@@ -21,9 +23,12 @@ var createEditor = function(canvasElem, inventory) {
     var altSelected = null;
     var paper = null;
     var canvasHasFocus = true;
+    var CT_NORMAL = 0;
+    var CT_SHIFTED = 1;
 
     var nameToRect = {}
 
+    console.log('create editor', types);
     function initPaper() {
         var top = 100;
         var w = $(window).width();
@@ -38,6 +43,10 @@ var createEditor = function(canvasElem, inventory) {
 
     function canvasFocus(state) {
         canvasHasFocus = state;
+    }
+
+    function getConnType() {
+        return shifted ? CT_SHIFTED : CT_NORMAL;
     }
 
     var dragger = function () {
@@ -60,7 +69,7 @@ var createEditor = function(canvasElem, inventory) {
 
     function connectComponents() {
         if (altSelected && curSelected && altSelected != curSelected) {
-            connectComponent(altSelected, curSelected);
+            connectComponent(altSelected, curSelected, getConnType());
         }
     }
 
@@ -228,7 +237,27 @@ var createEditor = function(canvasElem, inventory) {
                 curParams[name] = param['default'];
             }
 
-            if (param.type  == 'string' || param.type == 'uri') {
+            if (param.type in types) {
+                var label =  $('<label for="' + name + '">').text(name);
+                label.attr('title', param.description);
+                var val = component.params[name] ?
+                          component.params[name] : param['default'];
+                var sel = $("<select>");
+                _.each(types[param.type], function(type) {
+                    var opt = $("<option>");
+                    opt.val(type.value);
+                    opt.text(type.name);
+                    sel.append(opt);
+                });
+                sel.attr('id', name);
+
+                sel.on('change', function() {
+                    curParams[name] = parseInt(sel.val());
+                });
+                div.append(label);
+                div.append(sel);
+            }
+            else if (param.type  == 'string' || param.type == 'uri') {
 
                 var label =  $('<label for="' + name + '">').text(name);
                 label.attr('title', param.description);
@@ -312,7 +341,7 @@ var createEditor = function(canvasElem, inventory) {
                 div.append(inp);
             }
             pdiv.append(div);
-        }
+        } 
 
         
         var pdiv = $("#edit-modal .params");
@@ -399,7 +428,7 @@ var createEditor = function(canvasElem, inventory) {
     }
 
 
-    function connectComponent(source, dest) {
+    function connectComponent(source, dest, connType) {
         if (dest.component.maxInputs == 0) {
             return;
         }
@@ -409,12 +438,13 @@ var createEditor = function(canvasElem, inventory) {
         }
         disconnectOutputs(source);
 
-        var edge = addVisualConnection(source, dest);
-        program.addConnection(source.name, dest.name);
+        var edge = addVisualConnection(source, dest, connType);
+        program.addConnection(source.name, dest.name, connType);
     }
 
-    function addVisualConnection(srcRect, destRect) {
-        var edge = paper.connection(srcRect, destRect, spotifyGreen);
+    function addVisualConnection(srcRect, destRect, connType) {
+        var color = connType == CT_NORMAL ? spotifyGreen : spotifyRed;
+        var edge = paper.connection(srcRect, destRect, color);
         connections.push(edge);
         edge.source = srcRect;
         edge.dest = destRect;
@@ -555,40 +585,37 @@ var createEditor = function(canvasElem, inventory) {
         rect.label.attr({"text": out });
     }
 
+    function addComponent(elem, comp) {
+        var button = $("<li>")
+            .text(comp.name)
+            .attr('title', comp.description);
+        elem.append(button);
+        button.on('click', function() {
+            var newComponent = addNewComponent(comp);
+            if (previousComponent) {
+                connectComponent(previousComponent,
+                    newComponent,getConnType());
+            }
+            previousComponent = newComponent;
+            select.apply(newComponent);
+        });
+    }
+
     function showInventoryUI() {
         var sourceList = $("#sources");
         sourceList.empty();
         _.each(sources, function(source) {
-            var sourceComponent = $("<li class='abtn-custom'>")
-                .text(source.name)
-                //.css('color', source.color)
-                .attr('title', source.description);
-            sourceList.append(sourceComponent);
-            sourceComponent.on('click', function() {
-                var newComponent = addNewComponent(source);
-                if (previousComponent) {
-                    connectComponent(previousComponent, newComponent);
-                }
-                previousComponent = newComponent;
-                select.apply(newComponent);
-            });
+            addComponent(sourceList, source);
         });
 
         var filterList = $("#filters");
         _.each(filters, function(filter) {
-            var filterComponent = $("<li class='abtn-custom'>")
-                .text(filter.name)
-                //.css('color', filter.color)
-                .attr('title', filter.description);
-            filterList.append(filterComponent);
-            filterComponent.on('click', function() {
-                var newComponent = addNewComponent(filter);
-                if (previousComponent) {
-                    connectComponent(previousComponent, newComponent);
-                }
-                previousComponent = newComponent;
-                select.apply(newComponent);
-            });
+            addComponent(filterList, filter);
+        });
+
+        var conditionalList = $("#conditionals");
+        _.each(conditionals, function(conditional) {
+            addComponent(conditionalList, conditional);
         });
     }
 
@@ -599,12 +626,14 @@ var createEditor = function(canvasElem, inventory) {
             }
             else if (component.type == 'multi-in-filter') {
                 filters.push(component);
+            } else if (component.type == 'bool-filter') {
+                conditionals.push(component);
             }
             else if (component.type == 'source') {
                 sources.push(component);
             } 
             else {
-                alert('unsupportd ' + component.type);
+                alert('unsupported ' + component.type);
             }
         });
     }
@@ -734,12 +763,21 @@ var createEditor = function(canvasElem, inventory) {
                 console.log('dest', comp.name, destRect, nameToRect);
                 if (comp.source) {
                     var srcRect = nameToRect[comp.source];
-                    addVisualConnection(srcRect, destRect);
+                    addVisualConnection(srcRect, destRect, CT_NORMAL);
                 } else if (comp.source_list) {
                     _.each(comp.source_list, function(source) {
                         var srcRect = nameToRect[source];
-                        addVisualConnection(srcRect, destRect);
+                        addVisualConnection(srcRect, destRect, CT_NORMAL);
                     });
+                } else if (comp.true_source || comp.false_source) {
+                    if (comp.true_source) {
+                        var srcRect = nameToRect[comp.true_source];
+                        addVisualConnection(srcRect, destRect, CT_NORMAL);
+                    }
+                    if (comp.false_source) {
+                        var srcRect = nameToRect[comp.false_source];
+                        addVisualConnection(srcRect, destRect, CT_SHIFTED);
+                    }
                 }
             });
             // select main
