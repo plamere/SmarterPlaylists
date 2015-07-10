@@ -367,6 +367,13 @@ inventory = {
                     "optional" : False,
                     "description": "the list of sources",
                 },
+                "fail_fast": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "description": "if true stop producing tracks "
+                        + "as soon as any input stops producing tracks"
+                },
             }
         },
         {

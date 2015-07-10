@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,14 +12,16 @@
     -->
     <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="images/favicon.png">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
+    rel="stylesheet"/>
     <title>Smarter Playlists</title>
     <!-- Custom styles for this template -->
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-</head>
+  </head>
 
   <body >
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -31,112 +33,141 @@
           </a>
         </div>
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
-          <ul class="nav navbar-nav navbar-right">
-            <li> <a href="About">About</a> </li>
-          </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li> <a href="About">About</a> </li>
+        </ul>
         </nav>
       </div>
     </div>
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
-      <div class="top" id='intro'>
+    <div class="top" id='intro'>
       <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
 
-    <div id="content">
-        <div id="#info"> </div>
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        <div id="content">
+          <div id="#info"> </div>
+          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#work" data-toggle="tab">Builder</a></li>
             <li class="not-active"><a href="#dir" data-toggle="tab">Programs</a></li>
             <li><a href="#ttracks" data-toggle="tab" 
-                    id="track-tab-text">Tracks 
-                    <span class="badge" id="tab-track-count">0</span></a></li>
-        </ul>
-        <div id="my-tab-content" class="tab-content">
+              id="track-tab-text">Tracks 
+              <span class="badge" id="tab-track-count">0</span></a></li>
+          </ul>
+
+          <div id="my-tab-content" class="tab-content">
 
             <div class="tab-pane not-active" id="dir">
               <h2> Your Programs </h2>
-                    <button id='new-button' 
-                        class='btn btn-primary btn-primary'> New Program </button>
-                <table class="table">
-                    <thead> <tr> <th> # <th>Title <th> Created <th> Last run
-                    <th> Runs <th> Errors <th> # Components </tr> </thead>
-                    <tbody id='dir-body'> </tbody>
-                </table>
-            </div>
+              <button id='new-button' 
+                class='btn btn-primary btn-primary'> New Program </button>
+              <table class="table">
+                <thead> 
+                  <tr> 
+                    <th> # </th> 
+                    <th>Title </th> 
+                    <th> Created </th>
+                    <th> Last run </th>
+                    <th> Runs </th> <th> Errors </th> 
+                    <th> # Components </th> 
+                  </tr> 
+                </thead>
+                <tbody id='dir-body'> </tbody>
+              </table>
+            </div> <!-- programs pane -->
 
             <div class="tab-pane active" id="work">
               <div class="row">
-                <div id="controls" class='form-inline'> 
-                    <!--
-                    <button id='save-button' 
-                        class='btn btn-primary btn-xs pull-left'> save </button>
-                    -->
-                    <label> 
-                        Program Name 
-                        <input id='program-name' class='input apull-left nform-control'>
-                    </label>
-
+                <div class="col-sm-offset-2" id="workspace-parent">
+                  <div id='program-name'> untitled </div>
+                  <div id="controls" class='form-inline'> 
                     <button id='run-button' 
-                        class='btn btn-primary btn-xs pull-right'> run </button>
-                    <span class="checkbox">
-                        <label>
-                           <input id='save-playlist' type="checkbox"> Save playlist to Spotify 
-                           <span class="control-indicator"></span>
-                        </label>
+                      class='btn btn-primary btn-xs pull-left'> run </button>
+
+                    <span class="checkbox pull-right">
+                      <label>
+                        <input id='save-playlist' type="checkbox"> 
+                        Save playlist to Spotify 
+                        <span class="control-indicator"></span>
+                      </label>
                     </span>
+                  </div>
                 </div>
               </div>
 
               <div class="row">
-                  <div class="col-sm-2" id="mybuttons">
-                      <h4> Sources </h4>
-                      <ul id="sources" class="nav-inverse nav-tabs nav-stacked">
-                        <li class="active"><a href="#">Overview</a></li>
-                        <li><a href="#">Reports</a></li>
-                      </ul>
-                      <h4> Filters </h4>
-                      <ul id="filters" class="nav-inverse nav-tabs nav-stacked">
-                      </ul>
-                  </div> 
-                  <div class="col-sm-10" id="workspace-parent">
-                      <div id="workspace"> </div>
-                  </div> 
-            </div>
-            </div>
-
+                <div class="col-sm-2" id="mybuttons">
+                  <h4>       
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#sources"
+                      aria-expanded="false" aria-controls="sources">
+                      Sources
+                    </a>
+                  </h4>
+                  <ul id="sources" 
+                    class="collapse in nav-inverse nav-tabs nav-stacked">
+                  </ul>
+                  <h4>       
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#filters"
+                      aria-expanded="false" aria-controls="filters">
+                      Filters
+                    </a>
+                  </h4>
+                  <ul id="filters" 
+                    class="collapse nav-inverse nav-tabs nav-stacked">
+                  </ul>
+                </div> 
+                <div class="col-sm-10" id="workspace-parent">
+                  <div id="workspace"> </div>
+                </div> 
+              </div>
+            </div>  <!-- work pane -->
 
             <div class="tab-pane" id="ttracks">
-                <h2 id='playlist-title'> </h2>
-                <p id='playlist-description'> </p>
-                <div class="container" id='playlist-div'>
-                    <button id="save" class='btn btn-primary'> Save to Spotify</button>
-                    <table class="table">
-                        <thead> <tr> <th> # <th>title <th> artist <th> src </tr> </thead>
-                        <tbody id='playlist-body'> </tbody>
-                    </table>
-                </div>
-            </div>
+              <h2 id='playlist-title'> </h2>
+              <p id='playlist-description'> </p>
+              <div class="container" id='playlist-div'>
+                <button id="save" class='btn btn-primary'> 
+                  Save to Spotify</button>
+
+                <table class="table">
+                  <thead> 
+                    <tr> 
+                      <th> #  </th>
+                      <th>title  </th>
+                      <th> artist </th>
+                      <th> src </th>
+                    </tr> 
+                  </thead>
+                  <tbody id='playlist-body'> </tbody>
+                </table>
+
+              </div>
+            </div> <!-- track pane -->
+
+          </div>
         </div>
+      </div>
     </div>
- 
+
     <div id='edit-modal' class="modal fade">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"
-    aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
+              aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
             <h2 class="modal-title">Modal title</h2>
           </div>
           <div class="modal-body">
             <div class="description"> description </div>
             <h3> Parameters </h3>
-            <div class="params form"> </div>
+            <form class="params form"> </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default done"
-                data-dismiss="modal">Cancel</button>
+              data-dismiss="modal">Cancel</button>
             <button type="button" data-dismiss="modal" 
-                class="btn btn-primary  done save">Save</button>
+              class="btn btn-primary  done save">Save</button>
           </div>
         </div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->
@@ -150,142 +181,14 @@
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
+    <script
+      src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="lib/raphael-min.js"></script>
     <script src="lib/graffle.js"></script>
+    <script src="main.js"></script>
     <script src="program.js"></script>
     <script src="editor.js?v1"></script>
     <script src="playlist.js?v1"></script>
-<script>
-"use strict";
-
-var inventory = null
-var editor = null;
-var apiPath = 'http://localhost:5000/'
-
-
-function error(s) {
-    console.log('ERROR ' + s);
-    $("#info").text(s);
-}
-
-function info(s) {
-    $("#info").text(s);
-}
-
-function fetchInventory(callback) {
-    $.getJSON(apiPath + 'inventory').then(
-        function(data) {
-            console.log('inventory here');
-            var inventoryMap = {};
-            _.each(data.inventory.components, function(component) {
-                component.hasInputs = component.type != "source";
-                inventoryMap[component.name] = component;
-            });
-            console.log('fi', data, inventoryMap);
-            callback(inventoryMap);
-        },
-        function() {
-            console.log('inventory trouble');
-            callback(null);
-        }
-    );
-}
-
-function fmtDate(ts) {
-    var d = new Date(0);
-    d.setUTCSeconds(ts);
-    var out = d.toString().substring(0,21);
-    return out;
-}
-
-function showBuilder() {
-    $('#tabs a[href="#work"]').tab('show') // Select tab by name
-}
-
-function showDirectory() {
-    var body = $("#dir-body");
-    body.empty();
-    var dir = loadDirectory(inventory);
-
-    _.each(dir, function(entry, i) {
-        var tr = $("<tr>");
-
-        tr.append( $("<td>").text( (i + 1) ));
-        tr.append( $("<td>").text( entry.name ));
-        tr.append( $("<td>").text( fmtDate(entry.extra.createdOn / 1000) ));
-        tr.append( $("<td>").text( fmtDate(entry.extra.lastRun / 1000) ));
-        tr.append( $("<td>").text( entry.extra.runs ));
-        tr.append( $("<td>").text( entry.extra.errors));
-        tr.append( $("<td>").text( _.keys(entry.components).length));
-        tr.on('click', function() {
-            console.log('open', entry.name);
-            showBuilder();
-            editor.load(entry);
-        });
-        body.append(tr);
-    });
-}
-
-
-function initApp() {    
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-        console.log('showing', e.target);
-        if ($(e.target).attr('href') == '#dir') {
-            showDirectory();
-            console.log('showing dir');
-        } else if ($(e.target).attr('href') == '#ttracks') {
-            playlistShown();
-            console.log('showing tracks');
-        }
-    });
-
-    $("#save").on("click", function() {
-        savePlaylist(function(ok) {
-            if (ok) {
-                info("Saved!");
-            } else {
-                error("not saved!");
-            }
-        });
-    });
-
-    var newButton = $("#new-button");
-    newButton.on('click', function() {
-        var name = 'untitled';
-        var program = new Program(inventory, name);
-        showBuilder();
-        editor.load(program);
-    });
-
-
-    $('#tabs').tab();
-    console.log('fetching inventory ...');
-    fetchInventory(function(inventoryMap) {
-        if (inventoryMap == null) {
-            alert("Uh Oh - Having trouble phoning home");
-        } else {
-            inventory = inventoryMap;
-            editor = createEditor("workspace", inventoryMap);
-            var mostRecent = loadMostRecentProgram(inventory);
-            if (mostRecent) {
-                editor.load(mostRecent);
-            } else {
-                console.log('no recent program');
-            }
-        }
-        console.log('inventory ready');
-    });
-}
-
-
-$(document).ready(
-    function() {
-        initApp();
-    }
-);
-
-</script>
-
-</body>
+  </body>
 </html>

@@ -1,2 +1,3 @@
+source credentials.sh
 export PBL_NO_CACHE=1
 python server.py

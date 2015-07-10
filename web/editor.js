@@ -297,16 +297,19 @@ var createEditor = function(canvasElem, inventory) {
                 div.append(inp);
             }
             else if (param.type  == 'bool') {
-                var label =  $('<label for="' + name + '">').text(name);
+                var label = $('<label class="">');
                 var val = component.params[name];
-                var inp = $("<input type='checkbox' class='oform-control'>");
+                var inp = $("<input type='checkbox' class='param-checkbox'>");
                 inp.attr('id', name);
+                inp.prop('checked', val);
                 inp.on('change', function() {
                     var state = $(inp).is(':checked');
                     curParams[name] = state;
                 });
-                label.append(inp);
+                label.text(name);
+                label.attr('title', param.description);
                 div.append(label);
+                div.append(inp);
             }
             pdiv.append(div);
         }
@@ -607,11 +610,9 @@ var createEditor = function(canvasElem, inventory) {
     }
 
     function addControls() {
-        var titleInput = $("#program-name");
-        titleInput.val('untitled');
         var runButton = $("#run-button");
         runButton.on('click', function() {
-            var title = $("#program-name").val();
+            var title = $("#program-name").text();
             var saveToSpotify = $('#save-playlist').is(':checked');
             if (program.name != title) {
                 program.name = title;
@@ -635,7 +636,7 @@ var createEditor = function(canvasElem, inventory) {
 
         var saveButton = $("#save-button");
         saveButton.on('click', function() {
-            var title = $("#program-name").val();
+            var title = $("#program-name").text();
             program.name = title;
             program.save();
             info("Saved " + title);
@@ -689,6 +690,20 @@ var createEditor = function(canvasElem, inventory) {
         // TODO:  Instead of always saving programs, we might add
         //  and onbeforeunload event that will save just the dirty ones
         //  before we exit.
+        $('#program-name').editable({
+            type: 'text',
+            mode: 'inline',
+            title: 'Enter Program Name',
+            placement: 'bottom',
+            showbuttons: false,
+            inputclass: 'program-input',
+            success: function(response, newValue) {
+                program.name = newValue;
+             }
+        });
+    }
+
+    function setProgramName(name) {
     }
 
     function initNewProgram(newProgram) {
@@ -732,7 +747,7 @@ var createEditor = function(canvasElem, inventory) {
                 curSelected = nameToRect[program.main];
                 selectRect(curSelected, true);
             }
-            $("#program-name").val(program.name);
+            $("#program-name").text(program.name);
         },
 
         newProgram: function() {
