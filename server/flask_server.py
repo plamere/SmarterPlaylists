@@ -12,7 +12,7 @@ cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
-@app.route('/inventory')
+@app.route('/sps/inventory')
 @cross_origin()
 def inventory():
     start = time.time()
@@ -25,40 +25,57 @@ def inventory():
     print 'inventory', time.time() - start
     return jsonify(results)
 
-@app.route('/run', methods=['GET', 'POST'])
+@app.route('/sps/run', methods=['GET', 'POST'])
 @cross_origin()
 def run():
     print 'inventory'
     start = time.time()
     program = request.json
     print 'got program', program
-    status, obj = compiler.compile(program)
 
-    print 'compiled in', time.time() - start, 'secs'
+    results = { }
 
-    if 'max_tracks' in program:
-        max_tracks = program['max_tracks']
-    else:
-        max_tracks = 40
+    try:
+        status, obj = compiler.compile(program)
+        print 'compiled in', time.time() - start, 'secs'
 
-    results = { 'status': status}
+        if 'max_tracks' in program:
+            max_tracks = program['max_tracks']
+        else:
+            max_tracks = 40
 
-    if status == 'ok':
-        tracks = []
-        tids = pbl.get_tracks(obj, max_tracks)
-        print
-        for i, tid in enumerate(tids):
-            print i, pbl.tlib.get_tn(tid)
-            tracks.append(pbl.tlib.get_track(tid))
-        print
-        results['tracks'] = tracks
-        results['name'] = obj.name
+        results['status'] = status
+
+        if status == 'ok':
+            results['name'] = obj.name
+            tids = pbl.get_tracks(obj, max_tracks)
+
+            tracks = []
+            results['tracks'] = tracks
+            print
+            for i, tid in enumerate(tids):
+                print i, pbl.tlib.get_tn(tid)
+                tracks.append(pbl.tlib.get_track(tid))
+            print
+
+    except pbl.PBLException as e:
+        results['status'] = 'error'
+        results['message'] = e.reason
+        if e.component:
+            cname = program['hsymbols'][e.component]
+        else:
+            cname = e.cname
+        results['component'] = cname
+
+    except Exception as e:
+        results['status'] = 'error'
+        results['message'] = str(e)
 
     results['time'] = time.time() - start
     print 'compiled and executed in', time.time() - start, 'secs'
     if app.trace:
         print json.dumps(results, indent=4)
-    print 'run', time.time() - start
+    print 'run', time.time() - start, results['status']
     return jsonify(results)
   
 #@app.errorhandler(Exception)
@@ -74,7 +91,10 @@ if __name__ == '__main__':
         app.debug = True
         app.trace = True
         print 'debug  mode'
+        app.run(threaded=True)
     else:
+        from gevent.wsgi import WSGIServer
         app.trace = False
         print 'prod  mode'
-    app.run()
+        http_server = WSGIServer(('', 5000), app)
+        http_server.serve_forever()

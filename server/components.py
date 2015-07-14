@@ -19,6 +19,7 @@ inventory = {
     "components" : [
         {
             "name" : "Annotator",
+            "display": "annotate",
             "class": pbl.Annotator,
             "type" : "filter",
             "description": "annotates tracks with external information",
@@ -37,6 +38,7 @@ inventory = {
         },
         {
             "name" : "DeDup",
+            "display": "de-dup",
             "class": pbl.DeDup,
             "type" : "filter",
             "description": "Remove any duplicate tracks in the stream",
@@ -54,8 +56,47 @@ inventory = {
             }
         },
         {
+            "name" : "TrackFilter",
+            "class": plugs.TrackFilter,
+            "display": "track filter",
+            "type" : "bool-filter",
+            "description": "removes track from a stream",
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the tracks to be removed",
+                },
+            }
+        },
+        {
+            "name" : "ArtistFilter",
+            "class": plugs.ArtistFilter,
+            "display": "artist filter",
+            "type" : "bool-filter",
+            "description": "removes track from a stream by artist",
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of tracks",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the tracks (by artist) to be removed",
+                },
+            }
+        },
+        {
             "name" : "YesNo",
             "class": plugs.YesNo,
+            "display": "yes or no",
             "type" : "bool-filter",
             "description": "selects a stream based on a boolean",
             "params": {
@@ -79,6 +120,7 @@ inventory = {
         {
             "name" : "IsWeekend",
             "class": plugs.IsWeekend,
+            "display": "is weekend",
             "type" : "bool-filter",
             "description": "selects a stream based on whether or not today is a weekend",
             "params": {
@@ -98,7 +140,8 @@ inventory = {
             "name" : "IsDayOfWeek",
             "class": plugs.IsDayOfWeek,
             "type" : "bool-filter",
-            "title": "is $day?",
+            "display": "is day of week",
+            "title": "is $day",
             "description": "selects a stream based on whether is is the given day of the week",
             "params": {
                 "true_source": {
@@ -121,6 +164,7 @@ inventory = {
         {
             "name" : "AlbumSource",
             "class": pbl.AlbumSource,
+            "display": "album",
             "type" : "source",
             "description": "generates a series of tracks given an album",
             "title": "$title",
@@ -145,6 +189,7 @@ inventory = {
         {
             "name" : "TrackSource",
             "class": pbl.TrackSource,
+            "display": "track",
             "type" : "source",
             "description": "generates a series of tracks given their URIs",
             "params": {
@@ -156,9 +201,10 @@ inventory = {
             }
         },
         {
-            "name" : "ArtistFilter",
+            "name" : "SimpleArtistFilter",
             "class": pbl.ArtistFilter,
             "type" : "filter",
+            "display": "Simple artist filter",
             "description": "removes tracks by the given artist",
             "params": {
                 "source": {
@@ -177,6 +223,7 @@ inventory = {
             "name" : "ArtistTopTracks",
             "class": pbl.ArtistTopTracks,
             "type" : "source",
+            "display": "artist top tracks",
             "description": "generates a series of top tracks by the given artist",
             "title" : "Top $name tracks",
             "params": {
@@ -196,6 +243,7 @@ inventory = {
             "name" : "EchoNestGenreRadio",
             "class": pbl.EchoNestGenreRadio,
             "type" : "source",
+            "display": "genre radio",
             "description": "generates a series of tracks in the given genre",
             "title" : "$genre",
             "params": {
@@ -216,6 +264,7 @@ inventory = {
             "name" : "EchoNestArtistRadio",
             "class": pbl.EchoNestArtistRadio,
             "type" : "source",
+            "display": "artist radio",
             "description": "tracks by the given artist and similar artists",
             "title" : "$artist radio",
             "params": {
@@ -236,6 +285,7 @@ inventory = {
             "name" : "EchoNestArtist",
             "class": pbl.EchoNestArtistPlaylist,
             "type" : "source",
+            "display": "artist tracks",
             "description": "tracks by the given artist",
             "title" : "$artist",
             "params": {
@@ -256,6 +306,7 @@ inventory = {
             "name" : "SpotifyPlaylist",
             "class": pbl.PlaylistSource,
             "type" : "source",
+            "display": "playlist",
             "description": "loads tracks from the given spotify playlist",
             "title": "$name",
             "params": {
@@ -277,6 +328,7 @@ inventory = {
             "class": pbl.First,
             "type" : "filter",
             "title" : "first $sample_size",
+            "display": "first",
             "description": "Returns the first tracks from a stream",
             "params": {
                 "source": {
@@ -296,6 +348,7 @@ inventory = {
             "class": pbl.Last,
             "type" : "filter",
             "title" : "first $sample_size",
+            "display" : "last",
             "description": "Returns the last tracks from a stream",
             "params": {
                 "source": {
@@ -314,6 +367,7 @@ inventory = {
             "name" : "Sample",
             "class": pbl.Sample,
             "type" : "filter",
+            "display" : "sample",
             "title" : "sample $sample_size tracks",
             "description": "randomly sample tracks from the stream",
             "params": {
@@ -333,9 +387,10 @@ inventory = {
             "name" : "ShorterThan",
             "class": pbl.ShorterThan,
             "type" : "filter",
-            "title" : "shorter than $time",
+            "title" : "no longer than $time",
+            "display" : "no longer than",
             "description": "Limit the stream, if possible, to tracks with a" + \
-                "duration that is longer than the given time",
+                "duration that is no longer than the given time",
             "params": {
                 "source": {
                     "type" : "source",
@@ -353,9 +408,10 @@ inventory = {
             "name" : "LongerThan",
             "class": pbl.LongerThan,
             "type" : "filter",
-            "title" : "longer than $time",
+            "title" : "no shorter than $time",
+            "display" : "no shorter than",
             "description": "Limit the stream, if possible, to tracks with a" + \
-                "duration that is longer than the given time",
+                "duration that is no shorter than the given time",
             "params": {
                 "source": {
                     "type" : "source",
@@ -374,6 +430,7 @@ inventory = {
             "class": pbl.Shuffler,
             "type" : "filter",
             "title" : "shuffle",
+            "display" : "shuffle",
             "description": "Shuffles the tracks in the stream",
             "params": {
                 "source": {
@@ -393,6 +450,7 @@ inventory = {
             "class": pbl.Reverse,
             "type" : "filter",
             "title" : "reverse",
+            "display" : "reverse",
             "description": "Reverses the order of the tracks in the stream",
             "params": {
                 "source": {
@@ -407,6 +465,7 @@ inventory = {
             "class": pbl.Sorter,
             "type" : "filter",
             "title": "sort by $reverse $attr",
+            "display" : "sort",
             "description": "Sorts the tracks in the stream by the given attribute",
             "params": {
                 "source": {
@@ -437,7 +496,29 @@ inventory = {
             "name" : "Alternate",
             "class": pbl.Alternate,
             "type" : "multi-in-filter",
+            "display" : "alternate",
             "description": "alternate tracks from multiple streams",
+            "params": {
+                "source_list": {
+                    "type" : "source_list",
+                    "optional" : False,
+                    "description": "the list of sources",
+                },
+                "fail_fast": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "description": "if true stop producing tracks "
+                        + "as soon as any input stops producing tracks"
+                },
+            }
+        },
+        {
+            "name" : "RandomSelector",
+            "class": plugs.RandomSelector,
+            "type" : "multi-in-filter",
+            "display" : "random",
+            "description": "randomly select tracks from multiple streams",
             "params": {
                 "source_list": {
                     "type" : "source_list",
@@ -456,6 +537,7 @@ inventory = {
         {
             "name" : "Concatenate",
             "class": pbl.Concatenate,
+            "display" : "concatenate",
             "type" : "multi-in-filter",
             "description": "Concatenate tracks from multiple streams",
             "params": {
@@ -472,6 +554,7 @@ inventory = {
             "type" : "filter",
             "description": "filter tracks by an attribute",
             "title": "filter $attr",
+            "display" : "range filter",
             "params": {
                 "source": {
                     "type" : "source",

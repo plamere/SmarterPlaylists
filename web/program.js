@@ -223,6 +223,12 @@ function loadMostRecentProgram(inventory) {
     }
 }
 
+
+function removeProgram(name) {
+    localStorage.removeItem(getKey(name));
+}
+
+
 function loadProgram(inventory, key) {
     var program = null;
     var json = localStorage.getItem(key);

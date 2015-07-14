@@ -43,7 +43,7 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="top" id='intro'>
       <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
-
+        <div id='errors'> </div>
         <div id="content">
           <div id="#info"> </div>
           <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -57,18 +57,19 @@
           <div id="my-tab-content" class="tab-content">
 
             <div class="tab-pane not-active" id="dir">
-              <h2> Your Programs </h2>
               <button id='new-button' 
-                class='btn btn-primary btn-primary'> New Program </button>
-              <table class="table">
+                class='btn btn-primary btn-primary fbut pull-right'> New Program </button>
+              <h2 class='pull-left'> Your Programs </h2>
+              <table class="table table-striped table-bordered">
                 <thead> 
                   <tr> 
                     <th> # </th> 
                     <th>Title </th> 
-                    <th> Created </th>
                     <th> Last run </th>
-                    <th> Runs </th> <th> Errors </th> 
+                    <th> Runs </th> 
+                    <!--<th> Errors </th>  -->
                     <th> # Components </th> 
+                    <th> Options </th> 
                   </tr> 
                 </thead>
                 <tbody id='dir-body'> </tbody>
@@ -79,11 +80,11 @@
               <div class="row">
                 <div class="col-sm-offset-2" id="workspace-parent">
                   <div id='program-name'> untitled </div>
+
                   <div id="controls" class='form-inline'> 
                     <button id='run-button' 
-                      class='btn btn-primary btn-xs pull-left'> run </button>
-
-                    <span class="checkbox pull-right">
+                      class='btn btn-primary btn-xs pull-right form-group'> run </button>
+                    <span class="checkbox pull-left checkbox-ninline">
                       <label>
                         <input id='save-playlist' type="checkbox"> 
                         Save playlist to Spotify 
@@ -170,6 +171,7 @@
           </div>
           <div class="modal-body">
             <div class="description"> description </div>
+            <div class="error"> </div>
             <h3> Parameters </h3>
             <form class="params form"> </form>
           </div>

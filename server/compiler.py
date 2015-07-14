@@ -91,6 +91,7 @@ def get_spec_by_type(type):
 def compile_object(objname, program):
     components = program['components']
     symbols = program['symbols']
+    hsymbols = program['hsymbols']
     if objname in symbols:
         return OK, symbols[objname]
     else:
@@ -111,11 +112,11 @@ def compile_object(objname, program):
                 try:
                     obj = spec['class'](**params)
                     symbols[objname] = obj
+                    hsymbols[obj] = objname
                     return OK, obj
                 except:
                     print 'params', params
-                    raise
-                    return 'trouble creating ' + objname, None
+                    raise pbl.PBLException(None, "creation failure", objname)
             else:
                 return 'unknown type ' + comp['_type'] + ' for ' + objname, None
         else:
@@ -124,7 +125,10 @@ def compile_object(objname, program):
 def compile(program):
     if 'main' in program and program['main']:
         program['symbols'] = {}
+        program['hsymbols'] = {}
         status, compiled_program = compile_object(program['main'], program)
+        print 'hsymbols', program['hsymbols']
+        print 'symbols', program['symbols']
         return status, compiled_program
     else:
         return 'no main', None

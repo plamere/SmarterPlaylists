@@ -170,6 +170,22 @@ var createEditor = function(canvasElem, inventory, types) {
         console.log(rect.component.cls.color);
     }
 
+    function markComponentWithError(name, msg) {
+        var rect = nameToRect[name];
+        rect.attr({ stroke: spotifyRed});
+        rect.hasError = true;
+        rect.errorMessage = msg;
+    }
+
+    function clearComponentErrors() {
+        _.each(nameToRect, function(rect, name) {
+            if (rect.hasError) {
+                rect.hasError = false;
+                rect.attr({ stroke: "#000000"});
+            }
+        });
+    }
+
     function altSelectRect(rect, state) {
         if (state) {
             rect.attr({'stroke-dasharray' : ['-']});
@@ -227,13 +243,18 @@ var createEditor = function(canvasElem, inventory, types) {
 
         $("#edit-modal .modal-title").text(component.type);
         $("#edit-modal .description").text(component.cls.description);
+        $("#edit-modal .error").empty();
+        if (rect.hasError) {
+            $("#edit-modal .error").append($("<h3>").text('Errors'));
+            $("#edit-modal .error").append($("<span>").text(rect.errorMessage));
+        } 
 
         var curParams = {};
 
         function addParam(pdiv, name, param) {
             var div = $("<div class='form-group'>");
 
-            if ('default' in param) {
+            if (false && 'default' in param) {
                 curParams[name] = param['default'];
             }
 
@@ -245,6 +266,9 @@ var createEditor = function(canvasElem, inventory, types) {
                 var sel = $("<select>");
                 _.each(types[param.type], function(type) {
                     var opt = $("<option>");
+                    if (type.value == val) {
+                        opt.prop('selected', true);
+                    }
                     opt.val(type.value);
                     opt.text(type.name);
                     sel.append(opt);
@@ -334,6 +358,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 inp.on('change', function() {
                     var state = $(inp).is(':checked');
                     curParams[name] = state;
+                    console.log('bool', name, state);
                 });
                 label.text(name);
                 label.attr('title', param.description);
@@ -369,10 +394,22 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function renameComponent(rect) {
-        var title = rect.component.cls.title || rect.component.cls.name;
+        var title = rect.component.cls.title || rect.component.cls.display;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);
         // rect.label.attr('text', title + '\n' + 'more lines');
+    }
+
+    function findTypeName(key, type) {
+            console.log('findTypeName', key, type);
+        var name = '?';
+        _.each(type, function(t) {
+            if (key == t.value) {
+                console.log('findTypeName', key, type, t);
+                name =  t.name;
+            }
+        });
+        return name;
     }
 
     function makeSubs(title, component) {
@@ -381,7 +418,12 @@ var createEditor = function(canvasElem, inventory, types) {
         function makeSub(word, component) {
             var key  = word.replace('$', '');
             if (key in component.params) {
-                if (component.cls.params[key].type == 'bool') {
+                var keyType = component.cls.params[key].type;
+                console.log('makesubs', keyType, types);
+                if (keyType in types) {
+                    key = findTypeName(component.params[key], types[keyType]);
+                    return key;
+                } else if (keyType == 'bool') {
                     if (component.params[key]) {
                         return key;
                     } else {
@@ -587,7 +629,7 @@ var createEditor = function(canvasElem, inventory, types) {
 
     function addComponent(elem, comp) {
         var button = $("<li>")
-            .text(comp.name)
+            .text(comp.display)
             .attr('title', comp.description);
         elem.append(button);
         button.on('click', function() {
@@ -603,16 +645,25 @@ var createEditor = function(canvasElem, inventory, types) {
 
     function showInventoryUI() {
         var sourceList = $("#sources");
-        sourceList.empty();
+
+        sources.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
         _.each(sources, function(source) {
             addComponent(sourceList, source);
         });
 
+        filters.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
         var filterList = $("#filters");
         _.each(filters, function(filter) {
             addComponent(filterList, filter);
         });
 
+        conditionals.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
         var conditionalList = $("#conditionals");
         _.each(conditionals, function(conditional) {
             addComponent(conditionalList, conditional);
@@ -647,13 +698,22 @@ var createEditor = function(canvasElem, inventory, types) {
                 program.name = title;
                 program.extra.uri = null;
             }
+            clearComponentErrors();
             if (curSelected) {
                 var main = curSelected.name;
                 program.run(main, function(data) {
                     if (data) {
-                        showPlaylist(program.name, data);
-                        if (saveToSpotify) {
-                            savePlaylist(program, data);
+                        if (data.status == 'ok') {
+                            showPlaylist(program.name, data);
+                            if (saveToSpotify) {
+                                savePlaylist(program, data);
+                            }
+                        } else {
+                            console.log(data);
+                            error(data.message);
+                            if (data.component) {
+                                markComponentWithError(data.component, data.message);
+                            }
                         }
                     }
                 });
@@ -728,6 +788,10 @@ var createEditor = function(canvasElem, inventory, types) {
             inputclass: 'program-input',
             success: function(response, newValue) {
                 program.name = newValue;
+                program.extra.runs = 0;
+                program.extra.errors = 0;
+                program.extra.uri = null;
+                program.save();
              }
         });
     }
