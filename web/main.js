@@ -21,7 +21,7 @@ function fetchInventory(callback) {
                 inventoryMap[component.name] = component;
             });
             console.log('fi', data, inventoryMap);
-            callback(inventoryMap, data.types);
+            callback(inventoryMap, data.inventory.types);
         },
         function() {
             console.log('inventory trouble');

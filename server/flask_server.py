@@ -11,6 +11,8 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+debug_exceptions = False
+
 
 @app.route('/sps/inventory')
 @cross_origin()
@@ -20,7 +22,6 @@ def inventory():
     results = {
         'status': 'ok',
         'inventory': components.exported_inventory,
-        'types': components.inventory['types']
     }
     print 'inventory', time.time() - start
     return jsonify(results)
@@ -57,8 +58,13 @@ def run():
                 print i, pbl.tlib.get_tn(tid)
                 tracks.append(pbl.tlib.get_track(tid))
             print
+        else:
+            results['status'] = 'error'
+            results['message'] = status
 
     except pbl.PBLException as e:
+        if debug_exceptions:
+            raise
         results['status'] = 'error'
         results['message'] = e.reason
         if e.component:
@@ -68,6 +74,8 @@ def run():
         results['component'] = cname
 
     except Exception as e:
+        if debug_exceptions:
+            raise
         results['status'] = 'error'
         results['message'] = str(e)
 

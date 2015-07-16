@@ -110,12 +110,12 @@ def compile_object(objname, program):
                     else:
                         return status + " in " + objname, None
                 try:
+                    print 'creating', comp['_type'], params
                     obj = spec['class'](**params)
                     symbols[objname] = obj
                     hsymbols[obj] = objname
                     return OK, obj
                 except:
-                    print 'params', params
                     raise pbl.PBLException(None, "creation failure", objname)
             else:
                 return 'unknown type ' + comp['_type'] + ' for ' + objname, None

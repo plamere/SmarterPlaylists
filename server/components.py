@@ -1,8 +1,11 @@
 import pbl
 import plugs
 import copy
+import pyen
 
 exported_inventory = None
+en = pyen.Pyen()
+
 
 inventory = {
     "types" : {
@@ -156,6 +159,7 @@ inventory = {
                 },
                 "day": {
                     "type" : "day_of_week",
+                    "stype" : "number",
                     "optional" : False,
                     "description": "the day of the week",
                 },
@@ -181,7 +185,7 @@ inventory = {
                 },
                 "uri": {
                     "type" : "uri",
-                    "optional" : False,
+                    "optional" : True,
                     "description": "the uri of the artist",
                 },
             }
@@ -189,7 +193,7 @@ inventory = {
         {
             "name" : "TrackSource",
             "class": pbl.TrackSource,
-            "display": "track",
+            "display": "track uris",
             "type" : "source",
             "description": "generates a series of tracks given their URIs",
             "params": {
@@ -197,6 +201,23 @@ inventory = {
                     "type" : "uri_list",
                     "optional" : False,
                     "description": "a list of track uris",
+                },
+            }
+        },
+        {
+            "name" : "TrackSourceByName",
+            "class": pbl.TrackSourceByName,
+            "help": """ This component will search for the most popular track
+            with the given title and artist of the track""",
+            "display": "track",
+            "type" : "source",
+            "title" : "$title",
+            "description": "generates a single track given its name",
+            "params": {
+                "title": {
+                    "type" : "string",
+                    "optional" : False,
+                    "description": "the title and artist of the track",
                 },
             }
         },
@@ -248,8 +269,10 @@ inventory = {
             "title" : "$genre",
             "params": {
                 "genre": {
-                    "type" : "string",
+                    "type" : "genre",
+                    "stype" : "string",
                     "optional" : False,
+                    "default": "emo",
                     "description": "the genre of interest",
                 },
                 "count": {
@@ -308,6 +331,13 @@ inventory = {
             "type" : "source",
             "display": "playlist",
             "description": "loads tracks from the given spotify playlist",
+            "help" : """ This component will load tracks from the given Spotify
+            playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
+            be loaded. If you omit the URI but specify a <b>user</b> and a
+            <b>name</b>, the user's public playlists will be searched for the playlist with the
+            given name. If no user is specified, the most popular playlist with
+            the given <b>name</b> will be used.
+            """,
             "title": "$name",
             "params": {
                 "name": {
@@ -320,6 +350,11 @@ inventory = {
                     "type" : "string",
                     "optional" : True,
                     "description": "the owner of the playlist",
+                },
+                "uri": {
+                    "type" : "string",
+                    "optional" : True,
+                    "description": "the uri of the playlist",
                 },
             }
         },
@@ -399,6 +434,7 @@ inventory = {
                 },
                 "time": {
                     "type" : "number",
+                    "stype" : "time",
                     "optional" : False,
                     "description": "the length in seconds of the stream of tracks"
                 }
@@ -420,7 +456,10 @@ inventory = {
                 },
                 "time": {
                     "type" : "number",
+                    "stype" : "time",
                     "optional" : False,
+                    "placeholder" : "00:00:00",
+                    "format" : "time",
                     "description": "the length in seconds of the stream of tracks"
                 }
             }
@@ -590,11 +629,26 @@ inventory = {
 
 
 def export_inventory():
+    inventory['types']['genre'] = get_genres()
     inv = copy.deepcopy(inventory)
     for component in inv['components']:
         del component['class']
     return inv
 
+def get_genres():
+    response = en.get('genre/list', results=2000)
+    gstyle = []
+    for g in response['genres']:
+        gn = g['name']
+        gstyle.append( { 'name': gn, 'value': gn} )
+    return gstyle
+        
+    
 exported_inventory = export_inventory()
+
+
+if __name__ == '__main__':
+    import json
+    print json.dumps(exported_inventory, indent=4)
     
 

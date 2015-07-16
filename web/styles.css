@@ -120,3 +120,19 @@ body {
     margin-right:10px !important;
     cursor:pointer !important;
 }
+
+.edit-param-label {
+    margin-right:10px;
+}
+
+#running-state {
+}
+
+.modal-body .description {
+    font-size:24px;
+    margin-bottom:12px;
+}
+
+.modal-title {
+    text-transform: capitalize;
+}

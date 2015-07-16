@@ -47,6 +47,25 @@ Program.prototype = {
         return component.source_list != undefined;
     },
 
+    getSources:function(c) {
+        var sources = [];
+
+        if (c.source_list) {
+            sources.push.apply(sources, c.source_list)
+        }
+        if (c.source) {
+            sources.push(source);
+        }
+
+        if (c.true_source) {
+            sources.push(c.true_source);
+        }
+
+        if (c.false_source) {
+            sources.push(c.false_source);
+        }
+    },
+
     extract: function(c) {
         var out = { 
             _type: c.type
@@ -84,6 +103,7 @@ Program.prototype = {
         return JSON.stringify(jsonProgram, null, 4);
     },
 
+
     addComponent: function(name, type, params, extra) {
         var c = this.createComponent(name, type, params, extra)
         if (name in this.components) {
@@ -91,6 +111,21 @@ Program.prototype = {
         }
         this.components[name] = c;
         return c;
+    },
+
+
+    checkComponent: function(component) {
+        var issues = [];
+        var ecomponent = this.extract(component);
+        _.each(component.cls.params, function(param, pname) {
+            console.log('CC', pname, param);
+            if (!param.optional) {
+                if (! (pname in ecomponent)) {
+                    issues.push('missing required parameter: ' + pname);
+                }
+            }
+        });
+        return issues;
     },
 
     removeComponent: function(name) {
@@ -168,12 +203,33 @@ Program.prototype = {
         });
     },
 
+    getActiveComponents: function(main) {
+        return this.components;
+    },
+
+    check: function(main) {
+        var that = this;
+        var issues = [];
+        var components = this.getActiveComponents();
+        _.each(components, function(component) {
+            var cissues = that.checkComponent(component);
+            _.each(cissues, function(cissue) {
+                var issue = {
+                    component:component.name,
+                    message: cissue
+                }
+                issues.push(issue);
+            });
+        });
+        return issues;
+    },
+
     run: function(main, callback) {
         var that = this;
         this.main = main;
+        this.extra.lastRun =  new Date().getTime();
 
         var jsonProgram = this.toJson(this.main);
-        this.extra.lastRun =  new Date().getTime(),
         console.log('json program', jsonProgram);
         this.postProgram(jsonProgram, function(data) {
             if (data) {
@@ -181,7 +237,6 @@ Program.prototype = {
             } else {
                 that.extra.errors += 1;
             }
-            that.save()
             console.log('run done', data);
             callback(data)
             localStorage.setItem('sp-last-run', getKey(that.name));
@@ -189,6 +244,7 @@ Program.prototype = {
     },
 
     save: function() {
+        this.extra.lastRun =  new Date().getTime();
         console.log('saving', this.name);
         var obj = {
             name:this.name,

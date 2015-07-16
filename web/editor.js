@@ -1,8 +1,8 @@
 var createEditor = function(canvasElem, inventory, types) {
     var spotifyGreen = '#1ED760';
     var spotifyRed = '#D71E60';
-    var tileWidth = 140;
-    var tileHeight = 80;
+    var tileWidth = 100;
+    var tileHeight = 60;
     var textXOffset = tileWidth / 2;
     var textYOffset = 30;
     var xMargin = 40;
@@ -39,6 +39,49 @@ var createEditor = function(canvasElem, inventory, types) {
         paper.canvas.className += ' raphael-canvas';
         paper.canvas.baseVal += ' raphael-canvas';
         widgetsPerRow = Math.floor(paper.canvas.offsetWidth / tWidth);
+
+        (function($,sr){
+         
+          // debouncing function from John Hann
+          // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+          var debounce = function (func, threshold, execAsap) {
+              var timeout;
+         
+              return function debounced () {
+                  var obj = this, args = arguments;
+                  function delayed () {
+                      if (!execAsap)
+                          func.apply(obj, args);
+                      timeout = null; 
+                  };
+         
+                  if (timeout)
+                      clearTimeout(timeout);
+                  else if (execAsap)
+                      func.apply(obj, args);
+         
+                  timeout = setTimeout(delayed, threshold || 100); 
+              };
+          }
+            // smartresize 
+            jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
+         
+        })(jQuery,'smartresize');
+
+        // usage:
+        $(window).smartresize(function(){  
+            refreshLayout(true);
+        });
+    }
+
+    function refreshLayout(state) {
+        var workspace = $("#workspace");
+        if (workspace.is(':visible')) {
+            var w = workspace.width();
+            var h = workspace.height();
+            paper.setSize(w, h);
+            console.log('refresh', w, h);
+        }
     }
 
     function canvasFocus(state) {
@@ -92,6 +135,30 @@ var createEditor = function(canvasElem, inventory, types) {
         if (rect.label) {
             var lattr = { x: x + textXOffset, y: y + textYOffset }
             rect.label.attr(lattr);
+        }
+    }
+
+    function convertType(type, val)  {
+        var typeConverters = {
+            'string': function(val) {
+                return val;
+            },
+            'number': function(val) {
+                if (val.indexOf('.') >=0) {
+                    return parseFloat(val);
+                } else {
+                    return parseInt(val);
+                }
+            },
+            'bool': function(val) {
+                return val.toLowerCase() == 'true';
+            }
+        }
+
+        if (type in typeConverters) {
+            return typeConverters[type](val);
+        } else {
+            return val;
         }
     }
 
@@ -178,6 +245,7 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function clearComponentErrors() {
+        $("#errors").empty(200);
         _.each(nameToRect, function(rect, name) {
             if (rect.hasError) {
                 rect.hasError = false;
@@ -241,8 +309,13 @@ var createEditor = function(canvasElem, inventory, types) {
         canvasFocus(false);
         var component = rect.component;
 
-        $("#edit-modal .modal-title").text(component.type);
+        $("#edit-modal .modal-title").text(component.cls.display);
         $("#edit-modal .description").text(component.cls.description);
+        if (component.cls.help) {
+            $("#edit-modal .help").html(component.cls.help);
+        } else {
+            $("#edit-modal .help").text("");
+        }
         $("#edit-modal .error").empty();
         if (rect.hasError) {
             $("#edit-modal .error").append($("<h3>").text('Errors'));
@@ -258,9 +331,11 @@ var createEditor = function(canvasElem, inventory, types) {
                 curParams[name] = param['default'];
             }
 
+            var opt = param.optional ? "" : " (required) ";
             if (param.type in types) {
-                var label =  $('<label for="' + name + '">').text(name);
+                var label =  $('<label for="' + name + '">').text(name + opt);
                 label.attr('title', param.description);
+                label.addClass("edit-param-label");
                 var val = component.params[name] ?
                           component.params[name] : param['default'];
                 var sel = $("<select>");
@@ -276,15 +351,17 @@ var createEditor = function(canvasElem, inventory, types) {
                 sel.attr('id', name);
 
                 sel.on('change', function() {
-                    curParams[name] = parseInt(sel.val());
+                    curParams[name] = convertType(param.stype, sel.val());
+                    console.log('change', curParams);
                 });
                 div.append(label);
                 div.append(sel);
             }
             else if (param.type  == 'string' || param.type == 'uri') {
 
-                var label =  $('<label for="' + name + '">').text(name);
+                var label =  $('<label for="' + name + '">').text(name + opt);
                 label.attr('title', param.description);
+                label.addClass("edit-param-label");
                 var val = component.params[name] ?
                           component.params[name] : param['default'];
                 var inp = $("<input class='form-control'>").val(val);
@@ -299,8 +376,9 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(inp);
             }
             if (param.type  == 'uri_list') {
-                var label =  $('<label for="' + name + '">').text(name);
+                var label =  $('<label for="' + name + '">').text(name + opt);
                 label.attr('title', param.description);
+                label.addClass("edit-param-label");
                 var val = component.params[name];
                 if (val) {
                     val = val.join(',')
@@ -314,8 +392,9 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(label);
                 div.append(inp);
             } else if (param.type  == 'string_list') {
-                var label =  $('<label for="' + name + '">').text(name);
+                var label =  $('<label for="' + name + '">').text(name + opt);
                 label.attr('title', param.description);
+                label.addClass("edit-param-label");
                 var val = component.params[name];
                 if (val) {
                     val = val.join(',')
@@ -324,13 +403,15 @@ var createEditor = function(canvasElem, inventory, types) {
                 inp.attr('id', name);
 
                 inp.on('change', function() {
-                    curParams[name] = inp.val().split(',');
+                    //curParams[name] = inp.val().split(',');
+                    curParams[name] = inp.val().match(/(?=\S)[^,]+?(?=\s*(,|$))/g);
                 });
                 div.append(label);
                 div.append(inp);
             }
             else if (param.type  == 'number') {
-                var label =  $('<label for="' + name + '">').text(name);
+                var label =  $('<label for="' + name + '">').text(name + opt);
+                label.addClass("edit-param-label");
                 label.attr('title', param.description);
                 var val = component.params[name] ?
                           component.params[name] : param['default'];
@@ -350,7 +431,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(inp);
             }
             else if (param.type  == 'bool') {
-                var label = $('<label class="">');
+                var label = $('<label class="edit-param-label">');
                 var val = component.params[name];
                 var inp = $("<input type='checkbox' class='param-checkbox'>");
                 inp.attr('id', name);
@@ -388,12 +469,14 @@ var createEditor = function(canvasElem, inventory, types) {
             _.each(curParams, function(val, name) {
                 component.params[name] = val;
             });
+            console.log('save', component.params);
             renameComponent(rect);
         });
 
     }
 
     function renameComponent(rect) {
+        console.log('rc', rect);
         var title = rect.component.cls.title || rect.component.cls.display;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);
@@ -475,9 +558,16 @@ var createEditor = function(canvasElem, inventory, types) {
             return;
         }
 
+        if (dest.component.cls.type != 'bool-filter') {
+            connType = CT_NORMAL;
+        }
+
         if (dest.component.maxInputs == 1) {
             disconnectInputs(dest);
+        } else if (dest.component.maxInputs == 2) {
+            disconnectInput(dest, connType);
         }
+
         disconnectOutputs(source);
 
         var edge = addVisualConnection(source, dest, connType);
@@ -490,6 +580,7 @@ var createEditor = function(canvasElem, inventory, types) {
         connections.push(edge);
         edge.source = srcRect;
         edge.dest = destRect;
+        edge.type = connType;
         srcRect.outEdges[destRect.name] = edge;
         destRect.inEdges[srcRect.name] = edge;
         return edge;
@@ -518,6 +609,14 @@ var createEditor = function(canvasElem, inventory, types) {
         });
     }
 
+    function disconnectInput(comp, compType) {
+        _.each(comp.inEdges, function(edge, destName) {
+            if (edge.type == compType) {
+                removeEdge(edge);
+            }
+        });
+    }
+
     function disconnectOutputs(comp) {
         _.each(comp.outEdges, function(edge, destName) {
             removeEdge(edge);
@@ -537,10 +636,10 @@ var createEditor = function(canvasElem, inventory, types) {
 
 
     function addNewComponent(componentType, comp) {
-        var col = widgetCount % widgetsPerRow;
-        var row = Math.floor(widgetCount / widgetsPerRow);
-        var xpos = xMargin + col * (tileWidth + xMargin);
-        var ypos = yMargin + row * (tileHeight + yMargin)
+        var col = widgetCount * 12;
+        var row = widgetCount * 12;
+        var xpos = xMargin + col;
+        var ypos = yMargin + row;
 
         var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
         var color = Raphael.getColor();
@@ -566,7 +665,7 @@ var createEditor = function(canvasElem, inventory, types) {
             cursor: "move",
             "stroke-width": 0,
             "font-family":"Arial",
-            "font-size": 18,
+            "font-size": 12,
             "font-weight": 'lighter'
         });
 
@@ -627,6 +726,10 @@ var createEditor = function(canvasElem, inventory, types) {
         rect.label.attr({"text": out });
     }
 
+    function isConnected(comp) {
+        return (_.keys(comp.outEdges).length > 0);
+    }
+
     function addComponent(elem, comp) {
         var button = $("<li>")
             .text(comp.display)
@@ -634,7 +737,7 @@ var createEditor = function(canvasElem, inventory, types) {
         elem.append(button);
         button.on('click', function() {
             var newComponent = addNewComponent(comp);
-            if (previousComponent) {
+            if (previousComponent && !isConnected(previousComponent)) {
                 connectComponent(previousComponent,
                     newComponent,getConnType());
             }
@@ -689,6 +792,18 @@ var createEditor = function(canvasElem, inventory, types) {
         });
     }
 
+    function setRunning(state) {
+        if (state) {
+            $("#running-state").addClass('text-info');
+            $("#running-state").text('running');
+            $("#run-button").prop("disabled", true);
+
+        } else {
+            $("#running-state").text('');
+            $("#run-button").prop("disabled", false);
+        }
+    }
+
     function addControls() {
         var runButton = $("#run-button");
         runButton.on('click', function() {
@@ -698,25 +813,42 @@ var createEditor = function(canvasElem, inventory, types) {
                 program.name = title;
                 program.extra.uri = null;
             }
+
+            program.save();
             clearComponentErrors();
             if (curSelected) {
                 var main = curSelected.name;
-                program.run(main, function(data) {
-                    if (data) {
-                        if (data.status == 'ok') {
-                            showPlaylist(program.name, data);
-                            if (saveToSpotify) {
-                                savePlaylist(program, data);
-                            }
+                var issues = program.check(main);
+                console.log('check issues', issues);
+                if (issues.length > 0) {
+                    _.each(issues, function(issue) {
+                        if (issue.component) {
+                            error(issue.component + ": " + issue.message);
+                            markComponentWithError(issue.component, issue.message);
                         } else {
-                            console.log(data);
-                            error(data.message);
-                            if (data.component) {
-                                markComponentWithError(data.component, data.message);
+                            error(issue.message);
+                        }
+                    });
+                } else {
+                    setRunning(true);
+                    program.run(main, function(data) {
+                        setRunning(false);
+                        if (data) {
+                            if (data.status == 'ok') {
+                                showPlaylist(program.name, data);
+                                if (saveToSpotify) {
+                                    savePlaylist(program, data);
+                                }
+                            } else {
+                                console.log(data);
+                                error(data.message);
+                                if (data.component) {
+                                    markComponentWithError(data.component, data.message);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             } else {
                 alert("select a component to run");
             }
@@ -850,6 +982,8 @@ var createEditor = function(canvasElem, inventory, types) {
                 selectRect(curSelected, true);
             }
             $("#program-name").text(program.name);
+            $("#program-name").editable('setValue', program.name);
+
         },
 
         newProgram: function() {
