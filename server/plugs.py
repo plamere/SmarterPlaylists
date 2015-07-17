@@ -65,6 +65,33 @@ class RandomSelector(object):
                 break
         return None;
 
+class RandomStreamSelector(object):
+    '''
+        Randomly selects a stream from a set of inputs
+        :param source_list: a list of sources
+    '''
+    def __init__(self, source_list):
+        self.source_list = source_list
+        self.src = random.choice(self.source_list)
+        self.name = 'randomly picked ' + self.src.name
+
+    def next_track(self):
+        return self.src.next_track()
+
+class Comment(object):
+    '''
+        Randomly selects a stream from a set of inputs
+        :param source_list: a list of sources
+    '''
+    def __init__(self, text, fontsize=12, color='#000000'):
+        self.text = text
+        self.name = text
+        self.fontsize = fontsize
+        self.color = color
+
+    def next_track(self):
+        raise pbl.PBLException(self, "a comment is not runnable")
+
 class TrackFilter(object):
     '''
         produces tracks on the true source that are not on the false source

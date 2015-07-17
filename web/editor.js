@@ -2,9 +2,8 @@ var createEditor = function(canvasElem, inventory, types) {
     var spotifyGreen = '#1ED760';
     var spotifyRed = '#D71E60';
     var tileWidth = 100;
+    var commentWidth = 300;
     var tileHeight = 60;
-    var textXOffset = tileWidth / 2;
-    var textYOffset = 30;
     var xMargin = 40;
     var yMargin = 80;
     var sources = []
@@ -133,7 +132,7 @@ var createEditor = function(canvasElem, inventory, types) {
         rect.component.extra.y = y;
 
         if (rect.label) {
-            var lattr = { x: x + textXOffset, y: y + textYOffset }
+            var lattr = { x: x + rect.textXOffset, y: y + rect.textYOffset }
             rect.label.attr(lattr);
         }
     }
@@ -230,9 +229,9 @@ var createEditor = function(canvasElem, inventory, types) {
 
     function selectRect(rect, state) {
         if (state) {
-            rect.attr({'stroke-width' : 6});
+            rect.attr({'stroke-width' : 4, 'stroke': spotifyGreen});
         } else {
-            curSelected.attr({'stroke-width' : 1});
+            rect.attr({'stroke-width' : 1, 'stroke': rect.color});
         }
         console.log(rect.component.cls.color);
     }
@@ -558,6 +557,10 @@ var createEditor = function(canvasElem, inventory, types) {
             return;
         }
 
+        if (source.component.maxOutputs == 0) {
+            return;
+        }
+
         if (dest.component.cls.type != 'bool-filter') {
             connType = CT_NORMAL;
         }
@@ -640,22 +643,37 @@ var createEditor = function(canvasElem, inventory, types) {
         var row = widgetCount * 12;
         var xpos = xMargin + col;
         var ypos = yMargin + row;
+        var fontSize = 12;
 
-        var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
-        var color = Raphael.getColor();
+        if (componentType.name == "comment") {
+            var rect = paper.rect(xpos, ypos, commentWidth, tileHeight, 4);
+            rect.textXOffset = commentWidth / 2;
+            rect.textYOffset = 30;
+            rect.color = "#eeeeee";
+            rect.attr({
+                fill: "#eeeeee", 
+                stroke: rect.color,
+                opacity: .4, 
+                "stroke-width": 1, 
+                cursor: "move",
+                });
+            fontSize = 18;
+        } else {
+            var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
+            rect.color = '#000000';
+            rect.textXOffset = tileWidth / 2;
+            rect.textYOffset = 30;
+            rect.attr({
+                fill: "#ffffff", 
+                stroke: rect.color, 
+                "stroke-width": 2, 
+                cursor: "move",
+                });
+        }
 
-        color = componentType.color;
 
-        rect.attr({
-            fill: "#ffffff", 
-            stroke: color, 
-            "stroke-width": 2, 
-            cursor: "move",
-            });
-
-
-        rect.label = paper.text(xpos + textXOffset, 
-            ypos + textYOffset, componentType.name);
+        rect.label = paper.text(xpos + rect.textXOffset, 
+            ypos + rect.textYOffset, componentType.name);
         rect.label.parent = rect;
 
 
@@ -665,7 +683,7 @@ var createEditor = function(canvasElem, inventory, types) {
             cursor: "move",
             "stroke-width": 0,
             "font-family":"Arial",
-            "font-size": 12,
+            "font-size": fontSize,
             "font-weight": 'lighter'
         });
 

@@ -2,6 +2,7 @@ import pbl
 import engine
 from components import inventory
 
+debug_exceptions = True
 OK = 'ok'
 
 '''
@@ -116,6 +117,8 @@ def compile_object(objname, program):
                     hsymbols[obj] = objname
                     return OK, obj
                 except:
+                    if debug_exceptions:
+                        raise
                     raise pbl.PBLException(None, "creation failure", objname)
             else:
                 return 'unknown type ' + comp['_type'] + ' for ' + objname, None

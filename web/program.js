@@ -24,19 +24,26 @@ Program.prototype = {
             extra: extra,
         }
 
-        if (component.cls.type == 'source') {
+        if (component.cls.name == 'comment') {
+            component.maxInputs = 0;
+            component.maxOutputs = 0;
+        } else if (component.cls.type == 'source') {
             component.maxInputs = 0;
             component.minInputs = 0;
+            component.maxOutputs = 1;
         } else if (component.cls.type == 'bool-filter') {
             component.maxInputs = 2;
             component.minInputs = 2;
+            component.maxOutputs = 1;
         } else if (component.cls.type == 'multi-in-filter') {
             component.maxInputs = 20;
             component.minInputs = 1;
+            component.maxOutputs = 1;
             component.source_list = [];
         } else {
             component.maxInputs = 1;
             component.minInputs = 1;
+            component.maxOutputs = 1;
             component.source =  null;
         }
         return component;

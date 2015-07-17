@@ -17,7 +17,13 @@ inventory = {
             { "name": "Friday", "value": 4 },
             { "name": "Saturday", "value": 5 },
             { "name": "Sunday", "value": 6 }
-        ]
+        ],
+        "color": [
+            { "name": "black", "value": "#000000" },
+            { "name": "red", "value": "#ff0000"  },
+            { "name": "green", "value": "#00ff00"  },
+            { "name": "blue", "value": "#0000ff"  },
+         ]
     },
     "components" : [
         {
@@ -56,6 +62,21 @@ inventory = {
                     "optional" : True,
                     "description": " if True also match by name in addition to the regular ID match",
                 },
+            }
+        },
+        {
+            "name" : "comment",
+            "display": "Comment",
+            "class": plugs.Comment,
+            "type" : "filter",
+            "title": "$text",
+            "description": "Add a comment to the program",
+            "params": {
+                "text": {
+                    "type" : "string",
+                    "optional" : True,
+                    "description": "the text for the comment",
+                }
             }
         },
         {
@@ -570,6 +591,22 @@ inventory = {
                     "default" : True,
                     "description": "if true stop producing tracks "
                         + "as soon as any input stops producing tracks"
+                },
+            }
+        },
+        {
+            "name" : "RandomStreamSelector",
+            "class": plugs.RandomStreamSelector,
+            "help" : """This component will pick one input stream at random and
+            use that stream to produce tracks""",
+            "type" : "multi-in-filter",
+            "display" : "random stream",
+            "description": "randomly selects a stream",
+            "params": {
+                "source_list": {
+                    "type" : "source_list",
+                    "optional" : False,
+                    "description": "the list of sources",
                 },
             }
         },

@@ -1,6 +1,33 @@
 
 var curTracks = [];
 var curTitle = "your playlist"
+var audio = null;
+
+function play(url) {
+    if (audio == null) {
+        audio = $("<audio>");
+    }
+
+    if (!audioIsPaused()) {
+        audio.get(0).pause();
+        if (audio.attr('src') == url) {
+            return;
+        } 
+    }
+    audio.attr('src', url);
+    audio.get(0).play();
+}
+
+function audioIsPaused() {
+    return audio.get(0).paused;
+}
+
+function stopTrack() {
+    if (audio) {
+        audio.get(0).pause();
+    }
+}
+
 
 function showPlaylist(name, data) {
     var tbody = $("#playlist-body");
@@ -25,7 +52,34 @@ function showPlaylist(name, data) {
         tr.append(artist);
         tr.append(src);
         tbody.append(tr);
+
+        title.on('click', function() {
+            if (track.spotify && track.spotify.preview_url) {
+                play(track.spotify.preview_url);
+            } else {
+                fetchSpotifyTrackInfo(track.id, function(spotify_track_info) {
+                    if (spotify_track_info) {
+                        track.spotify = spotify_track_info;
+                        play(track.spotify.preview_url);
+                    }
+                });
+            }
+            console.log('playing', track);
+        });
+        title.addClass('playable');
     });
+}
+
+function fetchSpotifyTrackInfo(tid, callback) {
+    var url = 'https://api.spotify.com/v1/tracks/' + tid;
+    $.getJSON(url).then(
+        function(trackInfo) {
+            callback(trackInfo);
+        },
+        function() {
+            callback(null);
+        }
+    );
 }
 
 function playlistShown() {

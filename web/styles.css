@@ -136,3 +136,13 @@ body {
 .modal-title {
     text-transform: capitalize;
 }
+
+.playable:hover {
+    color:#b7811a;
+    cursor:pointer;
+}
+
+.unplayable:hover {
+    color:#990000;
+}
+
