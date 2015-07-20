@@ -2,6 +2,7 @@ Program = function(inventory, name) {
     this.inventory = inventory;
     this.name = name;
     this.main = null;
+    this.max_tracks = 200;
     this.components = {}
     this.extra = {
         createdOn: new Date().getTime(),
@@ -101,6 +102,7 @@ Program.prototype = {
         var that = this;
         var jsonProgram = {
             main : rootComponentName,
+           max_tracks : this.max_tracks,
             components : {},
         }
         _.each(this.components, function(component) {
@@ -117,6 +119,7 @@ Program.prototype = {
             console.log('dup cname', name);
         }
         this.components[name] = c;
+        this.save();
         return c;
     },
 
@@ -138,6 +141,7 @@ Program.prototype = {
     removeComponent: function(name) {
         if (name in this.components) {
             delete this.components[name];
+            this.save();
         }
     },
 
@@ -155,6 +159,7 @@ Program.prototype = {
         } else {
             c2.source = name1;
         }
+        this.save();
     },
 
     removeConnection: function(name1, name2) {
@@ -178,6 +183,7 @@ Program.prototype = {
                 c2.source = null;
             }
         }
+        this.save();
     },
 
     getComponent: function(name) {
@@ -292,37 +298,43 @@ function removeProgram(name) {
 }
 
 
+function loadProgramFromJSON(inventory, sprog) {
+    console.log('sprog', sprog);
+    var program = new Program(inventory, sprog.name);
+    program.name = sprog.name;
+    program.main = sprog.main;
+    program.extra = sprog.extra;
+    _.each(sprog.components, function(comp, name) {
+        program.addComponent(name, comp.type, comp.params, comp.extra);
+    });
+
+    _.each(sprog.components, function(comp, name) {
+        if (comp.true_source) {
+            program.addConnection(comp.true_source, name, 0);
+        } 
+
+        if (comp.false_source) {
+            program.addConnection(comp.false_source, name, 1);
+        } 
+
+        if (comp.source) {
+            program.addConnection(comp.source, name, 0);
+        } else if (comp.source_list) {
+            _.each(comp.source_list, function(source) {
+                program.addConnection(source, name, 0);
+            });
+        }
+    });
+    return program;
+}
+
+
 function loadProgram(inventory, key) {
     var program = null;
     var json = localStorage.getItem(key);
-    if (json) {
-        var sprog = JSON.parse(json);
-        console.log('sprog', sprog);
-        var program = new Program(inventory, sprog.name);
-        program.name = sprog.name;
-        program.main = sprog.main;
-        program.extra = sprog.extra;
-        _.each(sprog.components, function(comp, name) {
-            program.addComponent(name, comp.type, comp.params, comp.extra);
-        });
-
-        _.each(sprog.components, function(comp, name) {
-            if (comp.true_source) {
-                program.addConnection(comp.true_source, name, 0);
-            } 
-
-            if (comp.false_source) {
-                program.addConnection(comp.false_source, name, 1);
-            } 
-
-            if (comp.source) {
-                program.addConnection(comp.source, name, 0);
-            } else if (comp.source_list) {
-                _.each(comp.source_list, function(source) {
-                    program.addConnection(source, name, 0);
-                });
-            }
-        });
+    var sprog = JSON.parse(json);
+    if (sprog) {
+        program = loadProgramFromJSON(inventory, sprog);
     }
     return program;
 }
@@ -336,5 +348,30 @@ function loadDirectory(inventory) {
         }
     }
     return dir;
+}
+
+function loadInitialDirectory(inventory, callback) {
+    var visited = localStorage.getItem('sp-has-visited');
+    if (!visited) {
+        localStorage.setItem('sp-has-visited', 'visited');
+        console.log('loading example programs');
+        $.getJSON('examples.js?v1').then(
+            function(data) {
+                var dir = [];
+                _.each(data, function(prog) {
+                    var program = loadProgramFromJSON(inventory, prog);
+                    console.log('loaded', program);
+                    program.save();
+                    dir.push(program);
+                });
+                callback(dir);
+            },
+
+            function() {
+            }
+        );
+    } else {
+        callback(loadDirectory(inventory));
+    }
 }
 

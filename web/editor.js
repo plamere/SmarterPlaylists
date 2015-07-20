@@ -105,7 +105,6 @@ var createEditor = function(canvasElem, inventory, types) {
     function deleteCur() {
         if (curSelected) {
             deleteComponent(curSelected);
-            curSelected = null;
         }
     }
 
@@ -116,6 +115,17 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function deleteComponent(comp) {
+        if (comp == curSelected) {
+            curSelected = null;
+        }
+
+        if (altSelected == comp) {
+            altSelected = null;
+        }
+
+        if (previousComponent == comp) {
+            previousComponent = null;
+        }
         disconnectComponent(comp);
         program.removeComponent(comp.name);
         comp.label.remove();
@@ -243,6 +253,67 @@ var createEditor = function(canvasElem, inventory, types) {
         rect.errorMessage = msg;
     }
 
+    function fmtTime(secs) {
+        function pad(v) {
+            var vs = v.toString();
+            if (vs.length == 1) {
+                vs = '0' + vs;
+            }
+            return vs;
+        }
+
+        if (isNaN(secs)) {
+            return "00:00:00";
+        }
+
+        var s = Math.round(secs);
+        var h = Math.floor(s / 3600);
+        s -= h * 3600;
+        var m = Math.floor(s/60);
+        s -= m * 60
+        if (h == 0) {
+            return pad(m) + ":" + pad(s);
+        } else {
+            return pad(h) + ":" + pad(m) + ":" + pad(s);
+        }
+    }
+
+    function parseTime(stime) {
+        var secs = 0;
+        var mins = 0;
+        var hours = 0;
+        var hms = stime.split(':');
+
+        hms.reverse();
+        if (hms.length >= 1) {
+            var val = parseInt(hms[0]);
+            if (!isNaN(val)) {
+                secs = val;
+            }
+        }
+        if (hms.length >= 2) {
+            var val = parseInt(hms[1]);
+            if (!isNaN(val)) {
+                mins = val;
+            }
+        }
+        if (hms.length >= 3) {
+            var val = parseInt(hms[2]);
+            if (!isNaN(val)) {
+                hours = val;
+            }
+        }
+        return hours * 60 * 60 + mins * 60 + secs;
+    }
+
+    function secsToTimeString(secs) {
+        return fmtTime(secs)
+    }
+
+    function timeStringToSecs(val) {
+        return parseTime(val);
+    }
+
     function clearComponentErrors() {
         $("#errors").empty(200);
         _.each(nameToRect, function(rect, name) {
@@ -263,12 +334,49 @@ var createEditor = function(canvasElem, inventory, types) {
         }
     }
 
+    function prompt(p) {
+        $("#prompt").html(p);
+    }
+
+    function showConnectPrompts(cur, alt) {
+        if (cur != null && alt != null)  {
+            console.log('alt', alt);
+            console.log('cur', cur);
+            if (isConnectedTo(alt, cur)) {
+                // prompt('(already connected)');
+                return;
+            }
+            if (alt.component.maxOutputs > 0 && cur.component.minInputs > 0) {
+                if (cur.component.cls.type == 'bool-filter') {
+                    prompt('SHIFT-SPACE to connect <span class="rcname">' 
+                        + alt.displayName  
+                        + '</span> to the red port of <span class="cname">'
+                        + cur.displayName + "</span>"
+                        + ' or SPACE to connect to the green port');
+                } else {
+                    prompt('SPACE to connect <span class="cname">' 
+                        + alt.displayName  + '</span> to <span class="cname">' 
+                        + cur.displayName + "</span>");
+                }
+            }
+
+            else  {
+                prompt('');
+            }
+        }
+    }
+
+
     var select = function() {
         var rect = this;
         if (this.parent) {
             rect = this.parent;
         }
         
+        if (!rect.selectable) {
+            return;
+        }
+
         if (shifted) {
             if (altSelected) {
                 altSelectRect(altSelected, false);
@@ -297,6 +405,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 altSelected = null;
             }
             selectRect(curSelected, true);
+            showConnectPrompts(curSelected, altSelected);
         }
     }
     var edit = function() {
@@ -331,8 +440,9 @@ var createEditor = function(canvasElem, inventory, types) {
             }
 
             var opt = param.optional ? "" : " (required) ";
+            var dname = 'display' in param ? param['display'] : name;
             if (param.type in types) {
-                var label =  $('<label for="' + name + '">').text(name + opt);
+                var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.attr('title', param.description);
                 label.addClass("edit-param-label");
                 var val = component.params[name] ?
@@ -358,7 +468,7 @@ var createEditor = function(canvasElem, inventory, types) {
             }
             else if (param.type  == 'string' || param.type == 'uri') {
 
-                var label =  $('<label for="' + name + '">').text(name + opt);
+                var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.attr('title', param.description);
                 label.addClass("edit-param-label");
                 var val = component.params[name] ?
@@ -375,7 +485,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(inp);
             }
             if (param.type  == 'uri_list') {
-                var label =  $('<label for="' + name + '">').text(name + opt);
+                var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.attr('title', param.description);
                 label.addClass("edit-param-label");
                 var val = component.params[name];
@@ -391,7 +501,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(label);
                 div.append(inp);
             } else if (param.type  == 'string_list') {
-                var label =  $('<label for="' + name + '">').text(name + opt);
+                var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.attr('title', param.description);
                 label.addClass("edit-param-label");
                 var val = component.params[name];
@@ -409,7 +519,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(inp);
             }
             else if (param.type  == 'number') {
-                var label =  $('<label for="' + name + '">').text(name + opt);
+                var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.addClass("edit-param-label");
                 label.attr('title', param.description);
                 var val = component.params[name] ?
@@ -429,6 +539,22 @@ var createEditor = function(canvasElem, inventory, types) {
                 div.append(label);
                 div.append(inp);
             }
+            else if (param.type  == 'time') {
+                var label =  $('<label for="' + name + '">').text(dname + opt);
+                label.addClass("edit-param-label");
+                label.attr('title', param.description);
+                var val = secsToTimeString(component.params[name] ?
+                          component.params[name] : param['default']);
+                var inp = $("<input class='form-control'>").val(val);
+                inp.attr('id', name);
+
+                inp.on('change', function() {
+                    var val = inp.val();
+                    curParams[name] = timeStringToSecs(val);
+                });
+                div.append(label);
+                div.append(inp);
+            }
             else if (param.type  == 'bool') {
                 var label = $('<label class="edit-param-label">');
                 var val = component.params[name];
@@ -440,22 +566,32 @@ var createEditor = function(canvasElem, inventory, types) {
                     curParams[name] = state;
                     console.log('bool', name, state);
                 });
-                label.text(name);
+                label.text(dname);
                 label.attr('title', param.description);
                 div.append(label);
                 div.append(inp);
             }
-            pdiv.append(div);
+            if (div.children().length > 0) {
+                pdiv.append(div);
+            }
         } 
 
         
         var pdiv = $("#edit-modal .params");
         pdiv.empty();
+
         _.each(component.cls.params, function(param, name) {
             if (name != 'source') {
                 addParam(pdiv, name, param);
             }
         });
+
+        console.log('children', pdiv.children());
+        if (pdiv.children().length == 0) {
+            $("#parameters").hide();
+        } else {
+            $("#parameters").show();
+        }
 
         $('#edit-modal').modal({})
 
@@ -511,6 +647,8 @@ var createEditor = function(canvasElem, inventory, types) {
                     } else {
                         return null;
                     }
+                } else if (keyType == 'time') {
+                    return fmtTime(component.params[key]);
                 } else {
                     return component.params[key];
                 }
@@ -650,17 +788,19 @@ var createEditor = function(canvasElem, inventory, types) {
             rect.textXOffset = commentWidth / 2;
             rect.textYOffset = 30;
             rect.color = "#eeeeee";
+            rect.selectable = false;
             rect.attr({
                 fill: "#eeeeee", 
                 stroke: rect.color,
                 opacity: .4, 
-                "stroke-width": 1, 
+                "stroke-width": 0, 
                 cursor: "move",
                 });
             fontSize = 18;
         } else {
             var rect = paper.rect(xpos, ypos, tileWidth, tileHeight, 4);
             rect.color = '#000000';
+            rect.selectable = true;
             rect.textXOffset = tileWidth / 2;
             rect.textYOffset = 30;
             rect.attr({
@@ -742,10 +882,15 @@ var createEditor = function(canvasElem, inventory, types) {
             out += word;
         });
         rect.label.attr({"text": out });
+        rect.displayName = text;
     }
 
     function isConnected(comp) {
         return (_.keys(comp.outEdges).length > 0);
+    }
+
+    function isConnectedTo(src, dest) { 
+        return dest.name in src.outEdges;
     }
 
     function addComponent(elem, comp) {
@@ -832,11 +977,12 @@ var createEditor = function(canvasElem, inventory, types) {
                 program.extra.uri = null;
             }
 
-            program.save();
             clearComponentErrors();
             if (curSelected) {
                 var main = curSelected.name;
                 var issues = program.check(main);
+                program.main = main;
+                program.save();
                 console.log('check issues', issues);
                 if (issues.length > 0) {
                     _.each(issues, function(issue) {

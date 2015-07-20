@@ -149,3 +149,40 @@ class ArtistFilter(object):
             else:
                 break
         return None
+
+
+MOST = 0
+MORE = 1
+LESS = 2
+LEAST = 3
+ALL = 4
+
+class Danceable(pbl.AttributeRangeFilter):
+    ranges = [
+        (.8, 1),
+        (.6, 1),
+        (.0, .4),
+        (.0, .2),
+        (.0, 1),
+    ]
+
+    def __init__(self, source, scale):
+        min_val = self.ranges[scale] [0]
+        max_val = self.ranges[scale] [1]
+        super(Danceable, self).__init__(source, "echonest.danceability",
+            match=None, min_val=min_val, max_val=max_val)
+
+class Energy(pbl.AttributeRangeFilter):
+    ranges = [
+        (.8, 1),
+        (.6, 1),
+        (.0, .4),
+        (.0, .2),
+        (.0, 1),
+    ]
+
+    def __init__(self, source, scale):
+        min_val = self.ranges[scale] [0]
+        max_val = self.ranges[scale] [1]
+        super(Energy, self).__init__(source, "echonest.energy",
+            match=None, min_val=min_val, max_val=max_val)

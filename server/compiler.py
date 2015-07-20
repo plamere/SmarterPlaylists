@@ -49,6 +49,8 @@ def convert_val_to_type(val, type, program):
         return OK, str(val)
     elif type == 'string_list':
         return OK, val
+    elif type == 'time':
+        return OK, val
     elif type == 'uri':
         return OK, str(val)
     elif type == 'uri_list':

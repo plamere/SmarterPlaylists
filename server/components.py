@@ -23,6 +23,81 @@ inventory = {
             { "name": "red", "value": "#ff0000"  },
             { "name": "green", "value": "#00ff00"  },
             { "name": "blue", "value": "#0000ff"  },
+         ],
+         "annotations": [
+            { "name" : "Spotify", "value" : "spotify" },
+            { "name" : "Echo Nest", "value" : "echonest" }
+         ],
+
+         "scale": [
+            { "name" : "most", "value" : 0 },
+            { "name" : "more", "value" : 1 },
+            { "name" : "less", "value" : 2 },
+            { "name" : "least", "value" : 3 },
+            { "name" : "all", "value" : 4 },
+         ],
+
+         "range_attributes" : [
+            { "name" : "artist discovery", "value" : "echonest.artist_discovery"},
+            { "name" : "speechiness", "value" : "echonest.speechiness"},
+            { "name" : "song currencey rank", "value" : "echonest.song_currency_rank"},
+            { "name" : "acousticness", "value" : "echonest.acousticness"},
+            { "name" : "danceability", "value" : "echonest.danceability"},
+            { "name" : "song currency", "value" : "echonest.song_currency"},
+            { "name" : "artist familiarity", "value" : "echonest.artist_familiarity"},
+            { "name" : "energy", "value" : "echonest.energy"},
+            { "name" : "song hotttnesss", "value" : "echonest.song_hotttnesss"},
+            { "name" : "tempo", "value" : "echonest.tempo"},
+            { "name" : "instrumentalness", "value" : "echonest.instrumentalness"},
+            { "name" : "key", "value" : "echonest.key"},
+            { "name" : "album date", "value" : "echonest.album_date"},
+            { "name" : "liveness", "value" : "echonest.liveness"},
+            { "name" : "artist hotttnesss", "value" : "echonest.artist_hotttnesss"},
+            { "name" : "artist hotttnesss rank", "value" : "echonest.song_hotttnesss_rank"},
+            { "name" : "mode", "value" : "echonest.mode"},
+            { "name" : "time signature", "value" : "echonest.time_signature"},
+            { "name" : "loudness", "value" : "echonest.loudness"},
+            { "name" : "valence", "value" : "echonest.valence"},
+            { "name" : "src", "value" : "src"},
+            { "name" : "duration", "value" : "duration"},
+            { "name" : "artist", "value" : "artist"},
+            { "name" : "title", "value" : "title"},
+            { "name" : "popularity", "value" : "spotify.popularity"},
+            { "name" : "explicit", "value" : "spotify.explicit"},
+            { "name" : "track number", "value" : "spotify.track_number"},
+            { "name" : "disc number", "value" : "spotify.disc_number"}
+         ],
+         "sort_attributes" : [
+            { "name" : "artist name ", "value" : "artist"},
+            { "name" : "title", "value" : "title"},
+            { "name" : "artist discovery", "value" : "echonest.artist_discovery"},
+            { "name" : "speechiness", "value" : "echonest.speechiness"},
+            { "name" : "song currencey rank", "value" : "echonest.song_currency_rank"},
+            { "name" : "acousticness", "value" : "echonest.acousticness"},
+            { "name" : "danceability", "value" : "echonest.danceability"},
+            { "name" : "song currency", "value" : "echonest.song_currency"},
+            { "name" : "artist familiarity", "value" : "echonest.artist_familiarity"},
+            { "name" : "energy", "value" : "echonest.energy"},
+            { "name" : "song hotttnesss", "value" : "echonest.song_hotttnesss"},
+            { "name" : "tempo", "value" : "echonest.tempo"},
+            { "name" : "instrumentalness", "value" : "echonest.instrumentalness"},
+            { "name" : "key", "value" : "echonest.key"},
+            { "name" : "album date", "value" : "echonest.album_date"},
+            { "name" : "liveness", "value" : "echonest.liveness"},
+            { "name" : "artist hotttnesss", "value" : "echonest.artist_hotttnesss"},
+            { "name" : "artist hotttnesss rank", "value" : "echonest.song_hotttnesss_rank"},
+            { "name" : "mode", "value" : "echonest.mode"},
+            { "name" : "time signature", "value" : "echonest.time_signature"},
+            { "name" : "loudness", "value" : "echonest.loudness"},
+            { "name" : "valence", "value" : "echonest.valence"},
+            { "name" : "src", "value" : "src"},
+            { "name" : "duration", "value" : "duration"},
+            { "name" : "artist", "value" : "artist"},
+            { "name" : "title", "value" : "title"},
+            { "name" : "popularity", "value" : "spotify.popularity"},
+            { "name" : "explicit", "value" : "spotify.explicit"},
+            { "name" : "track number", "value" : "spotify.track_number"},
+            { "name" : "disc number", "value" : "spotify.disc_number"}
          ]
     },
     "components" : [
@@ -31,7 +106,12 @@ inventory = {
             "display": "annotate",
             "class": pbl.Annotator,
             "type" : "filter",
-            "description": "annotates tracks with external information",
+            "description": "Annotates tracks with external information",
+            "help" : """This component will add information to the tracks on the
+            input stream. This can make downstream operations like range filters
+            run much faster.  Supported annotation types are <i>echonest</i>
+            and <i>spotify</i>""",
+            "title" : "annotate with $type data",
             "params": {
                 "source": {
                     "type" : "source",
@@ -39,8 +119,9 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "type": {
-                    "type" : "string",
+                    "type" : "annotations",
                     "optional" : False,
+                    "default" : "echonest",
                     "description": "the type of annotation",
                 },
             }
@@ -51,6 +132,10 @@ inventory = {
             "class": pbl.DeDup,
             "type" : "filter",
             "description": "Remove any duplicate tracks in the stream",
+            "help" : """ This component will remove any duplicate tracks from
+            the stream.  If <b> By Name </b> is set, then tracks dedupped by
+            artist and title, otherwise, they are dedupped based upon their
+            track id""",
             "params": {
                 "source": {
                     "type" : "source",
@@ -58,6 +143,7 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "by_name": {
+                    "display" : "By name",
                     "type" : "bool",
                     "optional" : True,
                     "description": " if True also match by name in addition to the regular ID match",
@@ -71,6 +157,8 @@ inventory = {
             "type" : "filter",
             "title": "$text",
             "description": "Add a comment to the program",
+            "help" : """This component lets you add arbitrary comments to your
+            program.  Comments have no effect on how a program will execute""",
             "params": {
                 "text": {
                     "type" : "string",
@@ -85,6 +173,9 @@ inventory = {
             "display": "track filter",
             "type" : "bool-filter",
             "description": "removes track from a stream",
+            "help": """ This component takes two input streams. It produces a
+            stream of tracks that consist of the tracks on the green input
+            stream with the tracks on the red input stream removed""",
             "params": {
                 "true_source": {
                     "type" : "source",
@@ -104,6 +195,10 @@ inventory = {
             "display": "artist filter",
             "type" : "bool-filter",
             "description": "removes track from a stream by artist",
+            "help": """ This component takes two input streams. It produces a
+            stream of tracks that consist of the tracks on the green input
+            stream with the tracks by artists of the tracks on the red input 
+            stream removed""",
             "params": {
                 "true_source": {
                     "type" : "source",
@@ -123,6 +218,12 @@ inventory = {
             "display": "yes or no",
             "type" : "bool-filter",
             "description": "selects a stream based on a boolean",
+
+            "help": """ This component excepts a red and a green input stream.
+            If the <b> yes </b> parameter is set, tracks from the green stream
+            will be passed through, otherwise, tracks from the red stream will
+            be passed through""",
+
             "params": {
                 "true_source": {
                     "type" : "source",
@@ -147,6 +248,12 @@ inventory = {
             "display": "is weekend",
             "type" : "bool-filter",
             "description": "selects a stream based on whether or not today is a weekend",
+
+            "help" : """This component accepts a green and a red stream. If the
+            current day is a weekend, tracks from the green stream are passed
+            through, otherwise tracks from the red stream are passed
+            through.""",
+
             "params": {
                 "true_source": {
                     "type" : "source",
@@ -167,6 +274,12 @@ inventory = {
             "display": "is day of week",
             "title": "is $day",
             "description": "selects a stream based on whether is is the given day of the week",
+
+            "help" : """This component accepts a green and a red stream. If the
+            current day matches the day specified, tracks from the green stream are passed
+            through, otherwise tracks from the red stream are passed
+            through.""",
+
             "params": {
                 "true_source": {
                     "type" : "source",
@@ -191,7 +304,12 @@ inventory = {
             "class": pbl.AlbumSource,
             "display": "album",
             "type" : "source",
+
             "description": "generates a series of tracks given an album",
+            "help" : """ If an album <b> uri </b> is specified, the tracks from
+            that album are generated, otherwise tracks from the album with the given
+            <b>artist</b> and <b>title</b> are generated""",
+
             "title": "$title",
             "params": {
                 "title": {
@@ -454,10 +572,10 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "time": {
-                    "type" : "number",
-                    "stype" : "time",
+                    "type" : "time",
+                    "default" : 900,
                     "optional" : False,
-                    "description": "the length in seconds of the stream of tracks"
+                    "description": "the length in the form hh:mm:ss of the stream of tracks"
                 }
             }
         },
@@ -476,12 +594,11 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "time": {
-                    "type" : "number",
-                    "stype" : "time",
+                    "type" : "time",
                     "optional" : False,
-                    "placeholder" : "00:00:00",
+                    "default" :  1800,
                     "format" : "time",
-                    "description": "the length in seconds of the stream of tracks"
+                    "description": "the length in the form hh:mm:ss of the stream of tracks"
                 }
             }
         },
@@ -527,6 +644,9 @@ inventory = {
             "title": "sort by $reverse $attr",
             "display" : "sort",
             "description": "Sorts the tracks in the stream by the given attribute",
+            "help" : """ This component will order the tracks based upon the
+            given attribute. The sort can be reversed by selected the <b>
+            reverse </b> option.""",
             "params": {
                 "source": {
                     "type" : "source",
@@ -534,7 +654,8 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "attr": {
-                    "type" : "string",
+                    "type" : "sort_attributes",
+                    "default" : "title",
                     "optional" : False,
                     "description": "the attribute to be sorted on"
                 },
@@ -544,12 +665,6 @@ inventory = {
                     "optional" : True,
                     "description": "if true, reverse the sort"
                 },
-
-                "max_size": {
-                    "type" : "number",
-                    "optional" : True,
-                    "description": "the maximum number of tracks to sort"
-                }
             }
         },
         {
@@ -638,7 +753,7 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "attr": {
-                    "type" : "string",
+                    "type" : "range_attributes",
                     "optional" : False,
                     "description": "the attribute to be sorted on"
                 },
@@ -646,21 +761,69 @@ inventory = {
                 "match": {
                     "type" : "any",
                     "optional" : True,
-                    "description": "if not null, attribute must match this exactly"
+                    "description": "if not empty, attribute must match this exactly"
                 },
 
                 "min_val": {
                     "type" : "number",
                     "optional" : True,
-                    "description": "if not null attribute value must be at least this"
+                    "description": "if not empty attribute value must be at least this"
                 },
                 "max_val": {
                     "type" : "number",
                     "optional" : True,
-                    "description": "if not null attribute value must be less than this"
+                    "description": "if not empty attribute value must be less than this"
                 }
             }
-        }
+        },
+        {
+            "name" : "Danceable",
+            "class": plugs.Danceable,
+            "type" : "filter",
+            "title" : "$scale danceable",
+            "display": "danceable",
+            "description": "filters tracks by their danceability attribute",
+            "help" : """ This component will pass through tracks that meet
+            the given danceability scale.""",
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "scale": {
+                    "type" : "scale",
+                    "optional" : False,
+                    "default" : 0,
+                    "stype" : "number",
+                    "description": "how danceble are the desired tracks"
+                }
+            }
+        },
+        {
+            "name" : "Energy",
+            "class": plugs.Energy,
+            "type" : "filter",
+            "title" : "$scale energy",
+            "display": "energy",
+            "description": "filters tracks by their energy attribute",
+            "help" : """ This component will pass through tracks that meet
+            the given energy scale.""",
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "scale": {
+                    "type" : "scale",
+                    "optional" : False,
+                    "default" : 0,
+                    "stype" : "number",
+                    "description": "how energetic are the desired tracks"
+                }
+            }
+        },
     ]
 }
 

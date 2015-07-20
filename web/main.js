@@ -41,6 +41,12 @@ function showBuilder() {
     $('#tabs a[href="#work"]').tab('show') // Select tab by name
 }
 
+function showInitialDirectory() {
+    loadInitialDirectory(inventory, function() {
+        showDirectory();
+    });
+}
+
 function showDirectory() {
     var body = $("#dir-body");
     body.empty();
@@ -125,7 +131,7 @@ function initApp() {
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         console.log('showing', e.target);
         if ($(e.target).attr('href') == '#dir') {
-            showDirectory();
+            showInitialDirectory();
             console.log('showing dir');
         } else if ($(e.target).attr('href') == '#ttracks') {
             playlistShown();
@@ -193,4 +199,5 @@ $(document).ready(
         initApp();
     }
 );
+
 
