@@ -428,6 +428,9 @@ inventory = {
             "type" : "source",
             "display": "artist radio",
             "description": "tracks by the given artist and similar artists",
+            "help" : """ This component generates a stream of tracks by the
+            given artist or similar artists. The <b>count</b> controls how many
+            tracks are generated.""",
             "title" : "$artist radio",
             "params": {
                 "artist": {
@@ -521,9 +524,11 @@ inventory = {
             "name" : "Last",
             "class": pbl.Last,
             "type" : "filter",
-            "title" : "first $sample_size",
+            "title" : "last $sample_size",
             "display" : "last",
             "description": "Returns the last tracks from a stream",
+            "help" : """ This component returns the last <b> size </b> number of
+            tracks on the input stream""",
             "params": {
                 "source": {
                     "type" : "source",
@@ -531,8 +536,10 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
+                    "display" : "size",
                     "type" : "number",
                     "optional" : False,
+                    "default" : 10,
                     "description": "the number of tracks to return"
                 }
             }

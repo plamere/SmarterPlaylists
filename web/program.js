@@ -119,7 +119,6 @@ Program.prototype = {
             console.log('dup cname', name);
         }
         this.components[name] = c;
-        this.save();
         return c;
     },
 
@@ -141,12 +140,10 @@ Program.prototype = {
     removeComponent: function(name) {
         if (name in this.components) {
             delete this.components[name];
-            this.save();
         }
     },
 
     addConnection: function(name1, name2, type) {
-        console.log('ac', name1, name2);
         var c2 = this.components[name2];
         if (c2.cls.type == 'bool-filter') {
             if (type == 0) {
@@ -159,7 +156,6 @@ Program.prototype = {
         } else {
             c2.source = name1;
         }
-        this.save();
     },
 
     removeConnection: function(name1, name2) {
@@ -183,7 +179,6 @@ Program.prototype = {
                 c2.source = null;
             }
         }
-        this.save();
     },
 
     getComponent: function(name) {
@@ -203,13 +198,12 @@ Program.prototype = {
             dataType: 'json',
             url: apiPath + 'run',
             success: function (data) {
-                console.log('done', data);
                 if (data.status == 'ok') {
                     _.each(data.tracks, function(track, i) {
-                        console.log(i + 1, track.title + ' ' + track.artist);
+                        // console.log(i + 1, track.title + ' ' + track.artist);
                     });
                 } else {
-                    console.log('error', data.status);
+                    // console.log('error', data.status);
                 }
                 callback(data);
             }
@@ -243,14 +237,14 @@ Program.prototype = {
         this.extra.lastRun =  new Date().getTime();
 
         var jsonProgram = this.toJson(this.main);
-        console.log('json program', jsonProgram);
+        // console.log('json program', jsonProgram);
         this.postProgram(jsonProgram, function(data) {
             if (data) {
                 that.extra.runs += 1;
             } else {
                 that.extra.errors += 1;
             }
-            console.log('run done', data);
+            // console.log('run done', data);
             callback(data)
             localStorage.setItem('sp-last-run', getKey(that.name));
         });
@@ -258,7 +252,7 @@ Program.prototype = {
 
     save: function() {
         this.extra.lastRun =  new Date().getTime();
-        console.log('saving', this.name);
+        // console.log('saving', this.name);
         var obj = {
             name:this.name,
             main:this.main,
@@ -271,7 +265,7 @@ Program.prototype = {
             cc = _.extendOwn(cc, comp);
             delete cc['cls'];
             obj.components[id] = cc;
-            console.log('extend', comp, '->', cc);
+            // console.log('extend', comp, '->', cc);
         });
         var json = JSON.stringify(obj, null, 4);
         console.log('SAVE ' + json);
@@ -299,7 +293,6 @@ function removeProgram(name) {
 
 
 function loadProgramFromJSON(inventory, sprog) {
-    console.log('sprog', sprog);
     var program = new Program(inventory, sprog.name);
     program.name = sprog.name;
     program.main = sprog.main;
@@ -360,7 +353,6 @@ function loadInitialDirectory(inventory, callback) {
                 var dir = [];
                 _.each(data, function(prog) {
                     var program = loadProgramFromJSON(inventory, prog);
-                    console.log('loaded', program);
                     program.save();
                     dir.push(program);
                 });

@@ -157,3 +157,7 @@ body {
 .rcname {
     color: #1ed760;
 }
+
+#mybuttons .nav-tabs {
+    cursor:pointer;
+}

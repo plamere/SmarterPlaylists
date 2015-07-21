@@ -126,6 +126,11 @@ var createEditor = function(canvasElem, inventory, types) {
         if (previousComponent == comp) {
             previousComponent = null;
         }
+
+        if (comp.name in nameToRect) {
+            delete nameToRect[comp.name];
+        }
+
         disconnectComponent(comp);
         program.removeComponent(comp.name);
         comp.label.remove();
