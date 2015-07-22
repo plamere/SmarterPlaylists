@@ -27,13 +27,11 @@ var createEditor = function(canvasElem, inventory, types) {
 
     var nameToRect = {}
 
-    console.log('create editor', types);
     function initPaper() {
         var top = 100;
         var w = $(window).width();
         var h = $(window).height() - top;
 
-        console.log('width/height', w,h);
         paper = Raphael(canvasElem, w, h);
         paper.canvas.className += ' raphael-canvas';
         paper.canvas.baseVal += ' raphael-canvas';
@@ -79,7 +77,6 @@ var createEditor = function(canvasElem, inventory, types) {
             var w = workspace.width();
             var h = workspace.height();
             paper.setSize(w, h);
-            console.log('refresh', w, h);
         }
     }
 
@@ -109,9 +106,7 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function deleteAll() {
-        console.log('delete all');
         _.each(nameToRect, function(rect) {
-            console.log('deleting', rect);
             deleteComponent(rect);
         });
     }
@@ -143,6 +138,10 @@ var createEditor = function(canvasElem, inventory, types) {
         disconnectComponent(comp);
         program.removeComponent(comp.name);
         comp.label.remove();
+        comp.label = null;
+        comp.component = null;
+        comp.inEdges = null;
+        comp.outEdges = null;
         comp.remove();
     }
 
@@ -193,11 +192,9 @@ var createEditor = function(canvasElem, inventory, types) {
         }
 
         if ($(evt.target).is('input')) {
-            console.log('is input');
             return;
         }
 
-        console.log('key', evt.which, evt);
         if (evt.which == 17) {
             controlled = true;
         }
@@ -261,7 +258,6 @@ var createEditor = function(canvasElem, inventory, types) {
         } else {
             rect.attr({'stroke-width' : 1, 'stroke': rect.color});
         }
-        console.log(rect.component.cls.color);
     }
 
     function markComponentWithError(name, msg) {
@@ -358,8 +354,6 @@ var createEditor = function(canvasElem, inventory, types) {
 
     function showConnectPrompts(cur, alt) {
         if (cur != null && alt != null)  {
-            console.log('alt', alt);
-            console.log('cur', cur);
             if (isConnectedTo(alt, cur)) {
                 // prompt('(already connected)');
                 return;
@@ -388,6 +382,7 @@ var createEditor = function(canvasElem, inventory, types) {
     var select = function() {
         var rect = this;
         if (this.parent) {
+            console.log('ediing parent', this, this.parent);
             rect = this.parent;
         }
         
@@ -432,6 +427,7 @@ var createEditor = function(canvasElem, inventory, types) {
             rect = this.parent;
         }
 
+        console.log('editing', rect);
         canvasFocus(false);
         var component = rect.component;
 
@@ -479,7 +475,6 @@ var createEditor = function(canvasElem, inventory, types) {
 
                 sel.on('change', function() {
                     curParams[name] = convertType(param.stype, sel.val());
-                    console.log('change', curParams);
                 });
                 div.append(label);
                 div.append(sel);
@@ -550,7 +545,6 @@ var createEditor = function(canvasElem, inventory, types) {
 
                     if (val.indexOf('.') >= 0) {
                         curParams[name] = parseFloat(inp.val());
-                        console.log('PF', inp.val(), curParams[name]);
                     } else {
                         curParams[name] = parseInt(inp.val());
                     }
@@ -583,7 +577,6 @@ var createEditor = function(canvasElem, inventory, types) {
                 inp.on('change', function() {
                     var state = $(inp).is(':checked');
                     curParams[name] = state;
-                    console.log('bool', name, state);
                 });
                 label.text(dname);
                 label.attr('title', param.description);
@@ -605,7 +598,6 @@ var createEditor = function(canvasElem, inventory, types) {
             }
         });
 
-        console.log('children', pdiv.children());
         if (pdiv.children().length == 0) {
             $("#parameters").hide();
         } else {
@@ -615,23 +607,23 @@ var createEditor = function(canvasElem, inventory, types) {
         $('#edit-modal').modal({})
 
 
+        $("#edit-modal").off('hidden.bs.modal');
         $('#edit-modal').on('hidden.bs.modal', function () {
             canvasFocus(true);
         });
 
+        $("#edit-modal .save").off('click');
         $("#edit-modal .save").on('click', function() {
             _.each(curParams, function(val, name) {
-                console.log('save params', val);
+                console.log('save', rect, component, name, val);
                 component.params[name] = val;
             });
-            console.log('save', component.params);
             renameComponent(rect);
         });
-
     }
 
     function renameComponent(rect) {
-        console.log('rc', rect);
+        console.log('RENAME', rect);
         var title = rect.component.cls.title || rect.component.cls.display;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);
@@ -639,11 +631,9 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function findTypeName(key, type) {
-            console.log('findTypeName', key, type);
         var name = '?';
         _.each(type, function(t) {
             if (key == t.value) {
-                console.log('findTypeName', key, type, t);
                 name =  t.name;
             }
         });
@@ -657,7 +647,6 @@ var createEditor = function(canvasElem, inventory, types) {
             var key  = word.replace('$', '');
             if (key in component.params) {
                 var keyType = component.cls.params[key].type;
-                console.log('makesubs', keyType, types);
                 if (keyType in types) {
                     key = findTypeName(component.params[key], types[keyType]);
                     return key;
@@ -987,6 +976,13 @@ var createEditor = function(canvasElem, inventory, types) {
         }
     }
 
+    function prepDownloadLink(name, json) {
+        var blob = new Blob([json], { type: "application/json"});
+        var url = URL.createObjectURL(blob);
+        $("#download").attr('download', name + '.json');
+        $("#download").attr('href', url);
+    }
+
     function addControls() {
         var runButton = $("#run-button");
         runButton.on('click', function() {
@@ -1002,8 +998,8 @@ var createEditor = function(canvasElem, inventory, types) {
                 var main = curSelected.name;
                 var issues = program.check(main);
                 program.main = main;
-                program.save();
-                console.log('check issues', issues);
+                var json = program.save();
+                prepDownloadLink(program.name, json);
                 if (issues.length > 0) {
                     _.each(issues, function(issue) {
                         if (issue.component) {
@@ -1024,7 +1020,6 @@ var createEditor = function(canvasElem, inventory, types) {
                                     savePlaylist(program, data);
                                 }
                             } else {
-                                console.log(data);
                                 error(data.message);
                                 if (data.component) {
                                     markComponentWithError(data.component, data.message);
@@ -1140,7 +1135,6 @@ var createEditor = function(canvasElem, inventory, types) {
 
             _.each(program.components, function(comp, id) {
                 var destRect = nameToRect[comp.name];
-                console.log('dest', comp.name, destRect, nameToRect);
                 if (comp.source) {
                     var srcRect = nameToRect[comp.source];
                     addVisualConnection(srcRect, destRect, CT_NORMAL);

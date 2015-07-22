@@ -4,7 +4,6 @@ NEED Before Ship:
   * Add help / about
   * final review/test default params for all components
   * Create initial landing page
-  * Allow links to single program examples
 
 
 Later
@@ -44,6 +43,7 @@ Future
   * Refactor type system
   * constrain connections based on in to top left and out to bottom right
   * Add 'match' filter?
+  * remove maxInputs and maxOutputs from program json
 
 Done
 ====
@@ -70,7 +70,9 @@ Done
   * extract active components so we only error check ones that will run
   * Empty track list should be prettier
   * add clear all button? (shift-delete)
-  * fix 'cannot read proper cls of null' that occurs after deleting
-    editor 560, 553
   * add help to all components
   * review/test default params for all components
+  * Allow links to single program examples
+  * Support saving to json
+  * fix 'cannot read proper cls of null' that occurs after deleting
+    editor 560, 553 (phew, needed to remove stale event handlers)

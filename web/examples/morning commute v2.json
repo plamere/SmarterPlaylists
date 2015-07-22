@@ -1,0 +1,118 @@
+{
+    "name": "morning commute v2",
+    "main": "LongerThan-4",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Morning Drive"
+            },
+            "extra": {
+                "x": 73,
+                "y": 30
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-2": {
+            "name": "SpotifyPlaylist-2",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "New Music Friday"
+            },
+            "extra": {
+                "x": 211,
+                "y": 32
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Alternate-3": {
+            "name": "Alternate-3",
+            "type": "Alternate",
+            "params": {
+                "fail_fast": true
+            },
+            "extra": {
+                "x": 149,
+                "y": 161
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "SpotifyPlaylist-2",
+                "SpotifyPlaylist-1"
+            ]
+        },
+        "LongerThan-4": {
+            "name": "LongerThan-4",
+            "type": "LongerThan",
+            "params": {
+                "time": 3000
+            },
+            "extra": {
+                "x": 615,
+                "y": 171
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "ArtistFilter-8"
+        },
+        "DeDup-5": {
+            "name": "DeDup-5",
+            "type": "DeDup",
+            "params": {
+                "by_name": false
+            },
+            "extra": {
+                "x": 302,
+                "y": 162
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Alternate-3"
+        },
+        "SpotifyPlaylist-7": {
+            "name": "SpotifyPlaylist-7",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "My banned artists",
+                "user": "plamere"
+            },
+            "extra": {
+                "x": 384,
+                "y": 30
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "ArtistFilter-8": {
+            "name": "ArtistFilter-8",
+            "type": "ArtistFilter",
+            "params": {},
+            "extra": {
+                "x": 460,
+                "y": 169
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "DeDup-5",
+            "false_source": "SpotifyPlaylist-7"
+        }
+    },
+    "extra": {
+        "createdOn": 1437539409811,
+        "lastRun": 1437539879359,
+        "runs": 1,
+        "errors": 0,
+        "uri": null
+    }
+}

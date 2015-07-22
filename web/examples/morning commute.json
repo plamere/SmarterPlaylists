@@ -1,0 +1,74 @@
+{
+    "name": "morning commute",
+    "main": "LongerThan-4",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Morning Drive"
+            },
+            "extra": {
+                "x": 73,
+                "y": 30
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-2": {
+            "name": "SpotifyPlaylist-2",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "New Music Friday"
+            },
+            "extra": {
+                "x": 211,
+                "y": 32
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Alternate-3": {
+            "name": "Alternate-3",
+            "type": "Alternate",
+            "params": {
+                "fail_fast": true
+            },
+            "extra": {
+                "x": 149,
+                "y": 161
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "SpotifyPlaylist-2",
+                "SpotifyPlaylist-1"
+            ]
+        },
+        "LongerThan-4": {
+            "name": "LongerThan-4",
+            "type": "LongerThan",
+            "params": {
+                "time": 3000
+            },
+            "extra": {
+                "x": 149,
+                "y": 293
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Alternate-3"
+        }
+    },
+    "extra": {
+        "createdOn": 1437539409811,
+        "lastRun": 1437539667316,
+        "runs": 0,
+        "errors": 0,
+        "uri": null
+    }
+}

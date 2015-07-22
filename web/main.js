@@ -126,8 +126,27 @@ function showDirectory() {
     });
 }
 
+function loadRemoteProgram(path, inventory, callback) {
+    $.getJSON(path).then(
+        function(sprog) {
+            console.log('sprog', sprog);
+            delete sprog.extra.uri;
+            var program = loadProgramFromJSON(inventory, sprog);
+            callback(program);
+        },
+        function() {
+            console.log('sprog error');
+            callback(null);
+        }
+    );
+}
+
 
 function initApp() {    
+    var params = parseParams();
+    var pprogram = ('program' in params) ? params['program'] : null;
+    console.log('pprogram is', pprogram);
+    
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         console.log('showing', e.target);
         if ($(e.target).attr('href') == '#dir') {
@@ -166,11 +185,21 @@ function initApp() {
         } else {
             inventory = inventoryMap;
             editor = createEditor("workspace", inventoryMap, styles);
-            var mostRecent = loadMostRecentProgram(inventory);
-            if (mostRecent) {
-                editor.load(mostRecent);
+            if (pprogram) {
+                loadRemoteProgram(pprogram, inventory, function(remoteProgram) {
+                    if (remoteProgram) {
+                        editor.load(remoteProgram);
+                    } else {
+                        error("Can't load " + pprogram);
+                    }
+                });
             } else {
-                console.log('no recent program');
+                var mostRecent = loadMostRecentProgram(inventory);
+                if (mostRecent) {
+                    editor.load(mostRecent);
+                } else {
+                    console.log('no recent program');
+                }
             }
         }
         console.log('inventory ready');
@@ -192,6 +221,24 @@ function error(msg) {
     $("#errors").append(alert);
 }
 
+function urldecode(str) {
+   return decodeURIComponent((str+'').replace(/\+/g, '%20'));
+}
+
+function parseParams() {
+    var params = {};
+    var q = document.URL.split('?')[1];
+    if(q != undefined){
+        q = q.split('&');
+        for(var i = 0; i < q.length; i++){
+            var pv = q[i].split('=');
+            var p = pv[0];
+            var v = pv[1];
+            params[p] = urldecode(v);
+        }
+    }
+    return params;
+}
 
 $(document).ready(
     function() {

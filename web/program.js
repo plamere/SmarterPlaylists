@@ -287,6 +287,7 @@ Program.prototype = {
         var json = JSON.stringify(obj, null, 4);
         console.log('SAVE ' + json);
         localStorage.setItem(getKey(this.name), json);
+        return json;
     }
 }
 
