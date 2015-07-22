@@ -62,7 +62,7 @@ Program.prototype = {
             sources.push.apply(sources, c.source_list)
         }
         if (c.source) {
-            sources.push(source);
+            sources.push(c.source);
         }
 
         if (c.true_source) {
@@ -72,6 +72,7 @@ Program.prototype = {
         if (c.false_source) {
             sources.push(c.false_source);
         }
+        return sources;
     },
 
     extract: function(c) {
@@ -210,14 +211,30 @@ Program.prototype = {
         });
     },
 
+    findActiveComponents: function(c, active) {
+        var that = this;
+        if (! (c.name in active)) {
+            active[c.name] = c;
+            var sources = this.getSources(c);
+            _.each(sources, function(source) {
+                var sc = that.components[source];
+                that.findActiveComponents(sc, active);
+            });
+        }
+    },
+
     getActiveComponents: function(main) {
-        return this.components;
+        var active = {}
+        var mainComponent = this.components[main];
+        this.findActiveComponents(mainComponent, active);
+        console.log('active components', active);
+        return active;
     },
 
     check: function(main) {
         var that = this;
         var issues = [];
-        var components = this.getActiveComponents();
+        var components = this.getActiveComponents(main);
         _.each(components, function(component) {
             var cissues = that.checkComponent(component);
             _.each(cissues, function(cissue) {

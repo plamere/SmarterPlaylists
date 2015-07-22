@@ -152,7 +152,7 @@ inventory = {
         },
         {
             "name" : "comment",
-            "display": "Comment",
+            "display": "comment",
             "class": plugs.Comment,
             "type" : "filter",
             "title": "$text",
@@ -335,6 +335,12 @@ inventory = {
             "display": "track uris",
             "type" : "source",
             "description": "generates a series of tracks given their URIs",
+
+            "help": """ This component generates a series of one or more tracks
+            given their URIs. You specify the URIs as a comma separated list of
+            tracks like so: <pre> spotify:track:69JnEQF6OCntGndij5BTlq,
+            spotify:track:00t1USAjV7tiTDwlN6U44I </pre>.""",
+
             "params": {
                 "uris": {
                     "type" : "uri_list",
@@ -346,12 +352,14 @@ inventory = {
         {
             "name" : "TrackSourceByName",
             "class": pbl.TrackSourceByName,
+            "description": "generates a single track given its name",
+
             "help": """ This component will search for the most popular track
-            with the given title and artist of the track""",
+            with the given title and artist.""",
+
             "display": "track",
             "type" : "source",
             "title" : "$title",
-            "description": "generates a single track given its name",
             "params": {
                 "title": {
                     "type" : "string",
@@ -366,6 +374,11 @@ inventory = {
             "type" : "filter",
             "display": "Simple artist filter",
             "description": "removes tracks by the given artist",
+
+            "help" : """ This component will remove tracks from the input stream
+            that are by the given set of artists. Artists are specified as a
+            list of comma separated name.""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -374,6 +387,7 @@ inventory = {
                 },
                 "artistNames": {
                     "type" : "string_list",
+                    "display" : "Artist name(s)",
                     "optional" : False,
                     "description": "a list of artist names",
                 },
@@ -386,6 +400,11 @@ inventory = {
             "display": "artist top tracks",
             "description": "generates a series of top tracks by the given artist",
             "title" : "Top $name tracks",
+
+            "help" : """ This component will generate the top 10 tracks for the
+            given artist.  You can specify the artist either by name or by URI.
+            If both are given, the URI is used.""",
+
             "params": {
                 "name": {
                     "type" : "string",
@@ -405,6 +424,11 @@ inventory = {
             "type" : "source",
             "display": "genre radio",
             "description": "generates a series of tracks in the given genre",
+
+            "help": """ This component will generate a stream of tracks given
+            the Echo Nest genre. You can chose from a wide range of genres. Use
+            <b> count </b> to control how many tracks are returned""",
+
             "title" : "$genre",
             "params": {
                 "genre": {
@@ -427,10 +451,13 @@ inventory = {
             "class": pbl.EchoNestArtistRadio,
             "type" : "source",
             "display": "artist radio",
+
             "description": "tracks by the given artist and similar artists",
+
             "help" : """ This component generates a stream of tracks by the
             given artist or similar artists. The <b>count</b> controls how many
             tracks are generated.""",
+
             "title" : "$artist radio",
             "params": {
                 "artist": {
@@ -452,6 +479,12 @@ inventory = {
             "type" : "source",
             "display": "artist tracks",
             "description": "tracks by the given artist",
+
+            "help" : """ This component generates a stream of tracks by the
+            given artist. The <b>count</b> controls how many tracks are generated.
+            The tracks returned will vary from run to run. More popular tracks
+            by the artist are favored.""",
+
             "title" : "$artist",
             "params": {
                 "artist": {
@@ -473,13 +506,15 @@ inventory = {
             "type" : "source",
             "display": "playlist",
             "description": "loads tracks from the given spotify playlist",
-            "help" : """ This component will load tracks from the given Spotify
+
+            "help" : """ This component will generate a stream of tracks from the given Spotify
             playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
             be loaded. If you omit the URI but specify a <b>user</b> and a
             <b>name</b>, the user's public playlists will be searched for the playlist with the
             given name. If no user is specified, the most popular playlist with
             the given <b>name</b> will be used.
             """,
+
             "title": "$name",
             "params": {
                 "name": {
@@ -507,6 +542,11 @@ inventory = {
             "title" : "first $sample_size",
             "display": "first",
             "description": "Returns the first tracks from a stream",
+
+            "help": """ This filter will only pass through the first <b> count
+            </b> tracks through. Use this filter to limit the tracks to just the
+            first <b>count</b> tracks""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -514,7 +554,9 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
+                    "display": "count",
                     "type" : "number",
+                    "default" : 10,
                     "optional" : False,
                     "description": "the number of tracks to return"
                 }
@@ -527,8 +569,10 @@ inventory = {
             "title" : "last $sample_size",
             "display" : "last",
             "description": "Returns the last tracks from a stream",
-            "help" : """ This component returns the last <b> size </b> number of
+
+            "help" : """ This component returns the last <b> count </b> number of
             tracks on the input stream""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -536,7 +580,7 @@ inventory = {
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
-                    "display" : "size",
+                    "display" : "count",
                     "type" : "number",
                     "optional" : False,
                     "default" : 10,
@@ -544,6 +588,7 @@ inventory = {
                 }
             }
         },
+
         {
             "name" : "Sample",
             "class": pbl.Sample,
@@ -551,6 +596,11 @@ inventory = {
             "display" : "sample",
             "title" : "sample $sample_size tracks",
             "description": "randomly sample tracks from the stream",
+
+            "help" : """ This component will randomly sample up to <b> count </b>
+            tracks from the input stream. Sampled tracks may be returned in any
+            order""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -560,7 +610,9 @@ inventory = {
                 "sample_size": {
                     "type" : "number",
                     "optional" : False,
-                    "description": "the number of tracks to return"
+                    "description": "the number of tracks to return",
+                    "display" : "count",
+                    "default" : 10,
                 }
             }
         },
@@ -572,6 +624,12 @@ inventory = {
             "display" : "no longer than",
             "description": "Limit the stream, if possible, to tracks with a" + \
                 "duration that is no longer than the given time",
+
+            "help" : """ This component will limit the stream of tracks to the
+            first N tracks that have a total duration that is shorter than the
+            given time.  The time is given in the form mm:ss or hh:mm:ss or just
+            seconds""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -586,6 +644,7 @@ inventory = {
                 }
             }
         },
+
         {
             "name" : "LongerThan",
             "class": pbl.LongerThan,
@@ -594,6 +653,12 @@ inventory = {
             "display" : "no shorter than",
             "description": "Limit the stream, if possible, to tracks with a" + \
                 "duration that is no shorter than the given time",
+
+            "help" : """ This component will limit the stream of tracks to the
+            first N tracks that have a total duration that is longer than the
+            given time.  The time is given in the form mm:ss or hh:mm:ss or just
+            seconds""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -616,17 +681,16 @@ inventory = {
             "title" : "shuffle",
             "display" : "shuffle",
             "description": "Shuffles the tracks in the stream",
+
+            "help" : """
+                This component will randomly re-order the input tracks """,
+
             "params": {
                 "source": {
                     "type" : "source",
                     "optional" : False,
                     "description": "the source of the tracks",
                 },
-                "max_size": {
-                    "type" : "number",
-                    "optional" : True,
-                    "description": "maximum tracks to shuffle"
-                }
             }
         },
         {
@@ -636,6 +700,9 @@ inventory = {
             "title" : "reverse",
             "display" : "reverse",
             "description": "Reverses the order of the tracks in the stream",
+
+            "help" : """ This component will reverse the order of the input tracks """,
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -651,9 +718,11 @@ inventory = {
             "title": "sort by $reverse $attr",
             "display" : "sort",
             "description": "Sorts the tracks in the stream by the given attribute",
+
             "help" : """ This component will order the tracks based upon the
             given attribute. The sort can be reversed by selected the <b>
             reverse </b> option.""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -680,6 +749,14 @@ inventory = {
             "type" : "multi-in-filter",
             "display" : "alternate",
             "description": "alternate tracks from multiple streams",
+
+            "help" : """ This component takes any number of input streams and
+            generates a single output stream by alternating between each of the
+            input streams.  If <b> fail fast </b> is set, this component will
+            stop producing any tracks once any input stream stops producing
+            tracks. If <b>fail fast</b> is not set, this component will continue
+            to generate tracks until all input sources are exhausted.""",
+
             "params": {
                 "source_list": {
                     "type" : "source_list",
@@ -690,6 +767,7 @@ inventory = {
                     "type" : "bool",
                     "optional" : True,
                     "default" : True,
+                    "display" : "fail fast",
                     "description": "if true stop producing tracks "
                         + "as soon as any input stops producing tracks"
                 },
@@ -700,7 +778,14 @@ inventory = {
             "class": plugs.RandomSelector,
             "type" : "multi-in-filter",
             "display" : "random",
-            "description": "randomly select tracks from multiple streams",
+            "description": "randomly selects tracks from multiple streams",
+
+            "help" : """This component takes any number of input streams and
+            produces tracks by continuosly selecting a random input stream and
+            returning the next track from that stream. If <b> fail fast </b> is
+            set, this component will stop generating tracks as soon as any of
+            its randomly selected sources stops generating tracks.""",
+
             "params": {
                 "source_list": {
                     "type" : "source_list",
@@ -711,16 +796,20 @@ inventory = {
                     "type" : "bool",
                     "optional" : True,
                     "default" : True,
+                    "display" : "fail fast",
                     "description": "if true stop producing tracks "
                         + "as soon as any input stops producing tracks"
                 },
             }
         },
+
         {
             "name" : "RandomStreamSelector",
             "class": plugs.RandomStreamSelector,
+
             "help" : """This component will pick one input stream at random and
             use that stream to produce tracks""",
+
             "type" : "multi-in-filter",
             "display" : "random stream",
             "description": "randomly selects a stream",
@@ -738,6 +827,11 @@ inventory = {
             "display" : "concatenate",
             "type" : "multi-in-filter",
             "description": "Concatenate tracks from multiple streams",
+
+            "help" : """ This component takes any number of input streams and
+            produces tracks by retrieving all the tracks from the first stream,
+            followed by all the tracks from the second stream and so on.""",
+
             "params": {
                 "source_list": {
                     "type" : "source_list",
@@ -753,6 +847,11 @@ inventory = {
             "description": "filter tracks by an attribute",
             "title": "filter $attr",
             "display" : "range filter",
+
+            "help" : """ This component will filter the input stream and only
+            pass through tracks that have an attribute that passes the range
+            filter.""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -774,11 +873,13 @@ inventory = {
                 "min_val": {
                     "type" : "number",
                     "optional" : True,
+                    "display" : "min value",
                     "description": "if not empty attribute value must be at least this"
                 },
                 "max_val": {
                     "type" : "number",
                     "optional" : True,
+                    "display" : "max value",
                     "description": "if not empty attribute value must be less than this"
                 }
             }
@@ -790,8 +891,10 @@ inventory = {
             "title" : "$scale danceable",
             "display": "danceable",
             "description": "filters tracks by their danceability attribute",
+
             "help" : """ This component will pass through tracks that meet
             the given danceability scale.""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -814,8 +917,10 @@ inventory = {
             "title" : "$scale energy",
             "display": "energy",
             "description": "filters tracks by their energy attribute",
+
             "help" : """ This component will pass through tracks that meet
             the given energy scale.""",
+
             "params": {
                 "source": {
                     "type" : "source",
@@ -828,6 +933,37 @@ inventory = {
                     "default" : 0,
                     "stype" : "number",
                     "description": "how energetic are the desired tracks"
+                }
+            }
+        },
+        {
+            "name" : "Tempo",
+            "class": plugs.Tempo,
+            "type" : "filter",
+            "title" : "$min_tempo to $max_tempo BPM",
+            "display": "tempo",
+            "description": "filters tracks by their tempo",
+
+            "help" : """ This component will pass through tracks that have a
+            tempo that is between the given min and max tempos""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "min_tempo": {
+                    "type" : "number",
+                    "display" : "Min Tempo",
+                    "optional" : True,
+                    "description": "the minimum tempo. If omitted, there is no minimum"
+                },
+                "max_tempo": {
+                    "type" : "number",
+                    "display" : "Max Tempo",
+                    "optional" : True,
+                    "description": "the maximum tempo. If omitted, there is no maxiumum"
                 }
             }
         },

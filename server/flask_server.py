@@ -11,7 +11,7 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-debug_exceptions = True
+debug_exceptions = False
 
 
 @app.route('/sps/inventory')

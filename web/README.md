@@ -1,11 +1,10 @@
 NEED Before Ship:
 =================
-  * fix 'cannot read proper cls of null' that occurs after deleting
-    editor 560, 553
   * Add some sample programs
-  * review/test default params for all components
-  * add help to all components
   * Add help / about
+  * final review/test default params for all components
+  * Create initial landing page
+  * Allow links to single program examples
 
 
 Later
@@ -14,14 +13,11 @@ Later
   * add smart reordering:
     - artist separation
 
-  * add clear all button?
 
   * add some targeted filters 
-    (tempo, explicit, length, release date)
+    (explicit, length, release date)
   * Reorganize component menu so most common components are visible and the rest
     are in Deep Cuts
-  * Empty track list should be prettier
-  * Add 'match' filter?
 
 
 Big Stuff
@@ -35,7 +31,6 @@ Big Stuff
     * smart connect - figures out source and dest based on:
         * current connections
         * position on the screen
-  * Add help / about
   * Directory
       * bulk delete
       * run from directory?
@@ -45,10 +40,10 @@ Big Stuff
 
 Future
 ======
-  * extract components so we only error check ones that will run
   * Allow for nesting of programs
   * Refactor type system
   * constrain connections based on in to top left and out to bottom right
+  * Add 'match' filter?
 
 Done
 ====
@@ -69,5 +64,13 @@ Done
   * 40 track pull? - increased to 200,
   * enery
   * danceable
+  * tempo
   * attribute help range filters?
   * attribute help for sort 
+  * extract active components so we only error check ones that will run
+  * Empty track list should be prettier
+  * add clear all button? (shift-delete)
+  * fix 'cannot read proper cls of null' that occurs after deleting
+    editor 560, 553
+  * add help to all components
+  * review/test default params for all components

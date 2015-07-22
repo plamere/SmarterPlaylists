@@ -108,6 +108,15 @@ var createEditor = function(canvasElem, inventory, types) {
         }
     }
 
+    function deleteAll() {
+        console.log('delete all');
+        _.each(nameToRect, function(rect) {
+            console.log('deleting', rect);
+            deleteComponent(rect);
+        });
+    }
+
+
     function connectComponents() {
         if (altSelected && curSelected && altSelected != curSelected) {
             connectComponent(altSelected, curSelected, getConnType());
@@ -199,7 +208,11 @@ var createEditor = function(canvasElem, inventory, types) {
 
         if (evt.which == 8) {
             evt.preventDefault();
-            deleteCur();
+            if (shifted) {
+                deleteAll();
+            } else {
+                deleteCur();
+            }
         }
 
         if (evt.which == 32) {
@@ -535,8 +548,9 @@ var createEditor = function(canvasElem, inventory, types) {
                 inp.on('change', function() {
                     var val = inp.val();
 
-                    if (val.indexOf('.')) {
+                    if (val.indexOf('.') >= 0) {
                         curParams[name] = parseFloat(inp.val());
+                        console.log('PF', inp.val(), curParams[name]);
                     } else {
                         curParams[name] = parseInt(inp.val());
                     }
@@ -607,6 +621,7 @@ var createEditor = function(canvasElem, inventory, types) {
 
         $("#edit-modal .save").on('click', function() {
             _.each(curParams, function(val, name) {
+                console.log('save params', val);
                 component.params[name] = val;
             });
             console.log('save', component.params);
@@ -1004,7 +1019,7 @@ var createEditor = function(canvasElem, inventory, types) {
                         setRunning(false);
                         if (data) {
                             if (data.status == 'ok') {
-                                showPlaylist(program.name, data);
+                                showPlaylist(program, data);
                                 if (saveToSpotify) {
                                     savePlaylist(program, data);
                                 }

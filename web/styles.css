@@ -161,3 +161,7 @@ body {
 #mybuttons .nav-tabs {
     cursor:pointer;
 }
+
+#save {
+    margin:20px;
+}

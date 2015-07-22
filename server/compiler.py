@@ -2,7 +2,7 @@ import pbl
 import engine
 from components import inventory
 
-debug_exceptions = True
+debug_exceptions = False
 OK = 'ok'
 
 '''

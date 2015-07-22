@@ -186,3 +186,11 @@ class Energy(pbl.AttributeRangeFilter):
         max_val = self.ranges[scale] [1]
         super(Energy, self).__init__(source, "echonest.energy",
             match=None, min_val=min_val, max_val=max_val)
+
+class Tempo(pbl.AttributeRangeFilter):
+
+    def __init__(self, source, min_tempo, max_tempo):
+        min_val = min_tempo
+        max_val = max_tempo
+        super(Tempo, self).__init__(source, "echonest.tempo",
+            match=None, min_val=min_val, max_val=max_val)

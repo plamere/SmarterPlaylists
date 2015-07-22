@@ -1,6 +1,6 @@
 
 var curTracks = [];
-var curTitle = "your playlist"
+var curProgram = null;
 var audio = null;
 
 function play(url) {
@@ -29,17 +29,25 @@ function stopTrack() {
 }
 
 
-function showPlaylist(name, data) {
+function showPlaylist(program, data) {
+    var name = program.name;
     var tbody = $("#playlist-body");
     tbody.empty();
+
+
     $("#tab-track-count").text(data.tracks.length);
     $("#tab-track-count").addClass('tc-fresh');
     $("#playlist-title").text(name);
     $("#playlist-description").text(data.name);
 
     curTracks = data.tracks;
-    curTitle = data.name;
-    curTitle = name;
+    curProgram = program;
+
+    if (program == null || data.tracks.length == 0) {
+        $("#save").prop("disabled", true);
+    } else {
+        $("#save").prop("disabled", false);
+    }
 
     _.each(data.tracks, function(track, i) {
         var tr = $("<tr>");
@@ -87,17 +95,17 @@ function playlistShown() {
 }
 
 
-function savePlaylist(program, data) {
-    var tracks = data.tracks;
-    if (tracks && tracks.length > 0) {
+function savePlaylist() {
+    var tracks = curTracks;
+    if (curProgram && tracks && tracks.length > 0) {
         var tids = [];
         _.each(tracks, function(track) {
             tids.push('spotify:track:' + track.id);
         });
         localStorage.setItem('playlist-tids', JSON.stringify(tids));
-        localStorage.setItem('playlist-title', program.name);
-        if (program.extra.uri) {
-            localStorage.setItem('playlist-uri', program.extra.uri);
+        localStorage.setItem('playlist-title', curProgram.name);
+        if (curProgram.extra.uri) {
+            localStorage.setItem('playlist-uri', curProgram.extra.uri);
         } else {
             localStorage.removeItem('playlist-uri');
         }

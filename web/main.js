@@ -175,7 +175,6 @@ function initApp() {
         }
         console.log('inventory ready');
     });
-
 }
 
 function error(msg) {
