@@ -4,7 +4,7 @@ body {
 }
 
 .top {
-    margin-top:40px;
+    margin-top:60px;
 }
 
 #search-field {
@@ -170,3 +170,13 @@ body {
     margin:40px;
     font-size:18px !important;
 }
+
+.img-centered {
+    display : block;
+    margin : auto;
+}
+
+.comp-help  {
+    margin:20px;
+}
+

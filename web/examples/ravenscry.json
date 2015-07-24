@@ -1,0 +1,145 @@
+{
+    "name": "Gothic Metal front-loaded with Ravenscry",
+    "main": "DeDup-10",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Gothic / Symphonic Metal"
+            },
+            "extra": {
+                "x": 128,
+                "y": 43
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "First-2": {
+            "name": "First-2",
+            "type": "First",
+            "params": {
+                "sample_size": 20
+            },
+            "extra": {
+                "x": 284,
+                "y": 44
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-1"
+        },
+        "ArtistTopTracks-3": {
+            "name": "ArtistTopTracks-3",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "Ravenscry"
+            },
+            "extra": {
+                "x": 283,
+                "y": 129
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Concatenate-4": {
+            "name": "Concatenate-4",
+            "type": "Concatenate",
+            "params": {},
+            "extra": {
+                "x": 440,
+                "y": 92
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "ArtistTopTracks-3",
+                "First-2"
+            ]
+        },
+        "Shuffler-5": {
+            "name": "Shuffler-5",
+            "type": "Shuffler",
+            "params": {},
+            "extra": {
+                "x": 598,
+                "y": 95
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Concatenate-4"
+        },
+        "SpotifyPlaylist-6": {
+            "name": "SpotifyPlaylist-6",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Gothic / Symphonic metal"
+            },
+            "extra": {
+                "x": 135,
+                "y": 255
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "AllButTheFirst-7": {
+            "name": "AllButTheFirst-7",
+            "type": "AllButTheFirst",
+            "params": {
+                "sample_size": 20
+            },
+            "extra": {
+                "x": 290,
+                "y": 254
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-6"
+        },
+        "Concatenate-9": {
+            "name": "Concatenate-9",
+            "type": "Concatenate",
+            "params": {},
+            "extra": {
+                "x": 777,
+                "y": 151
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "Shuffler-5",
+                "AllButTheFirst-7"
+            ]
+        },
+        "DeDup-10": {
+            "name": "DeDup-10",
+            "type": "DeDup",
+            "params": {
+                "by_name": false
+            },
+            "extra": {
+                "x": 932,
+                "y": 150
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Concatenate-9"
+        }
+    },
+    "extra": {
+        "createdOn": 1437713186176,
+        "lastRun": 1437713485353,
+        "runs": 0,
+        "errors": 0,
+        "uri": null
+    }
+}

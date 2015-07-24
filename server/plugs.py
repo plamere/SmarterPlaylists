@@ -187,6 +187,36 @@ class Energy(pbl.AttributeRangeFilter):
         super(Energy, self).__init__(source, "echonest.energy",
             match=None, min_val=min_val, max_val=max_val)
 
+class Live(pbl.AttributeRangeFilter):
+    ranges = [
+        (.8, 1),
+        (.6, 1),
+        (.0, .4),
+        (.0, .2),
+        (.0, 1),
+    ]
+
+    def __init__(self, source, scale):
+        min_val = self.ranges[scale] [0]
+        max_val = self.ranges[scale] [1]
+        super(Live, self).__init__(source, "echonest.liveness",
+            match=None, min_val=min_val, max_val=max_val)
+
+class SpokenWord(pbl.AttributeRangeFilter):
+    ranges = [
+        (.8, 1),
+        (.6, 1),
+        (.0, .4),
+        (.0, .2),
+        (.0, 1),
+    ]
+
+    def __init__(self, source, scale):
+        min_val = self.ranges[scale] [0]
+        max_val = self.ranges[scale] [1]
+        super(SpokenWord, self).__init__(source, "echonest.speechiness",
+            match=None, min_val=min_val, max_val=max_val)
+
 class Tempo(pbl.AttributeRangeFilter):
 
     def __init__(self, source, min_tempo, max_tempo):
@@ -194,3 +224,59 @@ class Tempo(pbl.AttributeRangeFilter):
         max_val = max_tempo
         super(Tempo, self).__init__(source, "echonest.tempo",
             match=None, min_val=min_val, max_val=max_val)
+
+class AllButTheFirst(object):
+    '''
+        Returns all but the first tracks from a stream
+
+        :param source: the source of tracks
+        :param sample_size: the number of tracks to skip
+    '''
+    def __init__(self, source, sample_size=10):
+        self.name = 'all but the first ' + str(sample_size) + ' of ' + source.name
+        self.source = source
+        self.sample_size = sample_size
+        self.buffer = []
+        self.filling = True
+
+    def next_track(self):
+        while self.filling:
+            track = self.source.next_track()
+            if track:
+                self.buffer.append(track)
+            else:
+                self.filling = False
+                self.buffer = self.buffer[self.sample_size:]
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None
+
+class AllButTheLast(object):
+    '''
+        Returns all but the last tracks from a stream
+
+        :param source: the source of tracks
+        :param sample_size: the number of tracks to skip
+    '''
+    def __init__(self, source, sample_size=10):
+        self.name = 'all but the last ' + str(sample_size) + ' of ' + source.name
+        self.source = source
+        self.sample_size = sample_size
+        self.buffer = []
+        self.filling = True
+
+    def next_track(self):
+        while self.filling:
+            track = self.source.next_track()
+            if track:
+                self.buffer.append(track)
+            else:
+                self.filling = False
+                self.buffer = self.buffer[:-self.sample_size:]
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None

@@ -562,6 +562,61 @@ inventory = {
                 }
             }
         },
+
+        {
+            "name" : "AllButTheFirst",
+            "class": plugs.AllButTheFirst,
+            "type" : "filter",
+            "title" : "all but the first $sample_size",
+            "display": "all but the first",
+            "description": "Returns all but the first tracks from a stream",
+
+            "help": """ This filter will only pass through all but the first <b> count
+            </b> tracks through. Use this filter to limit the tracks to all but the
+            first <b>count</b> tracks""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "sample_size": {
+                    "display": "count",
+                    "type" : "number",
+                    "default" : 10,
+                    "optional" : False,
+                    "description": "the number of tracks to return"
+                }
+            }
+        },
+        {
+            "name" : "AllButTheLast",
+            "class": plugs.AllButTheLast,
+            "type" : "filter",
+            "title" : "all but the last $sample_size",
+            "display": "all but the last",
+            "description": "Returns all but the last tracks from a stream",
+
+            "help": """ This filter will only pass through all but the last <b> count
+            </b> tracks through. Use this filter to limit the tracks to all but the
+            last <b>count</b> tracks""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "sample_size": {
+                    "display": "count",
+                    "type" : "number",
+                    "default" : 10,
+                    "optional" : False,
+                    "description": "the number of tracks to return"
+                }
+            }
+        },
         {
             "name" : "Last",
             "class": pbl.Last,
@@ -933,6 +988,58 @@ inventory = {
                     "default" : 0,
                     "stype" : "number",
                     "description": "how energetic are the desired tracks"
+                }
+            }
+        },
+        {
+            "name" : "Live",
+            "class": plugs.Live,
+            "type" : "filter",
+            "title" : "$scale live",
+            "display": "live",
+            "description": "filters tracks by their liveness attribute",
+
+            "help" : """ This component will pass through tracks that meet
+            the given liveness scale.""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "scale": {
+                    "type" : "scale",
+                    "optional" : False,
+                    "default" : 0,
+                    "stype" : "number",
+                    "description": "how live are the desired tracks"
+                }
+            }
+        },
+        {
+            "name" : "Spoken Word",
+            "class": plugs.SpokenWord,
+            "type" : "filter",
+            "title" : "$scale spoken word",
+            "display": "spoken word",
+            "description": "filters tracks by their speechiness attribute",
+
+            "help" : """ This component will pass through tracks that meet
+            the given speechiness scale.""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "scale": {
+                    "type" : "scale",
+                    "optional" : False,
+                    "default" : 0,
+                    "stype" : "number",
+                    "description": "how much spoken are the desired tracks"
                 }
             }
         },

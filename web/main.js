@@ -240,10 +240,5 @@ function parseParams() {
     return params;
 }
 
-$(document).ready(
-    function() {
-        initApp();
-    }
-);
 
 

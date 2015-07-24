@@ -34,6 +34,7 @@
         </div>
         <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
         <ul class="nav navbar-nav navbar-right">
+          <li class=""> <a href="examples.html">Examples</a> </li>
           <li class="active"> <a href="about.html">About</a> </li>
         </ul>
         </nav>
@@ -41,15 +42,126 @@
     </div>
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
-    <div class="top" id='intro'>
-      <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
-        <div id='errors'> </div>
-        <div id="content">
-            <h2> Hello </h2>
-            <h2> Frequently asked questions </h2>
+    <div id='top' class="jumbotron">
+      <div class="container-fluid col-sm-offset-2 col-sm-8" id="jumbo-dialog">
+        <h1 id='attitle' >About Smarter Playlists </h1>
+
+        <p  class="intro-lead">
+            Smarter Playlists is a web app that lets you build complex programs
+            by assembling simple components.
+            <p>
+            With Smarter Playlists you can create new playlists
+            by combining a wide range of music sources - artists, albums,
+            genres, pre-programmed playlists and filtering and manipulating them
+            with a nifty graph-based UI.  
+        </p>
         </div>
-      </div>
     </div>
+
+    <br clear='both'>
+
+     <div class="container-fluid col-sm-offset-2 col-sm-8">
+         <h2> Frequently Asked Questions </h2>
+        <ul class="list-group">
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I add components?</h3>
+                <p class="list-group-item-text"> 
+                On the left sidebar, components are grouped into Sources,
+                Filters and Conditionals. Click on a component name to add a new
+                instance of that component to the current program. Double click
+                the component to get more information on what the component
+                does, what parameters it takes and how it works.
+                </p>
+             </li>
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I run a program?</h3>
+                <p class="list-group-item-text"> 
+                 To run a program, click on the last component of the program
+                 and press the run button. Pressing run will always run the
+                 currently selected component. This makes it easy to test and
+                 debug different parts of larger networks of components.
+                </p>
+             </li>
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I connect components?</h3>
+                <p class="list-group-item-text"> 
+                Click on each of the
+                components that you wish to connect and press the SPACE bar. If
+                the components are connectable they will be connected. To
+                connect a component to the red input of a conditional filter
+                press SHIFT and SPACE.
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I edit components?</h3>
+                <p class="list-group-item-text"> 
+                Double click on a component to bring up the component
+                configuration editor. 
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">The playlist component is
+                not finding my playlist. How come?</h3>
+                <p class="list-group-item-text"> 
+                    Make sure your playlist is public.
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I save my program?
+                </h3>
+                <p class="list-group-item-text"> 
+                    A program is saved automatically whenever you run it.
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">Where do I send ideas for
+                new components or features?
+                </h3>
+                <p class="list-group-item-text"> 
+                    Tweet your suggestions at <a
+                    href='http://twitter.com/plamere'>@plamere</a>
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">Is the code available?
+                </h3>
+                <p class="list-group-item-text"> 
+                    Yes, it is on Github at <a
+                    href="http://github.com/plamere/SmarterPlaylists"> Smarter
+                    Playlists on Github </a>
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">Is this an official Spotify
+                project?
+                </h3>
+                <p class="list-group-item-text"> 
+                    No, its a spare time project. 
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">Can I schedule my program to
+                run everyday? </h3>
+                <p class="list-group-item-text"> 
+                    This feature is <b> coming soon! </b>
+                </p>
+             </li>
+        </ul>
+    </div>
+
+     <div class="container-fluid col-sm-offset-2 col-sm-8">
+         <h2> Available Components</h2>
+         <ul id="components">
+         </ul>
+    </div>
+
 
     <br clear='both'>
     <div id="footer">
@@ -59,8 +171,44 @@
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
-    <script
-      src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <script src="lib/underscore-min.js"></script>
+    <script src="main.js"></script>
+
+    <script id="comp-template" type="text/template">
+      <li>  <b> <%= display %> </b> - <%= description %>
+            <!--<div class="comp-help"> <%= help %> </div> -->
+      </li>
+    </script>
+<script>
+
+var compTemplate = _.template($("#comp-template").text());
+
+function initApp() {    
+    fetchInventory(function(cmap, types) {
+        console.log('inventory here', cmap);
+        var clist = [];
+        _.each(cmap, function(component, name) {
+            clist.push(component);
+
+        });
+
+        clist.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
+
+        var list = $("#components");
+        list.empty();
+        _.each(clist, function(component) {
+            var el = $(compTemplate(component))
+            list.append(el);
+        });
+    });
+}
+$(document).ready(
+    function() {
+        initApp();
+    }
+);
+</script>
   </body>
 </html>

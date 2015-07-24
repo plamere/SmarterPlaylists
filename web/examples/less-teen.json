@@ -1,0 +1,98 @@
+{
+    "name": "Less teen-oriented new music",
+    "main": "ArtistFilter-3",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Today's Top HIts"
+            },
+            "extra": {
+                "x": 100,
+                "y": 47
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-2": {
+            "name": "SpotifyPlaylist-2",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Teen Party"
+            },
+            "extra": {
+                "x": 100,
+                "y": 127
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "ArtistFilter-3": {
+            "name": "ArtistFilter-3",
+            "type": "ArtistFilter",
+            "params": {},
+            "extra": {
+                "x": 450,
+                "y": 46
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "SpotifyPlaylist-1",
+            "false_source": "Concatenate-5"
+        },
+        "SpotifyPlaylist-4": {
+            "name": "SpotifyPlaylist-4",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Teen Pop!"
+            },
+            "extra": {
+                "x": 101,
+                "y": 213
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Concatenate-5": {
+            "name": "Concatenate-5",
+            "type": "Concatenate",
+            "params": {},
+            "extra": {
+                "x": 274,
+                "y": 168
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "SpotifyPlaylist-4",
+                "SpotifyPlaylist-2"
+            ]
+        },
+        "Shuffler-6": {
+            "name": "Shuffler-6",
+            "type": "Shuffler",
+            "params": {},
+            "extra": {
+                "x": 617,
+                "y": 47
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "ArtistFilter-3"
+        }
+    },
+    "extra": {
+        "createdOn": 1437712427203,
+        "lastRun": 1437712823043,
+        "runs": 1,
+        "errors": 0,
+        "uri": null
+    }
+}

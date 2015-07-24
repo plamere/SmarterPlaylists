@@ -107,13 +107,11 @@ def compile_object(objname, program):
                     if param == '_type':
                         continue
                     status, cval = get_param_val(param, val, spec, program)
-                    print status, param, cval, val, spec
                     if status == OK:
                         params[param] = cval
                     else:
                         return status + " in " + objname, None
                 try:
-                    print 'creating', comp['_type'], params
                     obj = spec['class'](**params)
                     symbols[objname] = obj
                     hsymbols[obj] = objname
@@ -132,8 +130,6 @@ def compile(program):
         program['symbols'] = {}
         program['hsymbols'] = {}
         status, compiled_program = compile_object(program['main'], program)
-        print 'hsymbols', program['hsymbols']
-        print 'symbols', program['symbols']
         return status, compiled_program
     else:
         return 'no main', None

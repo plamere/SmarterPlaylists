@@ -18,7 +18,6 @@ debug_exceptions = False
 @cross_origin()
 def inventory():
     start = time.time()
-    print 'inventory'
     results = {
         'status': 'ok',
         'inventory': components.exported_inventory,
@@ -29,7 +28,6 @@ def inventory():
 @app.route('/sps/run', methods=['GET', 'POST'])
 @cross_origin()
 def run():
-    print 'inventory'
     start = time.time()
     program = request.json
     print 'got program', program

@@ -1,9 +1,22 @@
 NEED Before Ship:
 =================
+  * final review/test default params for all components
+
   * Add some sample programs
   * Add help / about
-  * final review/test default params for all components
-  * Create initial landing page
+  * Add subprogram support
+  * Document:
+    - how to add components
+    - how to connect components
+    - how to create a program
+    - how to run a program
+    - how to save a playlist to spotify
+
+  * 
+
+
+Philosophy bits - to deal with user specific APIs we will can use the
+authorization code flow.
 
 
 Later
@@ -11,6 +24,8 @@ Later
 
   * add smart reordering:
     - artist separation
+
+  * add city components
 
 
   * add some targeted filters 
@@ -76,3 +91,4 @@ Done
   * Support saving to json
   * fix 'cannot read proper cls of null' that occurs after deleting
     editor 560, 553 (phew, needed to remove stale event handlers)
+  * Create initial landing page
