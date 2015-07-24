@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link type="text/css" href="styles.css" rel="stylesheet" />
+    <!--
+    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.1.0/sp-bootstrap.min.css" rel="stylesheet">
+    -->
+    <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="images/favicon.png">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
+    rel="stylesheet"/>
+    <title>Smarter Playlists</title>
+    <!-- Custom styles for this template -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body >
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.html">
+            <span class="navbar-logo">Spotify</span>
+            <span class="navbar-title">Smarter Playlists</span>
+          </a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+        <ul class="nav navbar-nav navbar-right">
+          <li class="active"> <a href="examples.html">Examples</a> </li>
+          <li class=""> <a href="about.html">About</a> </li>
+        </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="top container">
+      <div class="blog-header">
+        <h1 class="blog-title">Smarter Playlists Examples</h1>
+        <p class="lead blog-description">Here are some examples of
+how to do stuff with Smarter Playlists. Click on an example to open the program
+and try it for yourself.
+      </div>
+
+      <div class="row">
+        <div class="col-sm-offset-1 col-sm-10 blog-main">
+
+          <div class="blog-post">
+            <h2 class="blog-post-title">Creating a Smarter Playlist</h2>
+            <p class="blog-post-meta">
+                <iframe width="1000" height="600"
+                src="https://www.youtube.com/embed/TASsrQpJXo4?color=white&rel=0&autohide=1&controls=1"
+                    frameborder="0" allowfullscreen></iframe>
+                <p>
+                    This quick video shows how to create a Smarter Playlist that
+                    generates a good garage rock playlist with an extra dose of
+                    Weezer, but with no tracks from the album Hurley on it.
+                </p>
+
+          </div><!-- /.blog-post -->
+
+          <div class="blog-post">
+            <h2 class="blog-post-title">Combine two playlists</h2>
+            <p class="blog-post-meta">
+                <a href="go.html?program=examples/combine2.json"> 
+                <img src="images/combine2.png">
+                </a>
+                <p>
+                    In this examples, a new playlist is created by alternating
+                    between tracks from two Spotify playlists (Morning Commute
+                    and Your Favorite Coffeehouse).  The resulting track stream
+                    is de-dupped to ensure that we don't hear the same song
+                    twice.  
+                </p>
+
+          </div><!-- /.blog-post -->
+
+        <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Ultimate coffee playlist</h2>
+            <p class="blog-post-meta">
+                <a href="go.html?program=examples/coffee-extra.json"> 
+                <img src="images/coffee-extra.png">
+                </a>
+                <p>
+                This program starts with the Your Favorite Coffeehouse playlist
+                but then doubles down on the chill by making every other song be
+                by Ed Sheeran.  To make sure nothing harshes my mello, I use a
+                track filter to prevent any songs that are in My banned tracks
+                playlist from getting onto the playlist. Finally, we de-dup the
+                tracks to make sure we never play the same song twice.
+                </p>
+
+          </div><!-- /.blog-post -->
+
+        </div><!-- /.blog-main -->
+
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+
+    <br clear='both'>
+    <div id="footer">
+      <div class="container text-center">
+        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+      </div>
+    </div>
+    <script src="lib/jquery-1.11.1.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="lib/underscore-min.js"></script>
+  </body>
+</html>

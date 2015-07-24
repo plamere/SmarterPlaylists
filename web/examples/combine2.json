@@ -1,0 +1,74 @@
+{
+    "name": "Combine two playlists",
+    "main": "DeDup-1",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Morning Commute"
+            },
+            "extra": {
+                "x": 85,
+                "y": 41
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Alternate-3": {
+            "name": "Alternate-3",
+            "type": "Alternate",
+            "params": {
+                "fail_fast": true
+            },
+            "extra": {
+                "x": 178,
+                "y": 162
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "SpotifyPlaylist-1",
+                "SpotifyPlaylist-2"
+            ]
+        },
+        "DeDup-1": {
+            "name": "DeDup-1",
+            "type": "DeDup",
+            "params": {
+                "by_name": false
+            },
+            "extra": {
+                "x": 173,
+                "y": 273
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Alternate-3"
+        },
+        "SpotifyPlaylist-2": {
+            "name": "SpotifyPlaylist-2",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 259,
+                "y": 35
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        }
+    },
+    "extra": {
+        "createdOn": 1437547363068,
+        "lastRun": 1437575860140,
+        "runs": 0,
+        "errors": 0,
+        "uri": null
+    }
+}
