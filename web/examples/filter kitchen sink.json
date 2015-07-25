@@ -1,0 +1,372 @@
+{
+    "name": "filter kitchen sink",
+    "main": "RandomSelector-23",
+    "components": {
+        "EchoNestArtist-1": {
+            "name": "EchoNestArtist-1",
+            "type": "EchoNestArtist",
+            "params": {
+                "count": 20,
+                "artist": "weezer"
+            },
+            "extra": {
+                "x": 47,
+                "y": 25
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "AllButTheFirst-2": {
+            "name": "AllButTheFirst-2",
+            "type": "AllButTheFirst",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 197,
+                "y": 26
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "EchoNestArtist-1"
+        },
+        "SpotifyPlaylist-3": {
+            "name": "SpotifyPlaylist-3",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 46,
+                "y": 105
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "AllButTheLast-4": {
+            "name": "AllButTheLast-4",
+            "type": "AllButTheLast",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 193,
+                "y": 108
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-3"
+        },
+        "Alternate-5": {
+            "name": "Alternate-5",
+            "type": "Alternate",
+            "params": {
+                "fail_fast": true
+            },
+            "extra": {
+                "x": 354,
+                "y": 63
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "AllButTheLast-4",
+                "AllButTheFirst-2"
+            ]
+        },
+        "Annotator-6": {
+            "name": "Annotator-6",
+            "type": "Annotator",
+            "params": {
+                "type": "echonest"
+            },
+            "extra": {
+                "x": 514,
+                "y": 63
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Alternate-5"
+        },
+        "comment-7": {
+            "name": "comment-7",
+            "type": "comment",
+            "params": {
+                "text": "I am a comment"
+            },
+            "extra": {
+                "x": 315,
+                "y": -1
+            },
+            "maxInputs": 0,
+            "maxOutputs": 0
+        },
+        "Concatenate-8": {
+            "name": "Concatenate-8",
+            "type": "Concatenate",
+            "params": {},
+            "extra": {
+                "x": 342,
+                "y": 237
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "First-12",
+                "First-11"
+            ]
+        },
+        "SpotifyPlaylist-9": {
+            "name": "SpotifyPlaylist-9",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 48,
+                "y": 196.00000000000006
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-10": {
+            "name": "SpotifyPlaylist-10",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Lazy Weekend"
+            },
+            "extra": {
+                "x": 52,
+                "y": 272.00000000000006
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "First-11": {
+            "name": "First-11",
+            "type": "First",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 208,
+                "y": 192
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-9"
+        },
+        "First-12": {
+            "name": "First-12",
+            "type": "First",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 212,
+                "y": 269
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-10"
+        },
+        "Danceable-13": {
+            "name": "Danceable-13",
+            "type": "Danceable",
+            "params": {
+                "scale": 1
+            },
+            "extra": {
+                "x": 653,
+                "y": 61
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Annotator-6"
+        },
+        "DeDup-14": {
+            "name": "DeDup-14",
+            "type": "DeDup",
+            "params": {
+                "by_name": false
+            },
+            "extra": {
+                "x": 487,
+                "y": 235
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Concatenate-8"
+        },
+        "Energy-15": {
+            "name": "Energy-15",
+            "type": "Energy",
+            "params": {
+                "scale": 1
+            },
+            "extra": {
+                "x": 657,
+                "y": 159
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Danceable-13"
+        },
+        "Last-16": {
+            "name": "Last-16",
+            "type": "Last",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 218,
+                "y": 358
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-17"
+        },
+        "SpotifyPlaylist-17": {
+            "name": "SpotifyPlaylist-17",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 45,
+                "y": 361
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Live-18": {
+            "name": "Live-18",
+            "type": "Live",
+            "params": {
+                "scale": 3
+            },
+            "extra": {
+                "x": 508,
+                "y": 348
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Annotator-19"
+        },
+        "Annotator-19": {
+            "name": "Annotator-19",
+            "type": "Annotator",
+            "params": {
+                "type": "echonest"
+            },
+            "extra": {
+                "x": 355,
+                "y": 350
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Last-16"
+        },
+        "ShorterThan-20": {
+            "name": "ShorterThan-20",
+            "type": "ShorterThan",
+            "params": {
+                "time": 900
+            },
+            "extra": {
+                "x": 646,
+                "y": 332
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Live-18"
+        },
+        "SpotifyPlaylist-21": {
+            "name": "SpotifyPlaylist-21",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 52,
+                "y": 446
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "LongerThan-22": {
+            "name": "LongerThan-22",
+            "type": "LongerThan",
+            "params": {
+                "time": 1800
+            },
+            "extra": {
+                "x": 215,
+                "y": 444
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-21"
+        },
+        "RandomSelector-23": {
+            "name": "RandomSelector-23",
+            "type": "RandomSelector",
+            "params": {
+                "fail_fast": true
+            },
+            "extra": {
+                "x": 387,
+                "y": 491
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "LongerThan-22",
+                "SpotifyPlaylist-24"
+            ]
+        },
+        "SpotifyPlaylist-24": {
+            "name": "SpotifyPlaylist-24",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Lazy Weekend"
+            },
+            "extra": {
+                "x": 50,
+                "y": 531
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        }
+    },
+    "extra": {
+        "createdOn": 1437801057396,
+        "lastRun": 1437802249759,
+        "runs": 16,
+        "errors": 0,
+        "uri": null
+    }
+}

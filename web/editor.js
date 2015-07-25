@@ -382,7 +382,6 @@ var createEditor = function(canvasElem, inventory, types) {
     var select = function() {
         var rect = this;
         if (this.parent) {
-            console.log('ediing parent', this, this.parent);
             rect = this.parent;
         }
         
@@ -427,7 +426,6 @@ var createEditor = function(canvasElem, inventory, types) {
             rect = this.parent;
         }
 
-        console.log('editing', rect);
         canvasFocus(false);
         var component = rect.component;
 
@@ -615,7 +613,6 @@ var createEditor = function(canvasElem, inventory, types) {
         $("#edit-modal .save").off('click');
         $("#edit-modal .save").on('click', function() {
             _.each(curParams, function(val, name) {
-                console.log('save', rect, component, name, val);
                 component.params[name] = val;
             });
             renameComponent(rect);
@@ -623,7 +620,6 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
     function renameComponent(rect) {
-        console.log('RENAME', rect);
         var title = rect.component.cls.title || rect.component.cls.display;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);

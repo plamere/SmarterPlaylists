@@ -1,0 +1,2 @@
+rsync --exclude .cache -av  . echonest@labs2.echonest.com:apps/SmarterPlaylists
+#scp * echonest@labs2.echonest.com:apps/SmarterPlaylists

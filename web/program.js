@@ -117,7 +117,7 @@ Program.prototype = {
     addComponent: function(name, type, params, extra) {
         var c = this.createComponent(name, type, params, extra)
         if (name in this.components) {
-            console.log('dup cname', name);
+            // console.log('dup cname', name);
         }
         this.components[name] = c;
         return c;
@@ -128,7 +128,6 @@ Program.prototype = {
         var issues = [];
         var ecomponent = this.extract(component);
         _.each(component.cls.params, function(param, pname) {
-            console.log('CC', pname, param);
             if (!param.optional) {
                 if (! (pname in ecomponent)) {
                     issues.push('missing required parameter: ' + pname);
@@ -191,7 +190,7 @@ Program.prototype = {
     },
 
     postProgram: function(json, callback) {
-     console.log('PROGRAM=' + json);
+     // console.log('PROGRAM=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -227,7 +226,6 @@ Program.prototype = {
         var active = {}
         var mainComponent = this.components[main];
         this.findActiveComponents(mainComponent, active);
-        console.log('active components', active);
         return active;
     },
 
@@ -254,14 +252,12 @@ Program.prototype = {
         this.extra.lastRun =  new Date().getTime();
 
         var jsonProgram = this.toJson(this.main);
-        // console.log('json program', jsonProgram);
         this.postProgram(jsonProgram, function(data) {
             if (data) {
                 that.extra.runs += 1;
             } else {
                 that.extra.errors += 1;
             }
-            // console.log('run done', data);
             callback(data)
             localStorage.setItem('sp-last-run', getKey(that.name));
         });
@@ -269,7 +265,6 @@ Program.prototype = {
 
     save: function() {
         this.extra.lastRun =  new Date().getTime();
-        // console.log('saving', this.name);
         var obj = {
             name:this.name,
             main:this.main,
@@ -282,10 +277,8 @@ Program.prototype = {
             cc = _.extendOwn(cc, comp);
             delete cc['cls'];
             obj.components[id] = cc;
-            // console.log('extend', comp, '->', cc);
         });
         var json = JSON.stringify(obj, null, 4);
-        console.log('SAVE ' + json);
         localStorage.setItem(getKey(this.name), json);
         return json;
     }
@@ -365,7 +358,6 @@ function loadInitialDirectory(inventory, callback) {
     var visited = localStorage.getItem('sp-has-visited');
     if (!visited) {
         localStorage.setItem('sp-has-visited', 'visited');
-        console.log('loading example programs');
         $.getJSON('examples.js?v1').then(
             function(data) {
                 var dir = [];

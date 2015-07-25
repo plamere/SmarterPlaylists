@@ -15,7 +15,7 @@ class IsWeekend(pbl.Conditional):
     def __init__(self, true_source, false_source):
 
         def bool_func():
-            return datetime.datetime.today().weekday() >= 6
+            return datetime.datetime.today().weekday() >= 5
 
         super(IsWeekend, self).__init__(bool_func, true_source, false_source)
 

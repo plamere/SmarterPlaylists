@@ -1,181 +1,423 @@
 [
     {
+        "name": "Less teen-oriented new music",
+        "main": "Shuffler-6",
         "components": {
-            "ArtistFilter-5": {
-                "extra": {
-                    "x": 596,
-                    "y": 146
-                },
-                "false_source": "SpotifyPlaylist-3",
-                "maxInputs": 2,
-                "minInputs": 2,
-                "name": "ArtistFilter-5",
-                "params": {},
-                "true_source": "SpotifyPlaylist-4",
-                "type": "ArtistFilter"
-            },
-            "ArtistFilter-6": {
-                "extra": {
-                    "x": 594,
-                    "y": 272
-                },
-                "false_source": "SpotifyPlaylist-7",
-                "maxInputs": 2,
-                "minInputs": 2,
-                "name": "ArtistFilter-6",
-                "params": {},
-                "true_source": "ArtistFilter-5",
-                "type": "ArtistFilter"
-            },
-            "DeDup-9": {
-                "extra": {
-                    "x": 851,
-                    "y": 562
-                },
-                "maxInputs": 1,
-                "minInputs": 1,
-                "name": "DeDup-9",
+            "SpotifyPlaylist-1": {
+                "name": "SpotifyPlaylist-1",
+                "type": "SpotifyPlaylist",
                 "params": {
-                    "by_name": false
+                    "name": "Today's Top HIts"
                 },
-                "source": "RandomSelector-11",
-                "type": "DeDup"
-            },
-            "RandomSelector-11": {
                 "extra": {
-                    "x": 848,
-                    "y": 402
-                },
-                "maxInputs": 20,
-                "minInputs": 1,
-                "name": "RandomSelector-11",
-                "params": {
-                    "fail_fast": false
-                },
-                "source_list": [
-                    "Sample-10",
-                    "TrackFilter-1"
-                ],
-                "type": "RandomSelector"
-            },
-            "Sample-10": {
-                "extra": {
-                    "x": 846,
-                    "y": 236
-                },
-                "maxInputs": 1,
-                "minInputs": 1,
-                "name": "Sample-10",
-                "params": {
-                    "sample_size": 10
-                },
-                "source": "SpotifyPlaylist-8",
-                "type": "Sample"
-            },
-            "ShorterThan-1": {
-                "extra": {
-                    "x": 765,
-                    "y": 661
-                },
-                "maxInputs": 1,
-                "minInputs": 1,
-                "name": "ShorterThan-1",
-                "params": {
-                    "time": 1800
-                },
-                "source": "DeDup-9",
-                "type": "ShorterThan"
-            },
-            "SpotifyPlaylist-3": {
-                "extra": {
-                    "x": 338,
-                    "y": 78
+                    "x": 41,
+                    "y": 35
                 },
                 "maxInputs": 0,
                 "minInputs": 0,
-                "name": "SpotifyPlaylist-3",
+                "maxOutputs": 1
+            },
+            "SpotifyPlaylist-2": {
+                "name": "SpotifyPlaylist-2",
+                "type": "SpotifyPlaylist",
                 "params": {
                     "name": "Teen Party"
                 },
-                "type": "SpotifyPlaylist"
+                "extra": {
+                    "x": 43,
+                    "y": 111
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "ArtistFilter-3": {
+                "name": "ArtistFilter-3",
+                "type": "ArtistFilter",
+                "params": {},
+                "extra": {
+                    "x": 359,
+                    "y": 36
+                },
+                "maxInputs": 2,
+                "minInputs": 2,
+                "maxOutputs": 1,
+                "true_source": "SpotifyPlaylist-1",
+                "false_source": "Concatenate-5"
             },
             "SpotifyPlaylist-4": {
-                "extra": {
-                    "x": 596,
-                    "y": 20
-                },
-                "maxInputs": 0,
-                "minInputs": 0,
                 "name": "SpotifyPlaylist-4",
+                "type": "SpotifyPlaylist",
                 "params": {
-                    "name": "Summer Party"
+                    "name": "Teen Pop!"
                 },
-                "type": "SpotifyPlaylist"
-            },
-            "SpotifyPlaylist-5": {
                 "extra": {
-                    "x": 354,
-                    "y": 328
+                    "x": 48,
+                    "y": 194.00000000000006
                 },
                 "maxInputs": 0,
                 "minInputs": 0,
-                "name": "SpotifyPlaylist-5",
+                "maxOutputs": 1
+            },
+            "Concatenate-5": {
+                "name": "Concatenate-5",
+                "type": "Concatenate",
+                "params": {},
+                "extra": {
+                    "x": 205,
+                    "y": 152
+                },
+                "maxInputs": 20,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source_list": [
+                    "SpotifyPlaylist-4",
+                    "SpotifyPlaylist-2"
+                ]
+            },
+            "Shuffler-6": {
+                "name": "Shuffler-6",
+                "type": "Shuffler",
+                "params": {},
+                "extra": {
+                    "x": 508,
+                    "y": 36
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "ArtistFilter-3"
+            }
+        },
+        "extra": {
+            "createdOn": 1437712427203,
+            "lastRun": 0,
+            "runs": 0,
+            "errors": 0,
+            "uri": null
+        }
+    },
+    {
+        "name": "Combine two playlists",
+        "main": "DeDup-1",
+        "components": {
+            "SpotifyPlaylist-1": {
+                "name": "SpotifyPlaylist-1",
+                "type": "SpotifyPlaylist",
+                "params": {
+                    "name": "Morning Commute"
+                },
+                "extra": {
+                    "x": 85,
+                    "y": 41
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "Alternate-3": {
+                "name": "Alternate-3",
+                "type": "Alternate",
+                "params": {
+                    "fail_fast": true
+                },
+                "extra": {
+                    "x": 178,
+                    "y": 162
+                },
+                "maxInputs": 20,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source_list": [
+                    "SpotifyPlaylist-1",
+                    "SpotifyPlaylist-2"
+                ]
+            },
+            "DeDup-1": {
+                "name": "DeDup-1",
+                "type": "DeDup",
+                "params": {
+                    "by_name": false
+                },
+                "extra": {
+                    "x": 173,
+                    "y": 273
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "Alternate-3"
+            },
+            "SpotifyPlaylist-2": {
+                "name": "SpotifyPlaylist-2",
+                "type": "SpotifyPlaylist",
+                "params": {
+                    "name": "Your favorite coffeehouse"
+                },
+                "extra": {
+                    "x": 259,
+                    "y": 35
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            }
+        },
+        "extra": {
+            "createdOn": 1437547363068,
+            "lastRun": 0,
+            "runs": 0,
+            "errors": 0,
+            "uri": null
+        }
+    },
+    {
+        "name": "Coffeehouse with an extra dose of Sheeran, but with none of the bad stuff",
+        "main": "DeDup-7",
+        "components": {
+            "SpotifyPlaylist-1": {
+                "name": "SpotifyPlaylist-1",
+                "type": "SpotifyPlaylist",
+                "params": {
+                    "name": "Your favorite coffeehouse"
+                },
+                "extra": {
+                    "x": 115,
+                    "y": 43
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "SpotifyPlaylist-2": {
+                "name": "SpotifyPlaylist-2",
+                "type": "SpotifyPlaylist",
                 "params": {
                     "name": "My banned tracks",
                     "user": "plamere"
                 },
-                "type": "SpotifyPlaylist"
-            },
-            "SpotifyPlaylist-7": {
                 "extra": {
-                    "x": 344,
-                    "y": 204
+                    "x": 283,
+                    "y": 158
                 },
                 "maxInputs": 0,
                 "minInputs": 0,
-                "name": "SpotifyPlaylist-7",
-                "params": {
-                    "name": "My banned artists",
-                    "user": "plamere"
-                },
-                "type": "SpotifyPlaylist"
+                "maxOutputs": 1
             },
-            "SpotifyPlaylist-8": {
+            "TrackFilter-3": {
+                "name": "TrackFilter-3",
+                "type": "TrackFilter",
+                "params": {},
                 "extra": {
-                    "x": 842,
-                    "y": 70
+                    "x": 496,
+                    "y": 91.00000000000006
                 },
-                "maxInputs": 0,
-                "minInputs": 0,
-                "name": "SpotifyPlaylist-8",
-                "params": {
-                    "name": "beauty and the beast",
-                    "user": "plamere"
-                },
-                "type": "SpotifyPlaylist"
-            },
-            "TrackFilter-1": {
-                "extra": {
-                    "x": 602,
-                    "y": 402
-                },
-                "false_source": "SpotifyPlaylist-5",
                 "maxInputs": 2,
                 "minInputs": 2,
-                "name": "TrackFilter-1",
-                "params": {},
-                "true_source": "ArtistFilter-6",
-                "type": "TrackFilter"
+                "maxOutputs": 1,
+                "true_source": "Alternate-4",
+                "false_source": "SpotifyPlaylist-2"
+            },
+            "Alternate-4": {
+                "name": "Alternate-4",
+                "type": "Alternate",
+                "params": {
+                    "fail_fast": true
+                },
+                "extra": {
+                    "x": 285,
+                    "y": 68.00000000000006
+                },
+                "maxInputs": 20,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source_list": [
+                    "SpotifyPlaylist-1",
+                    "EchoNestArtist-6"
+                ]
+            },
+            "EchoNestArtist-6": {
+                "name": "EchoNestArtist-6",
+                "type": "EchoNestArtist",
+                "params": {
+                    "count": 20,
+                    "artist": "Ed Sheeran"
+                },
+                "extra": {
+                    "x": 116,
+                    "y": 132
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "DeDup-7": {
+                "name": "DeDup-7",
+                "type": "DeDup",
+                "params": {
+                    "by_name": false
+                },
+                "extra": {
+                    "x": 674,
+                    "y": 93
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "TrackFilter-3"
             }
         },
         "extra": {
-            "createdOn": 1436683426512,
-            "errors": 0,
-            "lastRun": 0,
+            "createdOn": 1437576428295,
+            "lastRun": 1437576698875,
             "runs": 0,
+            "errors": 0,
             "uri": null
+        }
+    },
+    {
+        "name": "Gothic Metal front-loaded with Ravenscry",
+        "main": "DeDup-10",
+        "components": {
+            "SpotifyPlaylist-1": {
+                "name": "SpotifyPlaylist-1",
+                "type": "SpotifyPlaylist",
+                "params": {
+                    "name": "Gothic / Symphonic Metal"
+                },
+                "extra": {
+                    "x": 128,
+                    "y": 43
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "First-2": {
+                "name": "First-2",
+                "type": "First",
+                "params": {
+                    "sample_size": 20
+                },
+                "extra": {
+                    "x": 284,
+                    "y": 44
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "SpotifyPlaylist-1"
+            },
+            "ArtistTopTracks-3": {
+                "name": "ArtistTopTracks-3",
+                "type": "ArtistTopTracks",
+                "params": {
+                    "name": "Ravenscry"
+                },
+                "extra": {
+                    "x": 283,
+                    "y": 129
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "Concatenate-4": {
+                "name": "Concatenate-4",
+                "type": "Concatenate",
+                "params": {},
+                "extra": {
+                    "x": 440,
+                    "y": 92
+                },
+                "maxInputs": 20,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source_list": [
+                    "ArtistTopTracks-3",
+                    "First-2"
+                ]
+            },
+            "Shuffler-5": {
+                "name": "Shuffler-5",
+                "type": "Shuffler",
+                "params": {},
+                "extra": {
+                    "x": 598,
+                    "y": 95
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "Concatenate-4"
+            },
+            "SpotifyPlaylist-6": {
+                "name": "SpotifyPlaylist-6",
+                "type": "SpotifyPlaylist",
+                "params": {
+                    "name": "Gothic / Symphonic metal"
+                },
+                "extra": {
+                    "x": 135,
+                    "y": 255
+                },
+                "maxInputs": 0,
+                "minInputs": 0,
+                "maxOutputs": 1
+            },
+            "AllButTheFirst-7": {
+                "name": "AllButTheFirst-7",
+                "type": "AllButTheFirst",
+                "params": {
+                    "sample_size": 20
+                },
+                "extra": {
+                    "x": 290,
+                    "y": 254
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "SpotifyPlaylist-6"
+            },
+            "Concatenate-9": {
+                "name": "Concatenate-9",
+                "type": "Concatenate",
+                "params": {},
+                "extra": {
+                    "x": 777,
+                    "y": 151
+                },
+                "maxInputs": 20,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source_list": [
+                    "Shuffler-5",
+                    "AllButTheFirst-7"
+                ]
+            },
+            "DeDup-10": {
+                "name": "DeDup-10",
+                "type": "DeDup",
+                "params": {
+                    "by_name": false
+                },
+                "extra": {
+                    "x": 932,
+                    "y": 150
+                },
+                "maxInputs": 1,
+                "minInputs": 1,
+                "maxOutputs": 1,
+                "source": "Concatenate-9"
+            }
         },
-        "main": "DeDup-9",
-        "name": "good summer music plus a little metal"
+        "extra": {
+            "createdOn": 1437713186176,
+            "lastRun": 1437713485353,
+            "runs": 0,
+            "errors": 0,
+            "uri": null
+        }
     }
 ]

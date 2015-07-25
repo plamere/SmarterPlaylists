@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify
-from flask.ext.cors import CORS, cross_origin
+from flask.ext.cors import cross_origin
 import json
 import components
 import compiler
@@ -8,13 +8,10 @@ import pbl
 import time
 
 app = Flask(__name__)
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-
 debug_exceptions = False
 
 
-@app.route('/sps/inventory')
+@app.route('/SmarterPlaylists/inventory')
 @cross_origin()
 def inventory():
     start = time.time()
@@ -25,8 +22,8 @@ def inventory():
     print 'inventory', time.time() - start
     return jsonify(results)
 
-@app.route('/sps/run', methods=['GET', 'POST'])
-@cross_origin()
+@app.route('/SmarterPlaylists/run', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 def run():
     start = time.time()
     program = request.json

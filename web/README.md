@@ -1,27 +1,33 @@
 NEED Before Ship:
 =================
+  * make a kitchen sink test app
   * final review/test default params for all components
+  * Download program link is unreliable
 
-  * Add some sample programs
-  * Add help / about
-  * Add subprogram support
-  * Document:
-    - how to add components
-    - how to connect components
-    - how to create a program
-    - how to run a program
-    - how to save a playlist to spotify
-
-  * 
-
+  * blog post
+  * internal doc
 
 Philosophy bits - to deal with user specific APIs we will can use the
 authorization code flow.
 
+More components
+================
+  * server side save
+  * followed artists
+
+
+Bugs
+=====
+  * track uris needs a trip
+    
 
 Later
 =====
+  * better github README
+  * Add a technical bits section
 
+  * Add initial login - get user info (TZ, username)
+  * Add subprogram support
   * add smart reordering:
     - artist separation
 
@@ -32,6 +38,7 @@ Later
     (explicit, length, release date)
   * Reorganize component menu so most common components are visible and the rest
     are in Deep Cuts
+  * Loading an example takes longer than expected. Why? - compile js
 
 
 Big Stuff
@@ -49,7 +56,6 @@ Big Stuff
       * bulk delete
       * run from directory?
       * bulk select?
-  * deploy strategy
 
 
 Future
@@ -92,3 +98,21 @@ Done
   * fix 'cannot read proper cls of null' that occurs after deleting
     editor 560, 553 (phew, needed to remove stale event handlers)
   * Create initial landing page
+  * Document:
+    - how to add components
+    - how to connect components
+    - how to create a program
+    - how to run a program
+    - how to save a playlist to spotify
+  * Add help / about
+  * Add some sample programs
+  * W3C Validator
+  * Properly support isLocal for playlist saving and logging in
+  * Get built-in examples to fit the screen
+  * FAQ - How do I delete a component?
+  * de-logger
+  * Move video to 'about'?
+  * Add landing image
+  * deploy strategy
+  * Is the default font too big?
+  * Add a what's coming section

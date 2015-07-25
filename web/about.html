@@ -7,9 +7,6 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link type="text/css" href="styles.css" rel="stylesheet" />
-    <!--
-    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.1.0/sp-bootstrap.min.css" rel="stylesheet">
-    -->
     <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="images/favicon.png">
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
@@ -32,7 +29,7 @@
             <span class="navbar-title">Smarter Playlists</span>
           </a>
         </div>
-        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
           <li class=""> <a href="examples.html">Examples</a> </li>
           <li class="active"> <a href="about.html">About</a> </li>
@@ -44,7 +41,7 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div id='top' class="jumbotron">
       <div class="container-fluid col-sm-offset-2 col-sm-8" id="jumbo-dialog">
-        <h1 id='attitle' >About Smarter Playlists </h1>
+        <h1>About Smarter Playlists </h1>
 
         <p  class="intro-lead">
             Smarter Playlists is a web app that lets you build complex programs
@@ -58,7 +55,7 @@
         </div>
     </div>
 
-    <br clear='both'>
+    <br>
 
      <div class="container-fluid col-sm-offset-2 col-sm-8">
          <h2> Frequently Asked Questions </h2>
@@ -98,6 +95,29 @@
                 <p class="list-group-item-text"> 
                 Double click on a component to bring up the component
                 configuration editor. 
+                </p>
+             </li>
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">Can you show an example of
+                creating a new program from scratch?</h3>
+                <p class="list-group-item-text"> 
+                    <iframe width="640" height="480"
+                    src="https://www.youtube.com/embed/TASsrQpJXo4?color=white&rel=0&autohide=1&controls=1"
+                        frameborder="0" allowfullscreen></iframe>
+                    <p>
+                        This quick video shows how to create a Smarter Playlist that
+                        generates a good garage rock playlist with an extra dose of
+                        Weezer, but with no tracks from the album Hurley on it.
+                    </p>
+                </p>
+             </li>
+
+
+             <li class="list-group-item">
+                <h3 class="list-group-item-heading">How do I rename a program?</h3>
+                <p class="list-group-item-text"> 
+                    On the Builder page click on the program name to edit it.
                 </p>
              </li>
 
@@ -157,13 +177,27 @@
     </div>
 
      <div class="container-fluid col-sm-offset-2 col-sm-8">
+         <h2> Upcoming features</h2>
+         <ul id="features">
+                <li> Scheduled playlist updates
+                <li> More personalized components:
+                <ul>    
+                    <li> Discovery weekly
+                    <li> My Followed Artists
+                    <li> My Top Tracks
+                    <li> My Top Tracks
+                </ul>
+         </ul>
+    </div>
+
+     <div class="container-fluid col-sm-offset-2 col-sm-8">
          <h2> Available Components</h2>
          <ul id="components">
          </ul>
     </div>
 
 
-    <br clear='both'>
+    <br>
     <div id="footer">
       <div class="container text-center">
         Created by <a href="http://twitter.com/plamere">@plamere</a> 
@@ -185,7 +219,6 @@ var compTemplate = _.template($("#comp-template").text());
 
 function initApp() {    
     fetchInventory(function(cmap, types) {
-        console.log('inventory here', cmap);
         var clist = [];
         _.each(cmap, function(component, name) {
             clist.push(component);

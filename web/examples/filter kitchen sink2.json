@@ -1,0 +1,438 @@
+{
+    "name": "filter kitchen sink2",
+    "main": "YesNo-28",
+    "components": {
+        "SpotifyPlaylist-1": {
+            "name": "SpotifyPlaylist-1",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 45,
+                "y": 52
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-2": {
+            "name": "SpotifyPlaylist-2",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "lazy weekend"
+            },
+            "extra": {
+                "x": 46,
+                "y": 133
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "RandomStreamSelector-3": {
+            "name": "RandomStreamSelector-3",
+            "type": "RandomStreamSelector",
+            "params": {},
+            "extra": {
+                "x": 209,
+                "y": 99
+            },
+            "maxInputs": 20,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source_list": [
+                "SpotifyPlaylist-2",
+                "SpotifyPlaylist-1"
+            ]
+        },
+        "Annotator-4": {
+            "name": "Annotator-4",
+            "type": "Annotator",
+            "params": {
+                "type": "echonest"
+            },
+            "extra": {
+                "x": 354,
+                "y": 99
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "RandomStreamSelector-3"
+        },
+        "AttributeRangeFilter-5": {
+            "name": "AttributeRangeFilter-5",
+            "type": "AttributeRangeFilter",
+            "params": {
+                "attr": "echonest.tempo",
+                "max_val": 120
+            },
+            "extra": {
+                "x": 494,
+                "y": 100
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Annotator-4"
+        },
+        "SpotifyPlaylist-6": {
+            "name": "SpotifyPlaylist-6",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 46,
+                "y": 223
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Reverse-7": {
+            "name": "Reverse-7",
+            "type": "Reverse",
+            "params": {},
+            "extra": {
+                "x": 211,
+                "y": 221
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-6"
+        },
+        "Sample-8": {
+            "name": "Sample-8",
+            "type": "Sample",
+            "params": {
+                "sample_size": 10
+            },
+            "extra": {
+                "x": 385,
+                "y": 220.99999999999994
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Reverse-7"
+        },
+        "Sorter-9": {
+            "name": "Sorter-9",
+            "type": "Sorter",
+            "params": {
+                "attr": "title",
+                "reverse": false
+            },
+            "extra": {
+                "x": 545,
+                "y": 223
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Sample-8"
+        },
+        "Spoken Word-10": {
+            "name": "Spoken Word-10",
+            "type": "Spoken Word",
+            "params": {
+                "scale": 2
+            },
+            "extra": {
+                "x": 711,
+                "y": 224.99999999999994
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Sorter-9"
+        },
+        "Tempo-11": {
+            "name": "Tempo-11",
+            "type": "Tempo",
+            "params": {
+                "max_tempo": 120,
+                "min_tempo": 100
+            },
+            "extra": {
+                "x": 635,
+                "y": 103
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "AttributeRangeFilter-5"
+        },
+        "SpotifyPlaylist-12": {
+            "name": "SpotifyPlaylist-12",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 40,
+                "y": 315
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "Shuffler-13": {
+            "name": "Shuffler-13",
+            "type": "Shuffler",
+            "params": {},
+            "extra": {
+                "x": 201,
+                "y": 320
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SpotifyPlaylist-12"
+        },
+        "SimpleArtistFilter-14": {
+            "name": "SimpleArtistFilter-14",
+            "type": "SimpleArtistFilter",
+            "params": {
+                "artistNames": [
+                    "Ed Sheeran"
+                ]
+            },
+            "extra": {
+                "x": 348,
+                "y": 314
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "Shuffler-13"
+        },
+        "Sorter-15": {
+            "name": "Sorter-15",
+            "type": "Sorter",
+            "params": {
+                "attr": "duration",
+                "reverse": true
+            },
+            "extra": {
+                "x": 511,
+                "y": 318
+            },
+            "maxInputs": 1,
+            "minInputs": 1,
+            "maxOutputs": 1,
+            "source": "SimpleArtistFilter-14"
+        },
+        "ArtistFilter-17": {
+            "name": "ArtistFilter-17",
+            "type": "ArtistFilter",
+            "params": {},
+            "extra": {
+                "x": 219,
+                "y": 411
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "SpotifyPlaylist-19",
+            "false_source": "SpotifyPlaylist-18"
+        },
+        "SpotifyPlaylist-18": {
+            "name": "SpotifyPlaylist-18",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 43,
+                "y": 406
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-19": {
+            "name": "SpotifyPlaylist-19",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Lazy Weekend"
+            },
+            "extra": {
+                "x": 47,
+                "y": 483
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "IsDayOfWeek-20": {
+            "name": "IsDayOfWeek-20",
+            "type": "IsDayOfWeek",
+            "params": {
+                "day": 5
+            },
+            "extra": {
+                "x": 362,
+                "y": 459
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "SpotifyPlaylist-21",
+            "false_source": "ArtistFilter-17"
+        },
+        "SpotifyPlaylist-21": {
+            "name": "SpotifyPlaylist-21",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Teen Party"
+            },
+            "extra": {
+                "x": 218,
+                "y": 509
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "IsWeekend-22": {
+            "name": "IsWeekend-22",
+            "type": "IsWeekend",
+            "params": {},
+            "extra": {
+                "x": 673,
+                "y": 412
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "ArtistTopTracks-24",
+            "false_source": "ArtistTopTracks-23"
+        },
+        "ArtistTopTracks-23": {
+            "name": "ArtistTopTracks-23",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "weezer"
+            },
+            "extra": {
+                "x": 539,
+                "y": 394
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "ArtistTopTracks-24": {
+            "name": "ArtistTopTracks-24",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "led zeppelin"
+            },
+            "extra": {
+                "x": 547,
+                "y": 472
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "TrackFilter-25": {
+            "name": "TrackFilter-25",
+            "type": "TrackFilter",
+            "params": {},
+            "extra": {
+                "x": 227,
+                "y": 605
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "EchoNestArtist-27",
+            "false_source": "ArtistTopTracks-26"
+        },
+        "ArtistTopTracks-26": {
+            "name": "ArtistTopTracks-26",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "weezer"
+            },
+            "extra": {
+                "x": 70,
+                "y": 657
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "EchoNestArtist-27": {
+            "name": "EchoNestArtist-27",
+            "type": "EchoNestArtist",
+            "params": {
+                "count": 20,
+                "artist": "weezer"
+            },
+            "extra": {
+                "x": 62,
+                "y": 581
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "YesNo-28": {
+            "name": "YesNo-28",
+            "type": "YesNo",
+            "params": {
+                "yes": true
+            },
+            "extra": {
+                "x": 544,
+                "y": 585
+            },
+            "maxInputs": 2,
+            "minInputs": 2,
+            "maxOutputs": 1,
+            "true_source": "ArtistTopTracks-29",
+            "false_source": "ArtistTopTracks-30"
+        },
+        "ArtistTopTracks-29": {
+            "name": "ArtistTopTracks-29",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "weezer"
+            },
+            "extra": {
+                "x": 382,
+                "y": 556
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "ArtistTopTracks-30": {
+            "name": "ArtistTopTracks-30",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "katy perry"
+            },
+            "extra": {
+                "x": 383,
+                "y": 632
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        }
+    },
+    "extra": {
+        "createdOn": 1437801533933,
+        "lastRun": 1437802220489,
+        "runs": 22,
+        "errors": 0,
+        "uri": "spotify:user:plamere:playlist:6TnpHIvjYUljtSNy0KUER5"
+    }
+}

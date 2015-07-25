@@ -1,7 +1,7 @@
 <html>
 <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="https://d3nkxvtkt5c8vi.cloudfront.net/4.0.0/sp-bootstrap.min.css" rel="stylesheet">
+        <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
         <script src="lib/jquery-1.11.1.min.js"></script>
         <script src="lib/underscore-min.js"></script>
 
@@ -101,7 +101,6 @@ function replaceTracksInPlaylist(username, playlist, tracks, callback) {
             'Content-Type': 'application/json'
         },
         success: function(r) {
-            console.log('replace success');
             if (start + maxTracksPerPlaylistAdd >= tracks.length) {
                 callback(true);
             } else {
@@ -111,7 +110,6 @@ function replaceTracksInPlaylist(username, playlist, tracks, callback) {
             }
         },
         error: function(r, status, err) {
-            console.log('replace error', r, status, err);
             if (r.status >= 200 && r.status <= 299) {
                 if (start + maxTracksPerPlaylistAdd >= tracks.length) {
                     callback(true);
@@ -153,7 +151,6 @@ function addedTracks(ok, username, pid, name) {
         uri: uri,
         status: ok ? 'ok' : 'error'
     }
-    console.log('localstorage', savedData);
     localStorage.setItem('playlist-save-status', JSON.stringify(savedData, null, 4));
 }
 
@@ -239,7 +236,8 @@ function doit() {
             </div>
             <div id="done" style="display: none;">
                 <h1 class='text-success' >Playlist saved to Spotify</h1>
-                <div id='info'> Playlist saved as: <div id="title" class="text-info"> </div></div>
+                <h2 id='info'> Playlist saved as: <div id="title"
+                class="text-info"> </div></h2>
                 <p>
                     <a class="btn btn-lg btn-primary btn-success" id="playlistlink">
                         Open playlist in Spotify

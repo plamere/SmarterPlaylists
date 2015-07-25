@@ -1,0 +1,147 @@
+{
+    "name": "source kitchen sink",
+    "main": "SpotifyPlaylist-6",
+    "components": {
+        "AlbumSource-1": {
+            "name": "AlbumSource-1",
+            "type": "AlbumSource",
+            "params": {
+                "artist": "weezer",
+                "title": "pinkerton"
+            },
+            "extra": {
+                "x": 140,
+                "y": 16
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "EchoNestArtistRadio-2": {
+            "name": "EchoNestArtistRadio-2",
+            "type": "EchoNestArtistRadio",
+            "params": {
+                "count": 20,
+                "artist": "weezer"
+            },
+            "extra": {
+                "x": 266,
+                "y": 19
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "ArtistTopTracks-3": {
+            "name": "ArtistTopTracks-3",
+            "type": "ArtistTopTracks",
+            "params": {
+                "name": "weezer"
+            },
+            "extra": {
+                "x": 398,
+                "y": 19
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "EchoNestArtist-4": {
+            "name": "EchoNestArtist-4",
+            "type": "EchoNestArtist",
+            "params": {
+                "count": 20,
+                "artist": "weezer"
+            },
+            "extra": {
+                "x": 533,
+                "y": 17
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "EchoNestGenreRadio-5": {
+            "name": "EchoNestGenreRadio-5",
+            "type": "EchoNestGenreRadio",
+            "params": {
+                "count": 20,
+                "genre": "garage pop"
+            },
+            "extra": {
+                "x": 136,
+                "y": 96
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-6": {
+            "name": "SpotifyPlaylist-6",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "Your favorite coffeehouse"
+            },
+            "extra": {
+                "x": 279,
+                "y": 97
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "SpotifyPlaylist-7": {
+            "name": "SpotifyPlaylist-7",
+            "type": "SpotifyPlaylist",
+            "params": {
+                "name": "extender test",
+                "user": "plamere"
+            },
+            "extra": {
+                "x": 403,
+                "y": 95
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "TrackSourceByName-8": {
+            "name": "TrackSourceByName-8",
+            "type": "TrackSourceByName",
+            "params": {
+                "title": "ravenscry nobody"
+            },
+            "extra": {
+                "x": 537,
+                "y": 97
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        },
+        "TrackSource-9": {
+            "name": "TrackSource-9",
+            "type": "TrackSource",
+            "params": {
+                "uris": [
+                    "spotify:track:69JnEQF6OCntGndij5BTlq",
+                    " spotify:track:00t1USAjV7tiTDwlN6U44I"
+                ]
+            },
+            "extra": {
+                "x": 136,
+                "y": 176
+            },
+            "maxInputs": 0,
+            "minInputs": 0,
+            "maxOutputs": 1
+        }
+    },
+    "extra": {
+        "createdOn": 1437800781129,
+        "lastRun": 1437802267644,
+        "runs": 2,
+        "errors": 0,
+        "uri": null
+    }
+}

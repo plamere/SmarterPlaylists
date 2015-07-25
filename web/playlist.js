@@ -72,7 +72,6 @@ function showPlaylist(program, data) {
                     }
                 });
             }
-            console.log('playing', track);
         });
         title.addClass('playable');
     });
@@ -114,8 +113,6 @@ function savePlaylist() {
 }
 
 function loginWithSpotify() {
-    var client_id = 'bb61fcfe1423449ba3d8e3b016316316';
-    var redirect_uri = 'http://localhost:8000/callback.html';
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
         '&response_type=token' +
         '&scope=playlist-modify-private' +

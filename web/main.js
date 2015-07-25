@@ -1,7 +1,25 @@
 var inventory = null
 var editor = null;
-var apiPath = 'http://localhost:5000/sps/'
+var apiLocalPath = 'http://localhost:5000/SmarterPlaylists/';
+var apiRemotePath = 'http://labs2.echonest.com/SmarterPlaylists/';
 
+var client_id = 'bb61fcfe1423449ba3d8e3b016316316';
+var local_redirect_uri = 'http://localhost:8000/callback.html';
+var remote_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/callback.html';
+
+var apiPath = isLocalHost() ? apiLocalPath : apiRemotePath;
+var redirect_uri = isLocalHost() ? local_redirect_uri : remote_redirect_uri;
+
+var forceRemote = false;
+
+
+function isLocalHost() {
+    if (forceRemote) {
+        return false;
+    } else {
+        return window.location.host.indexOf('localhost') >= 0;
+    }
+}
 
 function error(s) {
     console.log('ERROR ' + s);
@@ -15,16 +33,13 @@ function info(s) {
 function fetchInventory(callback) {
     $.getJSON(apiPath + 'inventory').then(
         function(data) {
-            console.log('inventory here', data);
             var inventoryMap = {};
             _.each(data.inventory.components, function(component) {
                 inventoryMap[component.name] = component;
             });
-            console.log('fi', data, inventoryMap);
             callback(inventoryMap, data.inventory.types);
         },
         function() {
-            console.log('inventory trouble');
             callback(null);
         }
     );
@@ -68,7 +83,6 @@ function showDirectory() {
                         .text(entry.name)
                         .on('click', function(e) {
                             e.stopPropagation();
-                            console.log('stop prp');
                         })));
         } else {
             tr.append( $("<td>").text( entry.name ));
@@ -79,7 +93,6 @@ function showDirectory() {
         tr.append( $("<td>").text( _.keys(entry.components).length));
 
         tr.on('click', function() {
-            console.log('open', entry.name);
             showBuilder();
             editor.load(entry);
         });
@@ -111,7 +124,6 @@ function showDirectory() {
                         .addClass('prog-but text-danger')
                         .text('Delete')
                         .on('click', function(e) {
-                            console.log('delete');
                             e.stopPropagation();
                             if (window.confirm('Delete ' + entry.name + '?')) {
                                 removeProgram(entry.name);
@@ -129,13 +141,11 @@ function showDirectory() {
 function loadRemoteProgram(path, inventory, callback) {
     $.getJSON(path).then(
         function(sprog) {
-            console.log('sprog', sprog);
             delete sprog.extra.uri;
             var program = loadProgramFromJSON(inventory, sprog);
             callback(program);
         },
         function() {
-            console.log('sprog error');
             callback(null);
         }
     );
@@ -145,16 +155,12 @@ function loadRemoteProgram(path, inventory, callback) {
 function initApp() {    
     var params = parseParams();
     var pprogram = ('program' in params) ? params['program'] : null;
-    console.log('pprogram is', pprogram);
     
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-        console.log('showing', e.target);
         if ($(e.target).attr('href') == '#dir') {
             showInitialDirectory();
-            console.log('showing dir');
         } else if ($(e.target).attr('href') == '#ttracks') {
             playlistShown();
-            console.log('showing tracks');
         }
     });
 
@@ -178,7 +184,6 @@ function initApp() {
 
 
     $('#tabs').tab();
-    console.log('fetching inventory ...');
     fetchInventory(function(inventoryMap, styles) {
         if (inventoryMap == null) {
             alert("Uh Oh - Having trouble phoning home");
@@ -198,16 +203,14 @@ function initApp() {
                 if (mostRecent) {
                     editor.load(mostRecent);
                 } else {
-                    console.log('no recent program');
+                    $('.nav-tabs a[href="#dir"]').tab('show');
                 }
             }
         }
-        console.log('inventory ready');
     });
 }
 
 function error(msg) {
-    console.log('ERROR ' + msg);
     var alert= $("<div>")
         .addClass('alert')
         .addClass('alert-danger')

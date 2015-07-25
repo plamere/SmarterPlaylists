@@ -3,6 +3,14 @@ body {
     background-color:#000;
 }
 
+.jumbotron h1 {
+    font-size:64px !important;
+}
+
+.blog-title {
+    font-size:64px !important;
+}
+
 .top {
     margin-top:60px;
 }
@@ -178,5 +186,13 @@ body {
 
 .comp-help  {
     margin:20px;
+}
+
+#footer {
+    clear:both;
+}
+
+#dir-body tr {
+    cursor:pointer;
 }
 
