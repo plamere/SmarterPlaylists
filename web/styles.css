@@ -196,3 +196,7 @@ body {
     cursor:pointer;
 }
 
+
+#controls .btn {
+    margin-right:10px;
+}

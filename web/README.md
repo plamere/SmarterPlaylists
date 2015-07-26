@@ -1,28 +1,28 @@
-NEED Before Ship:
-=================
-  * make a kitchen sink test app
-  * final review/test default params for all components
-  * Download program link is unreliable
-
-  * blog post
-  * internal doc
-
-Philosophy bits - to deal with user specific APIs we will can use the
-authorization code flow.
+TO DOs
+=======
+  * Server site stats
+  * Sharing / publishing
+  * Move server cache to bigger disk
+  * Scaling rapheal
 
 More components
 ================
   * server side save
   * followed artists
+  * track radio
 
 
 Bugs
 =====
-  * track uris needs a trip
+  * track uris needs a strip
+  * Download program link is unreliable
     
 
 Later
 =====
+  * internal doc
+  * Philosophy bits - to deal with user specific APIs we will can use the
+    authorization code flow.
   * better github README
   * Add a technical bits section
 
@@ -116,3 +116,8 @@ Done
   * deploy strategy
   * Is the default font too big?
   * Add a what's coming section
+  * make a kitchen sink test app
+  * final review/test default params for all components
+  * Fix weekend component
+  * blog post
+  * google analytics

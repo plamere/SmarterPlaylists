@@ -960,15 +960,25 @@ var createEditor = function(canvasElem, inventory, types) {
         });
     }
 
-    function setRunning(state) {
+    function setRunning(state, verb) {
         if (state) {
-            $("#running-state").addClass('text-info');
-            $("#running-state").text('running');
+            var text = verb || 'running';
+            $("#running-state").text(text);
             $("#run-button").prop("disabled", true);
 
         } else {
             $("#running-state").text('');
             $("#run-button").prop("disabled", false);
+        }
+    }
+
+    function setInfo(state, verb) {
+        if (state) {
+            var text = verb || 'running';
+            $("#running-state").addClass('text-info');
+            $("#running-state").text(text);
+        } else {
+            $("#running-state").text('');
         }
     }
 
@@ -995,7 +1005,6 @@ var createEditor = function(canvasElem, inventory, types) {
                 var issues = program.check(main);
                 program.main = main;
                 var json = program.save();
-                prepDownloadLink(program.name, json);
                 if (issues.length > 0) {
                     _.each(issues, function(issue) {
                         if (issue.component) {
@@ -1037,6 +1046,27 @@ var createEditor = function(canvasElem, inventory, types) {
             program.save();
             info("Saved " + title);
         });
+
+        $("#share-button").on('click', function() {
+            if (program) {
+                program.publish(function(results) {
+                    if (results.status == 'ok') {
+                        setInfo(true, 'Published');
+                    } else {
+                        setInfo(true, 'Not Publshed');
+                    }
+                });
+            }
+        });
+    }
+
+    function setURL(pid) {
+        if (pid) {
+            var p = '?pid=' + results['pid'];
+            history.replaceState({}, '', p);
+        } else {
+            history.replaceState({}, '', '');
+        }
     }
 
 
@@ -1101,6 +1131,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 program.save();
              }
         });
+
     }
 
     function setProgramName(name) {
@@ -1116,6 +1147,7 @@ var createEditor = function(canvasElem, inventory, types) {
         curSelected = null;
         altSelected = null;
         canvasFocus(true);
+        setInfo(false, '');
     }
 
     initEditor();

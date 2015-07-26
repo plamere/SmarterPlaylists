@@ -1,15 +1,18 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask.ext.cors import cross_origin
 import json
 import components
 import compiler
+import hashlib
 import pbl
 import time
+import collections
 
 app = Flask(__name__)
 debug_exceptions = False
 
+save_directory = '/lab/SmarterPlaylists/shared'
 
 @app.route('/SmarterPlaylists/inventory')
 @cross_origin()
@@ -21,6 +24,53 @@ def inventory():
     }
     print 'inventory', time.time() - start
     return jsonify(results)
+
+@app.route('/SmarterPlaylists/publish', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
+def publish():
+    start = time.time()
+    program = request.json
+    print 'got program', program
+    results = { }
+    if (is_valid_program(program)):
+        pid = make_pid(program)
+        program['extra']['pid'] = pid
+        
+        path = os.path.join(save_directory, pid + ".json")
+        save_program(path, program)
+        results['status'] = 'ok'
+        results['pid'] = pid
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'bad program'
+    return jsonify(results)
+
+def save_program(path, program):
+    out = json.dumps(program, indent=2)
+    f = open(path, 'w')
+    print >>f, out
+    f.close()
+
+def make_pid(program):
+    js = json.dumps(program)
+    md5 = hashlib.md5(js).hexdigest()
+    return md5
+
+
+def is_valid_program(program):
+    sections = ['name', 'main', 'components', 'extra']
+    for section in sections:
+        if not section in program:
+            return False
+    return True;
+
+@app.route('/SmarterPlaylists/shared')
+@cross_origin(allow_headers=['Content-Type'])
+def shared():
+    pid = request.args.get('pid', '')
+    if '..' in pid:
+        abort(404)
+    return send_from_directory(save_directory, pid + ".json")
 
 @app.route('/SmarterPlaylists/run', methods=['POST'])
 @cross_origin(allow_headers=['Content-Type'])
@@ -80,6 +130,7 @@ def run():
         print json.dumps(results, indent=4)
     print 'run', time.time() - start, results['status']
     return jsonify(results)
+
   
 #@app.errorhandler(Exception)
 def handle_invalid_usage(error):
@@ -101,3 +152,4 @@ if __name__ == '__main__':
         print 'prod  mode'
         http_server = WSGIServer(('', 5000), app)
         http_server.serve_forever()
+

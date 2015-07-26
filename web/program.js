@@ -103,7 +103,7 @@ Program.prototype = {
         var that = this;
         var jsonProgram = {
             main : rootComponentName,
-           max_tracks : this.max_tracks,
+            max_tracks : this.max_tracks,
             components : {},
         }
         _.each(this.components, function(component) {
@@ -209,6 +209,19 @@ Program.prototype = {
             }
         });
     },
+    publishProgram: function(json, callback) {
+     // console.log('publish PROGRAM=' + json);
+     $.ajax({
+            type: "POST",
+            contentType: 'application/json',
+            data: json,
+            dataType: 'json',
+            url: apiPath + 'publish',
+            success: function (data) {
+                callback(data);
+            }
+        });
+    },
 
     findActiveComponents: function(c, active) {
         var that = this;
@@ -263,8 +276,24 @@ Program.prototype = {
         });
     },
 
-    save: function() {
-        this.extra.lastRun =  new Date().getTime();
+    publish: function(callback) {
+        var that = this;
+        var json = this.serialize();
+        this.publishProgram(json, function(results) {
+            if (results) {
+                var pid = results['pid'];
+                console.log('results pid', pid);
+                if (that.extra.pid !== pid) {
+                    that.extra.pid = pid;
+                    that.save();
+                }
+            } else {
+            }
+            callback(results);
+        });
+    },
+
+    serialize: function() {
         var obj = {
             name:this.name,
             main:this.main,
@@ -279,6 +308,11 @@ Program.prototype = {
             obj.components[id] = cc;
         });
         var json = JSON.stringify(obj, null, 4);
+        return json;
+    },
+
+    save: function() {
+        var json = this.serialize();
         localStorage.setItem(getKey(this.name), json);
         return json;
     }

@@ -96,6 +96,18 @@ function showDirectory() {
             showBuilder();
             editor.load(entry);
         });
+        var shared = $("<td>");
+        if (entry.extra.pid) {
+            shared.append(
+                $("<a>")
+                    .addClass('prog-but text-primary')
+                    .text('Link')
+                    .attr('href', 'go.html?pid=' + entry.extra.pid)
+                ).on('click', function(e) {
+                    e.stopPropagation();
+                });
+        }
+        tr.append(shared);
         if (true) {
             var controls = $("<td>");
                 /*
@@ -132,6 +144,7 @@ function showDirectory() {
                         })
                     );
 
+
             tr.append( controls);
         }
         body.append(tr);
@@ -155,6 +168,12 @@ function loadRemoteProgram(path, inventory, callback) {
 function initApp() {    
     var params = parseParams();
     var pprogram = ('program' in params) ? params['program'] : null;
+
+    if ('pid' in params) {
+        var pid = params['pid'];
+        pprogram = apiPath + 'shared?pid='  + pid;
+        console.log('pprogram', pprogram);
+    }
     
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') == '#dir') {
