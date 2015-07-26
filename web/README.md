@@ -1,8 +1,6 @@
 TO DOs
 =======
   * Server site stats
-  * Sharing / publishing
-  * Move server cache to bigger disk
   * Scaling rapheal
 
 More components
@@ -121,3 +119,7 @@ Done
   * Fix weekend component
   * blog post
   * google analytics
+  * Move server cache to bigger disk
+  * Sharing / publishing
+  * Add explicit Save button to editor
+  * Add clear button to editor

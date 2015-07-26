@@ -1044,7 +1044,12 @@ var createEditor = function(canvasElem, inventory, types) {
             var title = $("#program-name").text();
             program.name = title;
             program.save();
-            info("Saved " + title);
+            setInfo(true, 'Saved');
+        });
+
+        var clearButton = $("#clear-button");
+        clearButton.on('click', function() {
+            deleteAll();
         });
 
         $("#share-button").on('click', function() {
@@ -1102,6 +1107,9 @@ var createEditor = function(canvasElem, inventory, types) {
         $(document).keydown(keydown);
         $(document).keyup(keyup);
 
+        // if the callback.html was able to successfully save
+        // we get this event, so update the program and save it
+        // with the uri that was created for the playlist
         $(window).bind('storage', function (e) {
             var evt = e.originalEvent;
             if (evt.key == 'playlist-save-status') {
