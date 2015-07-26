@@ -10,7 +10,6 @@ var createEditor = function(canvasElem, inventory, types) {
     var filters = []
     var conditionals = []
     var tWidth = (tileWidth + xMargin);
-    var widgetsPerRow = 0;
 
     var widgetCount = 0;
     var connections = [];
@@ -32,53 +31,24 @@ var createEditor = function(canvasElem, inventory, types) {
         var w = $(window).width();
         var h = $(window).height() - top;
 
-        paper = Raphael(canvasElem, w, h);
+        w = 1000;
+        h = 800;
+        //paper = Raphael(canvasElem, w, h);
+        paper = new ScaleRaphael(canvasElem, w, h);
         paper.canvas.className += ' raphael-canvas';
         paper.canvas.baseVal += ' raphael-canvas';
-        widgetsPerRow = Math.floor(paper.canvas.offsetWidth / tWidth);
 
-        (function($,sr){
-         
-          // debouncing function from John Hann
-          // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-          var debounce = function (func, threshold, execAsap) {
-              var timeout;
-         
-              return function debounced () {
-                  var obj = this, args = arguments;
-                  function delayed () {
-                      if (!execAsap)
-                          func.apply(obj, args);
-                      timeout = null; 
-                  };
-         
-                  if (timeout)
-                      clearTimeout(timeout);
-                  else if (execAsap)
-                      func.apply(obj, args);
-         
-                  timeout = setTimeout(delayed, threshold || 100); 
-              };
-          }
-            // smartresize 
-            jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
-         
-        })(jQuery,'smartresize');
+      function refreshLayout(state) {
+         // bit of a hack - fix that.
+         var w = $(window).width() * 5 / 6 - 30;
+         var h = $(window).height() - top;
+         paper.changeSize(w, h, false, false);
+      }
 
-        // usage:
-        $(window).smartresize(function(){  
-            refreshLayout(true);
-        });
+      $(window).resize(refreshLayout);
+      refreshLayout();
     }
 
-    function refreshLayout(state) {
-        var workspace = $("#workspace");
-        if (workspace.is(':visible')) {
-            var w = workspace.width();
-            var h = workspace.height();
-            paper.setSize(w, h);
-        }
-    }
 
     function canvasFocus(state) {
         canvasHasFocus = state;

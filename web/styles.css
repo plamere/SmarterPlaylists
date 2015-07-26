@@ -192,6 +192,10 @@ body {
     clear:both;
 }
 
+.br-clear {
+    clear:both;
+}
+
 #dir-body tr {
     cursor:pointer;
 }
@@ -200,3 +204,9 @@ body {
 #controls .btn {
     margin-right:10px;
 }
+
+#save-check {
+    margin-top:8px;
+    margin-left:8px;
+}
+
