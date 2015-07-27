@@ -677,8 +677,8 @@ inventory = {
             "type" : "filter",
             "title" : "no longer than $time",
             "display" : "no longer than",
-            "description": "Limit the stream, if possible, to tracks with a" + \
-                "duration that is no longer than the given time",
+            "description": "Limit the stream, if possible, to tracks with " \
+                "a duration that is no longer than the given time",
 
             "help" : """ This component will limit the stream of tracks to the
             first N tracks that have a total duration that is shorter than the
@@ -706,8 +706,8 @@ inventory = {
             "type" : "filter",
             "title" : "no shorter than $time",
             "display" : "no shorter than",
-            "description": "Limit the stream, if possible, to tracks with a" + \
-                "duration that is no shorter than the given time",
+            "description": "Limit the stream, if possible, to tracks with " + \
+                "a duration that is no shorter than the given time",
 
             "help" : """ This component will limit the stream of tracks to the
             first N tracks that have a total duration that is longer than the
