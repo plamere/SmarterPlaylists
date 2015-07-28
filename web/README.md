@@ -1,19 +1,20 @@
-TO DOs
+To DOs
 =======
   * Server site stats
-  * Scaling rapheal
 
 More components
 ================
   * server side save
   * followed artists
   * track radio
+  * light shuffle
+  * artist separation
+  * genre filter
 
 
 Bugs
 =====
   * track uris needs a strip
-  * Download program link is unreliable
     
 
 Later
@@ -123,3 +124,5 @@ Done
   * Sharing / publishing
   * Add explicit Save button to editor
   * Add clear button to editor
+  * Scaling rapheal
+  * Download program link is unreliable

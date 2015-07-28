@@ -8,9 +8,7 @@
 
         spauth = SpotifyAuth()
 
-        user_id = spauth.add_user(auth_token)
-
-        spauth.get_fresh_user_token(user_id)
+        token = spauth.get_fresh_token(auth_code)
 
 '''
 
@@ -35,34 +33,35 @@ class SpotifyAuth(object):
             self.client_redirect_uri == None:
             raise Exception('Missing SPOTIPY credentials in the environment')
 
-    def add_user(self, auth_token):
-        # get access token
-        user = None
-        token = self._get_new_token(auth_token)
-        if token:
-            # make a 'me' call to get name
-            me_info = self._me(token)
-            if me_info:
-                user = me_info['id']
-                self._add_user_token(user, token)
-        return user
 
-    def get_fresh_user_token(self, user):
+    def get_fresh_token(self, code):
         now = time.time()
-        token = self._get_user_token(user)
-        if token and (token['expires_at'] - now) < self.EXPIRES_THRESHOLD:
-            token = self._refresh_token(token)
-            if token:
-                self._add_user_token(user, token)
+        token = self._get_token(code)
+        if token:
+            if (token['expires_at'] - now) < self.EXPIRES_THRESHOLD:
+                token = self._refresh_token(token)
+                if token:
+                    self._add_token(code, token)
+        else:
+            token = self._add_auth_code(code)
+
         return token
 
-    def _add_user_token(self, user, token):
+    def _add_auth_code(self, auth_code):
+        print 'adding auth code', auth_code
+        token = self._get_new_token(auth_code)
+        if token:
+            token = self._add_token(code, token)
+        return token
+
+    def _add_token(self, code, token):
         now = time.time()
         token['expires_at'] = int(now) + token['expires_in']
         js = json.dumps(token)
-        self.db.Put('token:' + user, js)
+        self.db.Put('token:' + code, js)
         if self.trace:
-            print 'added user token to db', user, js
+            print 'added token to db', code, js
+        return token
 
     def _get_new_token(self, authorization_code):
         params = {
@@ -81,14 +80,15 @@ class SpotifyAuth(object):
         else:
             return None
 
-    def _get_user_token(self, user):
-        key = 'token:' + user
+    def _get_token(self, code):
+        key = 'token:' + code
         try:
             js = self.db.Get(key)
+            print 'got token', key
             return json.loads(js)
         except KeyError:
+            print 'no token', key
             return None
-
 
     def _refresh_token(self, token):
         params = {
@@ -136,23 +136,12 @@ if __name__ == '__main__':
     fields = arg.split('=')
     if len(fields) == 2:
         code = fields[-1]
-        user = spauth.add_user(code)
-        if user:
-            print 'got a code for user', user
-            token = spauth.get_fresh_user_token(user)
-            if token:
-                remaining = token['expires_at'] - time.time()
-                print 'Got a token that expires in', remaining, 'seconds'
-            else:
-                print 'no token for', user
-        else:
-            print "can't get a user for that code, probably a bad/old code"
-    else:
-        user = sys.argv[1]
-        token = spauth.get_fresh_user_token(user)
+        token = spauth.get_fresh_token(code)
         if token:
             remaining = token['expires_at'] - time.time()
             print 'Got a token that expires in', remaining, 'seconds'
         else:
-            print 'no token for', user
+            print 'no token for that code'
+    else:
+        print 'no token'
 

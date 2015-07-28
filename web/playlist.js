@@ -120,3 +120,12 @@ function loginWithSpotify() {
     var w = window.open(url, 'asdf', 'WIDTH=400,HEIGHT=500');
 }
 
+
+function loginWithSpotifyForCode() {
+    var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
+        '&response_type=code' +
+        '&scope=playlist-modify-private' +
+        '&redirect_uri=' + encodeURIComponent(redirect_uri);
+    var w = window.open(url, 'asdf', 'WIDTH=400,HEIGHT=500');
+}
+
