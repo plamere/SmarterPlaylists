@@ -1,3 +1,5 @@
 source credentials.sh
 export PBL_NO_CACHE=1
+export SPOTIPY_REDIRECT_URI='http://localhost:8000/auth.html'
+
 python flask_server.py

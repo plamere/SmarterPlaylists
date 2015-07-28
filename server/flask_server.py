@@ -8,11 +8,15 @@ import hashlib
 import pbl
 import time
 import collections
+import spotify_auth
 
 app = Flask(__name__)
-debug_exceptions = False
+debug_exceptions = True
 
+auth_directory = '/lab/SmarterPlaylists/auth'
 save_directory = '/lab/SmarterPlaylists/shared'
+
+auth = spotify_auth.SpotifyAuth(auth_directory)
 
 @app.route('/SmarterPlaylists/inventory')
 @cross_origin()
@@ -82,6 +86,19 @@ def run():
     results = { }
 
     try:
+        pbl.engine.clearEnvData()
+        env = program['env']
+        if 'spotify_auth_code' in env:
+            auth_code = env['spotify_auth_code']
+            if auth_code:
+                token = auth.get_fresh_token(auth_code)
+                if not token:
+                    print 'WARNING: bad auth token', auth_code
+                    # maybe we should generate an error here
+                    pass
+                else:
+                    pbl.engine.setEnv('spotify_auth_token', token['access_token'])
+
         status, obj = compiler.compile(program)
         print 'compiled in', time.time() - start, 'secs'
 
@@ -124,6 +141,7 @@ def run():
         results['status'] = 'error'
         results['message'] = str(e)
 
+    pbl.engine.clearEnvData()
     results['time'] = time.time() - start
     print 'compiled and executed in', time.time() - start, 'secs'
     if app.trace:
@@ -143,7 +161,7 @@ def handle_invalid_usage(error):
 if __name__ == '__main__':
     if os.environ.get('PBL_NO_CACHE'):
         app.debug = True
-        app.trace = True
+        app.trace = False
         print 'debug  mode'
         app.run(threaded=True)
     else:

@@ -6,12 +6,19 @@ var apiRemotePath = 'http://labs2.echonest.com/SmarterPlaylists/';
 var client_id = 'bb61fcfe1423449ba3d8e3b016316316';
 var local_redirect_uri = 'http://localhost:8000/callback.html';
 var remote_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/callback.html';
+var local_auth_redirect_uri = 'http://localhost:8000/auth.html';
+var remote_auth_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/auth.html';
 
 var apiPath = isLocalHost() ? apiLocalPath : apiRemotePath;
 var redirect_uri = isLocalHost() ? local_redirect_uri : remote_redirect_uri;
+var auth_redirect_uri = isLocalHost() ? local_auth_redirect_uri : remote_auth_redirect_uri;
 
 var forceRemote = false;
 
+
+function get_auth_code() {
+    return localStorage.getItem('sp-auth-code');
+}
 
 function isLocalHost() {
     if (forceRemote) {
@@ -193,6 +200,7 @@ function initApp() {
         });
     });
 
+
     var newButton = $("#new-button");
     newButton.on('click', function() {
         var name = 'untitled';
@@ -227,6 +235,15 @@ function initApp() {
             }
         }
     });
+}
+
+function loginWithSpotifyForAuth() {
+    var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
+        '&response_type=code&show_dialog=true' +
+        '&scope=playlist-modify-private' +
+        '&redirect_uri=' + encodeURIComponent(auth_redirect_uri);
+    document.location = url;
+    //var w = window.open(url, 'asdf', 'WIDTH=400,HEIGHT=500');
 }
 
 function error(msg) {

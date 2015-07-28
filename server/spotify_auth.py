@@ -22,7 +22,9 @@ import leveldb
 class SpotifyAuth(object):
 
     def __init__(self, dbpath='.userdb'):
-        self.db = leveldb.LevelDB(dbpath)
+        print 'creating spotify auth'
+        self.db = None
+        self.dbpath = dbpath
         self.EXPIRES_THRESHOLD = 120
         self.client_id = os.environ.get('SPOTIPY_CLIENT_ID')
         self.client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
@@ -51,17 +53,17 @@ class SpotifyAuth(object):
         print 'adding auth code', auth_code
         token = self._get_new_token(auth_code)
         if token:
-            token = self._add_token(code, token)
+            token = self._add_token(auth_code, token)
         return token
 
     def _add_token(self, code, token):
         now = time.time()
         token['expires_at'] = int(now) + token['expires_in']
-        js = json.dumps(token)
-        self.db.Put('token:' + code, js)
+        self._put('token:' + code, token)
         if self.trace:
             print 'added token to db', code, js
         return token
+
 
     def _get_new_token(self, authorization_code):
         params = {
@@ -82,13 +84,8 @@ class SpotifyAuth(object):
 
     def _get_token(self, code):
         key = 'token:' + code
-        try:
-            js = self.db.Get(key)
-            print 'got token', key
-            return json.loads(js)
-        except KeyError:
-            print 'no token', key
-            return None
+        js = self._get(key)
+        return js
 
     def _refresh_token(self, token):
         params = {
@@ -129,14 +126,34 @@ class SpotifyAuth(object):
         else:
             return None
 
+    def _get(self, key):
+        self._init_db()
+        try:
+            js = self.db.Get(key)
+            if js:
+                return json.loads(js)
+            else:
+                return None
+        except KeyError:
+            return None
+
+    def _put(self, key, val):
+        self._init_db()
+        js = json.dumps(val)
+        self.db.Put(key, js)
+
+    def _init_db(self):
+        if self.db == None:
+            self.db = leveldb.LevelDB(self.dbpath)
+
 
 if __name__ == '__main__':
     spauth = SpotifyAuth()
     arg = sys.argv[1]
     fields = arg.split('=')
     if len(fields) == 2:
-        code = fields[-1]
-        token = spauth.get_fresh_token(code)
+        my_code = fields[-1]
+        token = spauth.get_fresh_token(my_code)
         if token:
             remaining = token['expires_at'] - time.time()
             print 'Got a token that expires in', remaining, 'seconds'

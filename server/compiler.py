@@ -1,8 +1,7 @@
 import pbl
-import engine
 from components import inventory
 
-debug_exceptions = False
+debug_exceptions = True
 OK = 'ok'
 
 '''

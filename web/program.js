@@ -105,11 +105,13 @@ Program.prototype = {
             main : rootComponentName,
             max_tracks : this.max_tracks,
             components : {},
+            env : {}
         }
         _.each(this.components, function(component) {
             var name = component.name;
             jsonProgram.components[name] = that.extract(component);
         });
+        jsonProgram.env.spotify_auth_code = get_auth_code()
         return JSON.stringify(jsonProgram, null, 4);
     },
 
