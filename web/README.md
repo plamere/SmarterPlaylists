@@ -1,6 +1,52 @@
 To DOs
 =======
   * Server site stats
+  * Components that take URIs should also take URLs and provide better diagnostics for malformed addresses
+
+
+Auth Issues
+============
+Auth .... to use the app you will need to login, but his makes it hard to share
+examples if there's a login page in between the share, that will be a challenge.
+One approach would be to allow non-auth users to get to the examples page. If
+they 'run' a program that requires auth, they will get an error and they will be
+prompted to login.  Login button should be in the upper right of the app. (or
+conversly, make sure people are logged in
+
+Save should take place on the server side (to avoid needing two kinds of auth
+for the user).  when they go to 'run' a program.
+
+variables
+=========
+    we support a small set of variables. These are substituted at run time on
+    the server
+
+  * $my\_id - the current user
+  * $my\_name - the current user
+  * $date - the current date
+  * $day - the day of the week
+  * $hour - the our of the day
+  * $daypart - morning, afternoon, evening, night
+
+typical us would be a script that has a 'playlist' component with a 'My banned
+artists' - the user could be $me.
+
+personalized components
+
+   * save playlist - saves tracks to playlist. Takes a name or a uri, saves
+   * my saved tracks - generates the list of saved tracks
+
+schedule program:
+
+    need to start a scheduled update
+    need to stop a scheduled update
+    see your scheduled programs
+    see status of latest run (time run, number of tracks generated, any errors)
+
+
+user management:
+    - s
+
 
 More components
 ================
@@ -10,6 +56,8 @@ More components
   * light shuffle
   * artist separation
   * genre filter
+  * advanced echo nest playlist 
+  * dedup-artists - playlist but with only one song per artist
 
 
 Bugs

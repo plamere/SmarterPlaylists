@@ -17,14 +17,16 @@ import os
 import time
 import simplejson as json
 import requests
-import leveldb
+import redis
 
 class SpotifyAuth(object):
 
-    def __init__(self, dbpath='.userdb'):
+    def __init__(self, r = None):
         print 'creating spotify auth'
-        self.db = None
-        self.dbpath = dbpath
+        if r:
+            self.r = r
+        else:
+            self.r = redis.StrictRedis(host='localhost', port=6379, db=0)
         self.EXPIRES_THRESHOLD = 120
         self.client_id = os.environ.get('SPOTIPY_CLIENT_ID')
         self.client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
@@ -49,8 +51,17 @@ class SpotifyAuth(object):
 
         return token
 
+    def get_fresh_token_for_user(self, user):
+        now = time.time()
+        token = self._get_token(user)
+        if token:
+            if (token['expires_at'] - now) < self.EXPIRES_THRESHOLD:
+                token = self._refresh_token(token)
+                if token:
+                    self._add_token(code, token)
+        return token
+
     def _add_auth_code(self, auth_code):
-        print 'adding auth code', auth_code
         token = self._get_new_token(auth_code)
         if token:
             token = self._add_token(auth_code, token)
@@ -59,9 +70,18 @@ class SpotifyAuth(object):
     def _add_token(self, code, token):
         now = time.time()
         token['expires_at'] = int(now) + token['expires_in']
-        self._put('token:' + code, token)
-        if self.trace:
-            print 'added token to db', code, js
+        user_info = self._me(token)
+        if user_info:
+            token['user_id'] = user_info['id']
+            token['user_name'] = user_info['display_name']
+
+            user = token['user_id']
+            self._put('token:' + code, token)
+            if self.trace:
+                print 'added token to db', code, token
+        else:
+            print "can't get user info, bailing"
+            return None
         return token
 
 
@@ -96,10 +116,12 @@ class SpotifyAuth(object):
         }
         r = requests.post('https://accounts.spotify.com/api/token', params)
         if r.status_code >= 200 and r.status_code < 300:
-            token = r.json()
+            new_token = r.json()
             if self.trace:
                 print 'got back token', token
-            return token
+            if not 'refresh_token' in new_token:
+                new_token['refresh_token'] = token['refresh_token']
+            return new_token
         else:
             raise Exception("can't get token")
 
@@ -127,38 +149,33 @@ class SpotifyAuth(object):
             return None
 
     def _get(self, key):
-        self._init_db()
-        try:
-            js = self.db.Get(key)
-            if js:
-                return json.loads(js)
-            else:
-                return None
-        except KeyError:
+        js = self.r.get(key)
+        if js:
+            return json.loads(js)
+        else:
             return None
 
     def _put(self, key, val):
-        self._init_db()
         js = json.dumps(val)
-        self.db.Put(key, js)
+        print 'put', key, val
+        self.r.set(key, js)
 
-    def _init_db(self):
-        if self.db == None:
-            self.db = leveldb.LevelDB(self.dbpath)
+    def delete_auth(self, code):
+        key = 'token:' + code
+        self.r.delete(key)
+    
 
 
 if __name__ == '__main__':
     spauth = SpotifyAuth()
     arg = sys.argv[1]
     fields = arg.split('=')
-    if len(fields) == 2:
-        my_code = fields[-1]
-        token = spauth.get_fresh_token(my_code)
-        if token:
-            remaining = token['expires_at'] - time.time()
-            print 'Got a token that expires in', remaining, 'seconds'
-        else:
-            print 'no token for that code'
+    my_code = fields[-1]
+    spauth.delete_auth(my_code)
+    token = spauth.get_fresh_token(my_code)
+    if token:
+        remaining = token['expires_at'] - time.time()
+        print 'Got a token that expires in', remaining, 'seconds'
     else:
-        print 'no token'
+        print 'no token for that code'
 

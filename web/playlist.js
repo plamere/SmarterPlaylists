@@ -1,6 +1,4 @@
 
-var curTracks = [];
-var curProgram = null;
 var audio = null;
 
 function play(url) {
@@ -29,8 +27,7 @@ function stopTrack() {
 }
 
 
-function showPlaylist(program, data) {
-    var name = program.name;
+function showPlaylist(name, data) {
     var tbody = $("#playlist-body");
     tbody.empty();
 
@@ -40,14 +37,6 @@ function showPlaylist(program, data) {
     $("#playlist-title").text(name);
     $("#playlist-description").text(data.name);
 
-    curTracks = data.tracks;
-    curProgram = program;
-
-    if (program == null || data.tracks.length == 0) {
-        $("#save").prop("disabled", true);
-    } else {
-        $("#save").prop("disabled", false);
-    }
 
     _.each(data.tracks, function(track, i) {
         var tr = $("<tr>");
@@ -93,24 +82,6 @@ function playlistShown() {
     $("#tab-track-count").removeClass('tc-fresh');
 }
 
-
-function savePlaylist() {
-    var tracks = curTracks;
-    if (curProgram && tracks && tracks.length > 0) {
-        var tids = [];
-        _.each(tracks, function(track) {
-            tids.push('spotify:track:' + track.id);
-        });
-        localStorage.setItem('playlist-tids', JSON.stringify(tids));
-        localStorage.setItem('playlist-title', curProgram.name);
-        if (curProgram.extra.uri) {
-            localStorage.setItem('playlist-uri', curProgram.extra.uri);
-        } else {
-            localStorage.removeItem('playlist-uri');
-        }
-        loginWithSpotify();
-    }
-}
 
 function loginWithSpotify() {
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +

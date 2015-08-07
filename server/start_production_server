@@ -1,6 +1,5 @@
 source credentials.sh
-export PBL_NO_CACHE=
-export PBL_CACHE_PATH=/lab/SmarterPlaylists/cache
+export PBL_CACHE=REDIS
 export SPOTIPY_REDIRECT_URI='http://localhost:8000/auth.html'
-export SPOTIPY_REDIRECT_URI = 'http://static.echonest.com/SmarterPlaylists/auth.html';
+export SPOTIPY_REDIRECT_URI='http://static.echonest.com/SmarterPlaylists/auth.html';
 python flask_server.py

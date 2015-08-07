@@ -99,18 +99,26 @@ def compile_object(objname, program):
     else:
         if objname in components:
             comp = components[objname]
-            spec = get_spec_by_type(comp['_type'])
+            spec = get_spec_by_type(comp['type'])
             if spec:
                 params = { }
-                for param, val in comp.items():
-                    if param == '_type':
-                        continue
+
+                for param, val in comp['sources'].items():
                     status, cval = get_param_val(param, val, spec, program)
                     if status == OK:
                         params[param] = cval
                     else:
                         return status + " in " + objname, None
+
+                for param, val in comp['params'].items():
+                    status, cval = get_param_val(param, val, spec, program)
+                    if status == OK:
+                        params[param] = cval
+                    else:
+                        return status + " in " + objname, None
+
                 try:
+                    print 'creating', comp['type'], params
                     obj = spec['class'](**params)
                     symbols[objname] = obj
                     hsymbols[obj] = objname

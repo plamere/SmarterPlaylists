@@ -14,6 +14,7 @@ var redirect_uri = isLocalHost() ? local_redirect_uri : remote_redirect_uri;
 var auth_redirect_uri = isLocalHost() ? local_auth_redirect_uri : remote_auth_redirect_uri;
 
 var forceRemote = false;
+var confirmDelete = false;
 
 
 function get_auth_code() {
@@ -26,11 +27,6 @@ function isLocalHost() {
     } else {
         return window.location.host.indexOf('localhost') >= 0;
     }
-}
-
-function error(s) {
-    console.log('ERROR ' + s);
-    $("#info").text(s);
 }
 
 function info(s) {
@@ -53,40 +49,36 @@ function fetchInventory(callback) {
 }
 
 function fmtDate(ts) {
-    var d = new Date(0);
-    d.setUTCSeconds(ts);
-    var out = d.toString().substring(0,21);
-    return out;
+    if (ts) {
+        var d = new Date(0);
+        d.setUTCSeconds(ts);
+        var out = d.toString().substring(0,21);
+        return out;
+    } else {
+        return '';
+    }
 }
 
 function showBuilder() {
     $('#tabs a[href="#work"]').tab('show') // Select tab by name
 }
 
-function showInitialDirectory() {
-    loadInitialDirectory(inventory, function() {
-        showDirectory();
-    });
-}
-
-function showDirectory() {
+function showDirectoryTable(dir) {
     var body = $("#dir-body");
     body.empty();
-    var dir = loadDirectory(inventory);
-
     dir.sort(function(a, b) {
-        return b.extra.lastRun - a.extra.lastRun;
+        return b.last_run - a.last_run;
     });
 
     _.each(dir, function(entry, i) {
         var tr = $("<tr>");
 
         tr.append( $("<td>").text( (i + 1) ));
-        if (entry.extra.uri) {
+        if (entry.uri) {
             tr.append( 
                 $("<td>").append( 
                     $("<a>")
-                        .attr('href', entry.extra.uri)
+                        .attr('href', entry.uri)
                         .text(entry.name)
                         .on('click', function(e) {
                             e.stopPropagation();
@@ -94,49 +86,90 @@ function showDirectory() {
         } else {
             tr.append( $("<td>").text( entry.name ));
         }
-        tr.append( $("<td>").text( fmtDate(entry.extra.lastRun / 1000) ));
-        tr.append( $("<td>").text( entry.extra.runs ));
-        // tr.append( $("<td>").text( entry.extra.errors));
-        tr.append( $("<td>").text( _.keys(entry.components).length));
+        tr.append( $("<td>").text( fmtDate(entry.last_run) ));
+        tr.append( $("<td>").text( entry.runs ));
+        tr.append( $("<td>").text( entry.ncomponents));
 
+        /*
         tr.on('click', function() {
             showBuilder();
-            editor.load(entry);
+            loadProgram(inventory, entry.pid, function(program) {
+                editor.load(program);
+            });
         });
-        var shared = $("<td>");
-        if (entry.extra.pid) {
-            shared.append(
-                $("<a>")
-                    .addClass('prog-but text-primary')
-                    .text('Link')
-                    .attr('href', 'go.html?pid=' + entry.extra.pid)
-                ).on('click', function(e) {
-                    e.stopPropagation();
-                });
-        }
-        tr.append(shared);
+        */
         if (true) {
             var controls = $("<td>");
-                /*
+
                 controls.append(
                     $("<a>")
-                        .addClass('prog-but')
-                        .text('edit')
+                        .addClass('prog-but text-primary')
+                        .text('Edit')
                         .on('click', function(e) {
-                            console.log('edit');
+                            e.stopPropagation();
+                            showBuilder();
+                            loadProgram(inventory, entry.pid, function(program) {
+                                editor.load(program);
+                            });
+                        })
+                    );
+
+                controls.append(
+                    $("<a>")
+                        .addClass('prog-but text-primary')
+                        .text('Run')
+                        .on('click', function(e) {
+                            e.stopPropagation();
+                            runProgram(entry.pid, true, function(data) {
+                                if (data) {
+                                    console.log(data);
+                                    if (data.status == 'ok') {
+                                        showPlaylist(entry.name, data);
+                                    } else {
+                                        error(data.message);
+                                    }
+                                }
+                                showDirectory();
+                            });
+                        })
+                    );
+
+                controls.append(
+                    $("<a>")
+                        .addClass('prog-but text-primary')
+                        .text('Copy')
+                        .on('click', function(e) {
                             e.stopPropagation();
                         })
                     );
+
                 controls.append(
                     $("<a>")
-                        .addClass('prog-but')
-                        .text('run')
+                        .addClass('prog-but text-primary')
+                        .text('Share')
                         .on('click', function(e) {
-                            console.log('run');
                             e.stopPropagation();
                         })
                     );
-                */
+
+                controls.append(
+                    $("<a>")
+                        .addClass('prog-but text-primary')
+                        .text('Schedule')
+                        .on('click', function(e) {
+                            scheduleProgram(entry.pid, function(data) {
+                                if (data) {
+                                    console.log(data);
+                                    if (data.status == 'ok') {
+                                        info('job scheduled');
+                                    } else {
+                                        error(data.message);
+                                    }
+                                }
+                                showDirectory();
+                            });
+                        })
+                    );
 
                 controls.append(
                     $("<a>")
@@ -144,9 +177,16 @@ function showDirectory() {
                         .text('Delete')
                         .on('click', function(e) {
                             e.stopPropagation();
-                            if (window.confirm('Delete ' + entry.name + '?')) {
-                                removeProgram(entry.name);
-                                showDirectory();
+                            if (confirmDelete) {
+                                if (window.confirm('Delete ' + entry.name + '?')) {
+                                    removeProgram(entry.pid, function(status) {
+                                        showDirectory();
+                                    });
+                                }
+                            } else {
+                                removeProgram(entry.pid, function(status) {
+                                    showDirectory();
+                                });
                             }
                         })
                     );
@@ -158,10 +198,17 @@ function showDirectory() {
     });
 }
 
+function showDirectory() {
+    loadProgramDirectory(function(results) {
+        if (results.status == 'ok') {
+            showDirectoryTable(results.programs);
+        }
+    });
+}
+
 function loadRemoteProgram(path, inventory, callback) {
     $.getJSON(path).then(
         function(sprog) {
-            delete sprog.extra.uri;
             var program = loadProgramFromJSON(inventory, sprog);
             callback(program);
         },
@@ -184,7 +231,7 @@ function initApp() {
     
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') == '#dir') {
-            showInitialDirectory();
+            showDirectory();
         } else if ($(e.target).attr('href') == '#ttracks') {
             playlistShown();
         }
@@ -238,10 +285,16 @@ function initApp() {
 }
 
 function loginWithSpotifyForAuth() {
+    var scopes = "playlist-read-private playlist-read-collaborative";
+
+    scopes += " playlist-modify-public playlist-modify-private"
+    scopes += " user-library-read"
+
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
-        '&response_type=code&show_dialog=true' +
-        '&scope=playlist-modify-private' +
+        '&response_type=code&show_dialog=false' +
+        '&scope=' + scopes +
         '&redirect_uri=' + encodeURIComponent(auth_redirect_uri);
+
     document.location = url;
     //var w = window.open(url, 'asdf', 'WIDTH=400,HEIGHT=500');
 }

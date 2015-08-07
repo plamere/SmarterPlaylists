@@ -128,6 +128,7 @@ var createEditor = function(canvasElem, inventory, types) {
             var lattr = { x: x + rect.textXOffset, y: y + rect.textYOffset }
             rect.label.attr(lattr);
         }
+        program.trans.needsSave = true;
     }
 
     function convertType(type, val)  {
@@ -228,6 +229,7 @@ var createEditor = function(canvasElem, inventory, types) {
         } else {
             rect.attr({'stroke-width' : 1, 'stroke': rect.color});
         }
+        program.trans.needsSave = true;
     }
 
     function markComponentWithError(name, msg) {
@@ -328,8 +330,8 @@ var createEditor = function(canvasElem, inventory, types) {
                 // prompt('(already connected)');
                 return;
             }
-            if (alt.component.maxOutputs > 0 && cur.component.minInputs > 0) {
-                if (cur.component.cls.type == 'bool-filter') {
+            if (alt.component.trans.maxOutputs > 0 && cur.component.trans.minInputs > 0) {
+                if (cur.component.trans.cls.type == 'bool-filter') {
                     prompt('SHIFT-SPACE to connect <span class="rcname">' 
                         + alt.displayName  
                         + '</span> to the red port of <span class="cname">'
@@ -399,10 +401,10 @@ var createEditor = function(canvasElem, inventory, types) {
         canvasFocus(false);
         var component = rect.component;
 
-        $("#edit-modal .modal-title").text(component.cls.display);
-        $("#edit-modal .description").text(component.cls.description);
-        if (component.cls.help) {
-            $("#edit-modal .help").html(component.cls.help);
+        $("#edit-modal .modal-title").text(component.trans.cls.display);
+        $("#edit-modal .description").text(component.trans.cls.description);
+        if (component.trans.cls.help) {
+            $("#edit-modal .help").html(component.trans.cls.help);
         } else {
             $("#edit-modal .help").text("");
         }
@@ -560,10 +562,8 @@ var createEditor = function(canvasElem, inventory, types) {
         var pdiv = $("#edit-modal .params");
         pdiv.empty();
 
-        _.each(component.cls.params, function(param, name) {
-            if (name != 'source') {
-                addParam(pdiv, name, param);
-            }
+        _.each(component.trans.cls.params, function(param, name) {
+            addParam(pdiv, name, param);
         });
 
         if (pdiv.children().length == 0) {
@@ -586,11 +586,12 @@ var createEditor = function(canvasElem, inventory, types) {
                 component.params[name] = val;
             });
             renameComponent(rect);
+            program.trans.needsSave = true;
         });
     }
 
     function renameComponent(rect) {
-        var title = rect.component.cls.title || rect.component.cls.display;
+        var title = rect.component.trans.cls.title || rect.component.trans.cls.display;
         title = makeSubs(title, rect.component);
         addLabel(rect, title);
         // rect.label.attr('text', title + '\n' + 'more lines');
@@ -612,7 +613,7 @@ var createEditor = function(canvasElem, inventory, types) {
         function makeSub(word, component) {
             var key  = word.replace('$', '');
             if (key in component.params) {
-                var keyType = component.cls.params[key].type;
+                var keyType = component.trans.cls.params[key].type;
                 if (keyType in types) {
                     key = findTypeName(component.params[key], types[keyType]);
                     return key;
@@ -645,42 +646,22 @@ var createEditor = function(canvasElem, inventory, types) {
     }
 
 
-
-    // lelf over from testing
-    function addDraggableObjects() {
-            shapes = [  paper.ellipse(190, 100, 30, 20),
-                        paper.rect(290, 80, 60, 40, 10),
-                        paper.rect(290, 180, 60, 40, 2),
-                        paper.rect(240, 140, 60, 40, 2),
-                        paper.ellipse(450, 100, 20, 20)
-                    ];
-        for (var i = 0, ii = shapes.length; i < ii; i++) {
-            var color = Raphael.getColor();
-            shapes[i].attr({fill: color, stroke: color, "fill-opacity": 0, "stroke-width": 2, cursor: "move"});
-            shapes[i].drag(move, dragger, up);
-        }
-        connections.push(paper.connection(shapes[0], shapes[1], "#fff"));
-        connections.push(paper.connection(shapes[1], shapes[2], "#fff", "#fff|5"));
-        connections.push(paper.connection(shapes[1], shapes[3], "#000", "#fff"));
-    }
-
-
     function connectComponent(source, dest, connType) {
-        if (dest.component.maxInputs == 0) {
+        if (dest.component.trans.maxInputs == 0) {
             return;
         }
 
-        if (source.component.maxOutputs == 0) {
+        if (source.component.trans.maxOutputs == 0) {
             return;
         }
 
-        if (dest.component.cls.type != 'bool-filter') {
+        if (dest.component.trans.cls.type != 'bool-filter') {
             connType = CT_NORMAL;
         }
 
-        if (dest.component.maxInputs == 1) {
+        if (dest.component.trans.maxInputs == 1) {
             disconnectInputs(dest);
-        } else if (dest.component.maxInputs == 2) {
+        } else if (dest.component.trans.maxInputs == 2) {
             disconnectInput(dest, connType);
         }
 
@@ -822,7 +803,7 @@ var createEditor = function(canvasElem, inventory, types) {
         } else {
             rect.name = nextComponentName(componentType);
             rect.component = program.addComponent(rect.name, componentType.name, {}, {});
-            _.each(rect.component.cls.params, function(param, name) {
+            _.each(rect.component.trans.cls.params, function(param, name) {
                 if ('default' in param) {
                     rect.component.params[name] = param['default'];
                 } else if (param.type == 'bool') {
@@ -966,15 +947,12 @@ var createEditor = function(canvasElem, inventory, types) {
             var saveToSpotify = $('#save-playlist').is(':checked');
             if (program.name != title) {
                 program.name = title;
-                program.extra.uri = null;
             }
-
             clearComponentErrors();
             if (curSelected) {
                 var main = curSelected.name;
                 var issues = program.check(main);
                 program.main = main;
-                var json = program.save();
                 if (issues.length > 0) {
                     _.each(issues, function(issue) {
                         if (issue.component) {
@@ -986,14 +964,12 @@ var createEditor = function(canvasElem, inventory, types) {
                     });
                 } else {
                     setRunning(true);
-                    program.run(main, function(data) {
+                    program.run(main, saveToSpotify, function(data) {
                         setRunning(false);
                         if (data) {
+                            console.log(data);
                             if (data.status == 'ok') {
-                                showPlaylist(program, data);
-                                if (saveToSpotify) {
-                                    savePlaylist(program, data);
-                                }
+                                showPlaylist(program.name, data);
                             } else {
                                 error(data.message);
                                 if (data.component) {
@@ -1013,8 +989,13 @@ var createEditor = function(canvasElem, inventory, types) {
         saveButton.on('click', function() {
             var title = $("#program-name").text();
             program.name = title;
-            program.save();
-            setInfo(true, 'Saved');
+            program.save(function(data) {
+                if (data.status == 'ok') {
+                    setInfo(true, 'Saved');
+                } else {
+                    error("Can' save");
+                }
+            });
         });
 
         var clearButton = $("#clear-button");
@@ -1080,6 +1061,7 @@ var createEditor = function(canvasElem, inventory, types) {
         // if the callback.html was able to successfully save
         // we get this event, so update the program and save it
         // with the uri that was created for the playlist
+        /* TBD OLD, REMOVE
         $(window).bind('storage', function (e) {
             var evt = e.originalEvent;
             if (evt.key == 'playlist-save-status') {
@@ -1090,6 +1072,7 @@ var createEditor = function(canvasElem, inventory, types) {
                 }
             }
         });
+        */
 
         // TODO:  Instead of always saving programs, we might add
         //  and onbeforeunload event that will save just the dirty ones
@@ -1103,16 +1086,10 @@ var createEditor = function(canvasElem, inventory, types) {
             inputclass: 'program-input',
             success: function(response, newValue) {
                 program.name = newValue;
-                program.extra.runs = 0;
-                program.extra.errors = 0;
-                program.extra.uri = null;
-                program.save();
+                program.trans.needsSave = true;
              }
         });
 
-    }
-
-    function setProgramName(name) {
     }
 
     function initNewProgram(newProgram) {
@@ -1134,28 +1111,28 @@ var createEditor = function(canvasElem, inventory, types) {
             initNewProgram(newProgram);
 
             _.each(program.components, function(comp, id) {
-                addNewComponent(comp.cls, comp);
+                addNewComponent(comp.trans.cls, comp);
             });
 
             // add connections
 
             _.each(program.components, function(comp, id) {
                 var destRect = nameToRect[comp.name];
-                if (comp.source) {
-                    var srcRect = nameToRect[comp.source];
+                if (comp.sources.source) {
+                    var srcRect = nameToRect[comp.sources.source];
                     addVisualConnection(srcRect, destRect, CT_NORMAL);
-                } else if (comp.source_list) {
-                    _.each(comp.source_list, function(source) {
+                } else if (comp.sources.source_list) {
+                    _.each(comp.sources.source_list, function(source) {
                         var srcRect = nameToRect[source];
                         addVisualConnection(srcRect, destRect, CT_NORMAL);
                     });
-                } else if (comp.true_source || comp.false_source) {
-                    if (comp.true_source) {
-                        var srcRect = nameToRect[comp.true_source];
+                } else if (comp.sources.true_source || comp.sources.false_source) {
+                    if (comp.sources.true_source) {
+                        var srcRect = nameToRect[comp.sources.true_source];
                         addVisualConnection(srcRect, destRect, CT_NORMAL);
                     }
-                    if (comp.false_source) {
-                        var srcRect = nameToRect[comp.false_source];
+                    if (comp.sources.false_source) {
+                        var srcRect = nameToRect[comp.sources.false_source];
                         addVisualConnection(srcRect, destRect, CT_SHIFTED);
                     }
                 }
@@ -1168,6 +1145,7 @@ var createEditor = function(canvasElem, inventory, types) {
             $("#program-name").text(program.name);
             $("#program-name").editable('setValue', program.name);
 
+            program.trans.needsSave = false;
         },
 
         newProgram: function() {

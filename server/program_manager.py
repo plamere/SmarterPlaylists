@@ -8,6 +8,11 @@ import simplejson as json
 import hashlib
 import random
 import time
+import pbl
+import compiler
+import plugs
+
+debug_exceptions = False
 
 
 '''
@@ -25,7 +30,8 @@ import time
 
 class ProgramManager:
 
-    def __init__(self, r = None):
+    def __init__(self, auth, r = None):
+        self.auth = auth
         if r:
             self.r = r
         else:
@@ -89,12 +95,9 @@ class ProgramManager:
                 'pid': pid,
                 'ncomponents': len(program['components']),
             }
-
-            if 'uri' in program:
-                info['uri'] = program['uri']
-
             info.update(program['extra'])
             info.update(self.get_stats(pid))
+            info.update(self.get_info(pid))
             out.append(info)
         return total, out
             
@@ -141,13 +144,105 @@ class ProgramManager:
             out[k] = int(float(v))
         return out
 
+    def add_info(self, pid, key, val):
+        pkey = mkkey('program-info', pid)
+        self.r.hset(pkey, key, val)
+
+    def get_info(self, pid, key = None):
+        pkey = mkkey('program-info', pid)
+        if key == None:
+            return self.r.hgetall(pkey)
+        else:
+            return self.r.hget(pkey, key)
+
+
+    def execute_program(self, auth_code, pid, save_playlist):
+        start = time.time()
+
+        program = self.get_program(pid)
+        results = { }
+
+        try:
+            pbl.engine.clearEnvData()
+            token = self.auth.get_fresh_token(auth_code)
+            if not token:
+                print 'WARNING: bad auth token', auth_code
+                results['status'] = 'error'
+                results['message'] = 'not authorized'
+            else:
+                delta = token['expires_at'] - time.time()
+                print 'cur token expires in', delta, 'secs'
+                print 'token', token
+                user = token['user_id']
+                pbl.engine.setEnv('spotify_auth_token', token['access_token'])
+                pbl.engine.setEnv('spotify_user_id', token['user_id'])
+
+                status, obj = compiler.compile(program)
+                print 'compiled in', time.time() - start, 'secs'
+
+                if 'max_tracks' in program:
+                    max_tracks = program['max_tracks']
+                else:
+                    max_tracks = 40
+
+                results['status'] = status
+
+                if status == 'ok':
+                    results['name'] = obj.name
+                    tids = pbl.get_tracks(obj, max_tracks)
+                    results['tids'] = tids
+
+                    if save_playlist:
+                        uri = self.get_info(pid, 'uri')
+                        new_uri = plugs.save_to_playlist(program['name'], uri, tids)
+                        if uri != new_uri:
+                            self.add_info(pid, 'uri', new_uri)
+                        if new_uri:
+                            results['uri'] = new_uri
+                        else:
+                            results['status'] = 'error'
+                            results['message'] = "Can't save playlist to Spotify"
+                else:
+                    results['status'] = 'error'
+                    results['message'] = status
+
+        except pbl.PBLException as e:
+            if debug_exceptions:
+                raise
+            results['status'] = 'error'
+            results['message'] = e.reason
+            if e.component:
+                cname = program['hsymbols'][e.component]
+            else:
+                cname = e.cname
+            results['component'] = cname
+
+        except Exception as e:
+            if debug_exceptions:
+                raise
+            results['status'] = 'error'
+            results['message'] = str(e)
+
+        pbl.engine.clearEnvData()
+        results['time'] = time.time() - start
+        print 'compiled and executed in', time.time() - start, 'secs'
+
+        self.add_stat(pid, 'last_run', time.time());
+        if results['status'] == 'ok':
+            self.inc_stat(pid, 'runs');
+        else:
+            self.inc_stat(pid, 'errors');
+
+        print 'run', time.time() - start, results['status']
+        return results
+
     def share_program(self, user, pid):
         pass
 
     def unshare_program(self, user, share_id):
         pass
 
-    def schedule_program(self, user, pid):
+    def schedule_program(self, token, user, pid):
         pass
 
 

@@ -564,6 +564,43 @@ inventory = {
         },
 
         {
+            "name" : "PlaylistSave",
+            "class": plugs.PlaylistSave,
+            "type" : "filter",
+            "title" : "save to Spotify",
+            "display": "save to Spotify",
+            "description": "save the tracks to a spotify playlist",
+
+            "help": """ This filter will save all the tracks that pass through
+            it to the Spotify playlist. If a playlist with the given name
+            already exists it will be written to. If no playlist with the given
+            name exists, it will be created.  If the <b> append </b> flag is
+            set, the tracks will be appended to the playlist
+            """,
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "playlist_name": {
+                    "display": "name",
+                    "type" : "string",
+                    "default" : "My Smarter Playlist",
+                    "optional" : False,
+                    "description": "the name of the playlist"
+                },
+                "append": {
+                    "display": "append",
+                    "type" : "bool",
+                    "default" : False,
+                    "description": "if true, append tracks to the playlist"
+                }
+            }
+        },
+
+        {
             "name" : "AllButTheFirst",
             "class": plugs.AllButTheFirst,
             "type" : "filter",
