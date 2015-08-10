@@ -239,30 +239,6 @@ var createEditor = function(canvasElem, inventory, types) {
         rect.errorMessage = msg;
     }
 
-    function fmtTime(secs) {
-        function pad(v) {
-            var vs = v.toString();
-            if (vs.length == 1) {
-                vs = '0' + vs;
-            }
-            return vs;
-        }
-
-        if (isNaN(secs)) {
-            return "00:00:00";
-        }
-
-        var s = Math.round(secs);
-        var h = Math.floor(s / 3600);
-        s -= h * 3600;
-        var m = Math.floor(s/60);
-        s -= m * 60
-        if (h == 0) {
-            return pad(m) + ":" + pad(s);
-        } else {
-            return pad(h) + ":" + pad(m) + ":" + pad(s);
-        }
-    }
 
     function parseTime(stime) {
         var secs = 0;

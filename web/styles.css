@@ -210,3 +210,10 @@ body {
     margin-left:8px;
 }
 
+.icon-btn {
+    padding:10px !important;
+}
+
+.icon-red {
+    color:red !important;
+}

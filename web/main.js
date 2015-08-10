@@ -14,7 +14,7 @@ var redirect_uri = isLocalHost() ? local_redirect_uri : remote_redirect_uri;
 var auth_redirect_uri = isLocalHost() ? local_auth_redirect_uri : remote_auth_redirect_uri;
 
 var forceRemote = false;
-var confirmDelete = false;
+var confirmDelete = true;
 
 
 function get_auth_code() {
@@ -29,8 +29,59 @@ function isLocalHost() {
     }
 }
 
+var deltaNames = {
+    0: "Never",
+    60: "Once a minute",
+    3600: "Once an hour",
+    86400: "Once a day",
+    604800: "Once a week",
+    2592000: "Once a month",
+}
+
+function getDeltaName(delta) {
+    delta = parseInt(delta);
+    if (delta in deltaNames) {
+        return deltaNames[delta];
+    } else {
+        return fmtTime(delta);
+    }
+}
+
+function isValidDelta(val) {
+    return val in deltaNames;
+}
+
 function info(s) {
     $("#info").text(s);
+}
+
+function fmtTime(secs) {
+    function pad(v) {
+        var vs = v.toString();
+        if (vs.length == 1) {
+            vs = '0' + vs;
+        }
+        return vs;
+    }
+
+    if (isNaN(secs)) {
+        return "00:00:00";
+    }
+
+    var s = Math.round(secs);
+    var d = Math.floor(s / (3600 * 24));
+    s -= d * 3600 * 24;
+    var h = Math.floor(s / 3600);
+    s -= h * 3600;
+    var m = Math.floor(s/60);
+    s -= m * 60
+
+    prefix = d > 0 ? d + "d " : "";
+    if (h == 0) {
+        return prefix + pad(m) + ":" + pad(s);
+    } else {
+        return prefix + pad(h) + ":" + pad(m) + ":" + pad(s);
+    }
 }
 
 function fetchInventory(callback) {
@@ -41,6 +92,21 @@ function fetchInventory(callback) {
                 inventoryMap[component.name] = component;
             });
             callback(inventoryMap, data.inventory.types);
+        },
+        function() {
+            callback(null);
+        }
+    );
+}
+
+
+function fetchScheduleStats(pid, callback) {
+    $.getJSON(apiPath + 'schedule_status', {
+        pid:pid,
+        auth_code: get_auth_code()
+    }).then(
+        function(data) {
+            callback(data);
         },
         function() {
             callback(null);
@@ -98,104 +164,112 @@ function showDirectoryTable(dir) {
             });
         });
         */
+
+        // show schedule status
+        {
+            var status = '';
+            if (entry.schedule_status.status) {
+                var ss = entry.schedule_status.status;
+                if (ss  == 'queued' || ss == 'running') {
+                    status = getDeltaName(entry.schedule_status.delta);
+                } else {
+                    status = entry.schedule_status.status
+                }
+            }
+            tr.append( $("<td>").text(status));
+        }
         if (true) {
             var controls = $("<td>");
 
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-primary')
-                        .text('Edit')
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                            showBuilder();
-                            loadProgram(inventory, entry.pid, function(program) {
-                                editor.load(program);
-                            });
-                        })
-                    );
+            {
+                var btn = getIconButton('glyphicon-edit');
+                btn.attr('title', 'edit this program');
+                btn.on('click', function(e) {
+                    e.stopPropagation();
+                    showBuilder();
+                    loadProgram(inventory, entry.pid, function(program) {
+                        editor.load(program);
+                    });
+                })
+                controls.append(btn);
+            }
 
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-primary')
-                        .text('Run')
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                            runProgram(entry.pid, true, function(data) {
-                                if (data) {
-                                    console.log(data);
-                                    if (data.status == 'ok') {
-                                        showPlaylist(entry.name, data);
-                                    } else {
-                                        error(data.message);
-                                    }
-                                }
-                                showDirectory();
-                            });
-                        })
-                    );
-
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-primary')
-                        .text('Copy')
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                        })
-                    );
-
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-primary')
-                        .text('Share')
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                        })
-                    );
-
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-primary')
-                        .text('Schedule')
-                        .on('click', function(e) {
-                            scheduleProgram(entry.pid, function(data) {
-                                if (data) {
-                                    console.log(data);
-                                    if (data.status == 'ok') {
-                                        info('job scheduled');
-                                    } else {
-                                        error(data.message);
-                                    }
-                                }
-                                showDirectory();
-                            });
-                        })
-                    );
-
-                controls.append(
-                    $("<a>")
-                        .addClass('prog-but text-danger')
-                        .text('Delete')
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                            if (confirmDelete) {
-                                if (window.confirm('Delete ' + entry.name + '?')) {
-                                    removeProgram(entry.pid, function(status) {
-                                        showDirectory();
-                                    });
-                                }
+            {
+                var btn = getIconButton('glyphicon-play-circle');
+                btn.attr('title', 'run this program');
+                btn.on('click', function(e) {
+                    e.stopPropagation();
+                    runProgram(entry.pid, true, function(data) {
+                        if (data) {
+                            console.log(data);
+                            if (data.status == 'ok') {
+                                showPlaylist(entry.name, data);
                             } else {
-                                removeProgram(entry.pid, function(status) {
-                                    showDirectory();
-                                });
+                                error(data.message);
                             }
-                        })
-                    );
+                        }
+                        showDirectory();
+                    });
+                })
+                controls.append(btn);
+            }
+
+
+            {
+                var btn = getIconButton('glyphicon-share');
+                btn.attr('title', 'share this program');
+                controls.append(btn);
+            }
+
+            {
+                var btn = getIconButton('glyphicon-retweet');
+                btn.attr('title', 'copy this program');
+                controls.append(btn);
+            }
+
+            {
+                var btn = getIconButton('glyphicon-time');
+                btn.attr('href', 'schedule.html?pid=' + entry.pid);
+                btn.attr('title', 'schedule this program to run periodically');
+                controls.append(btn);
+            }
+
+            {
+                var btn = getIconButton('glyphicon-trash');
+                btn.addClass('icon-red');
+                btn.attr('title', 'delete this program');
+                btn.on('click', function(e) {
+                    e.stopPropagation();
+                    if (confirmDelete) {
+                        if (window.confirm('Delete ' + entry.name + '?')) {
+                            removeProgram(entry.pid, function(status) {
+                                showDirectory();
+                            });
+                        }
+                    } else {
+                        removeProgram(entry.pid, function(status) {
+                            showDirectory();
+                        });
+                    }
+                })
+                controls.append(btn);
+            }
 
 
             tr.append( controls);
         }
         body.append(tr);
     });
+}
+
+function getIconButton(icn) {
+    var a = $("<a>")
+        .addClass("icon-btn btn-lg active");
+    var span = $("<span>")
+        .addClass("glyphicon")
+        .addClass(icn);
+    a.append(span);
+    return a;
 }
 
 function showDirectory() {

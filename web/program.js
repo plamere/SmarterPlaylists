@@ -386,6 +386,33 @@ function loadProgram(inventory, pid, callback) {
     );
 }
 
+function loadProgramInfo(pid, callback) {
+    $.getJSON(apiPath + "program",
+        {
+            auth_code: get_auth_code(),
+            pid: pid
+        }, 
+        function(data) {
+            console.log('loaded', data);
+            if (data.status == 'ok') {
+                if (data.program) {
+                    callback(data.program);
+                } else {
+                    error("Can't load program");
+                    callback(null);
+                }
+            } else {
+                error("Can't load program");
+                callback(null);
+            }
+        }, 
+        function() {
+            error("Can't load program");
+            callback(null);
+        }
+    );
+}
+
 function loadProgramDirectory(callback) {
     $.getJSON(apiPath + 'directory', 
         { 
@@ -429,14 +456,13 @@ function runProgram(pid, save, callback) {
         });
 }
 
-function scheduleProgram(pid, callback) {
+function scheduleProgram(pid, when, delta, total, callback) {
      var schedule_post = {
         auth_code: get_auth_code(),
         pid: pid,
-        pid:pid,
         when: 0,
-        delta: 100,
-        total: 5
+        delta: delta,
+        total: total
      };
      var json = JSON.stringify(schedule_post, null, 4);
      console.log('SCHEDULE=' + json);

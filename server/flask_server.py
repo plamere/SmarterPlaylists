@@ -14,6 +14,7 @@ import pprint
 import program_manager
 import redis
 import scheduler
+import sys
 
 app = Flask(__name__)
 
@@ -111,17 +112,53 @@ def directory():
         if token:
             user = token['user_id']
             total, dir = pm.directory(user, start, count)
+
+            if len(dir) > 0:
+                pids = [ d['pid'] for d in dir]
+                all_ss = scheduler.get_batch_schedule_status(user, pids)
+                for d in dir:
+                    d['schedule_status'] = all_ss[d['pid']]
+
             results['status'] = 'ok'
             results['programs'] = dir
             results['total'] = total
             results['start'] = start
             results['count'] = count
+
         else:
             results['status'] = 'error'
             results['msg'] = 'no authorized user'
     else:
         results['status'] = 'error'
         results['msg'] = 'no authorized user'
+    results['time'] = time.time() - start_time
+    return jsonify(results)
+
+@app.route('/SmarterPlaylists/schedule_status')
+@cross_origin()
+def schedule_status():
+    start_time = time.time()
+    results = { }
+
+    auth_code = request.args.get('auth_code', '')
+    pid = request.args.get('pid', '')
+    if auth_code:
+        token = auth.get_fresh_token(auth_code)
+        if token:
+            user = token['user_id']
+            stats = scheduler.get_run_stats(user, pid)
+            rlist = scheduler.get_recent_results(user, pid)
+            results['status'] = 'ok'
+            results['schedule_status'] = stats
+            results['recent_results'] = rlist
+            results['pid'] = pid
+        else:
+            results['status'] = 'error'
+            results['msg'] = 'no authorized user'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no authorized user'
+
     results['time'] = time.time() - start_time
     return jsonify(results)
 
@@ -250,112 +287,22 @@ def schedule():
         when = params['when']
         delta = params['delta']
         total = params['total']
-        if scheduler.schedule(auth_code, user, pid, when, delta, total):
-            results['status'] = 'ok'
-        else:
-            results['status'] = 'error'
-            results['message'] = "Can't schedule that job"
-
-    results['time'] = time.time() - start
-    return jsonify(results)
-
-def old_run():
-    start = time.time()
-    params = request.json
-    pprint.pprint(params)
-    pid = params['pid']
-    auth_code = params['auth_code']
-    save_playlist = params['save']
-    print 'running', pid
-
-    program = pm.get_program(pid)
-    pprint.pprint(program)
-
-    results = { }
-
-    try:
-        pbl.engine.clearEnvData()
-        token = auth.get_fresh_token(auth_code)
-        if not token:
-            print 'WARNING: bad auth token', auth_code
-            results['status'] = 'error'
-            results['message'] = 'not authorized'
-        else:
-            delta = token['expires_at'] - time.time()
-            print 'cur token expires in', delta, 'secs'
-            print 'token', token
-            user = token['user_id']
-            pbl.engine.setEnv('spotify_auth_token', token['access_token'])
-            pbl.engine.setEnv('spotify_user_id', token['user_id'])
-
-            status, obj = compiler.compile(program)
-            print 'compiled in', time.time() - start, 'secs'
-
-            if 'max_tracks' in program:
-                max_tracks = program['max_tracks']
-            else:
-                max_tracks = 40
-
-            results['status'] = status
-
-            if status == 'ok':
-                results['name'] = obj.name
-                tids = pbl.get_tracks(obj, max_tracks)
-
-                tracks = []
-                results['tracks'] = tracks
-                print
-                for i, tid in enumerate(tids):
-                    print i, pbl.tlib.get_tn(tid)
-                    tracks.append(pbl.tlib.get_track(tid))
-                print
-
-                print 'SAVE to Spotify', save_playlist
-                if save_playlist:
-                    uri = pm.get_info(pid, 'uri')
-                    new_uri = plugs.save_to_playlist(program['name'], uri, tids)
-                    if uri != new_uri:
-                        pm.add_info(pid, 'uri', new_uri)
-                    if new_uri:
-                        results['uri'] = new_uri
-                    else:
-                        results['status'] = 'error'
-                        results['message'] = "Can't save playlist to Spotify"
+        if delta > 0:
+            if scheduler.schedule(auth_code, user, pid, when, delta, total):
+                results['status'] = 'ok'
             else:
                 results['status'] = 'error'
-                results['message'] = status
+                results['message'] = "Can't schedule that job"
+        else:   
+            if scheduler.cancel(user, pid):
+                results['status'] = 'ok'
+            else:
+                results['status'] = 'error'
+                results['message'] = "Can't cancel that job"
 
-    except pbl.PBLException as e:
-        if debug_exceptions:
-            raise
-        results['status'] = 'error'
-        results['message'] = e.reason
-        if e.component:
-            cname = program['hsymbols'][e.component]
-        else:
-            cname = e.cname
-        results['component'] = cname
-
-    except Exception as e:
-        if debug_exceptions:
-            raise
-        results['status'] = 'error'
-        results['message'] = str(e)
-
-    pbl.engine.clearEnvData()
     results['time'] = time.time() - start
-    print 'compiled and executed in', time.time() - start, 'secs'
-
-    pm.add_stat(pid, 'last_run', time.time());
-    if results['status'] == 'ok':
-        pm.inc_stat(pid, 'runs');
-    else:
-        pm.inc_stat(pid, 'errors');
-
-    if app.trace:
-        print json.dumps(results, indent=4)
-    print 'run', time.time() - start, results['status']
     return jsonify(results)
+
   
 #@app.errorhandler(Exception)
 def handle_invalid_usage(error):
@@ -366,16 +313,18 @@ def handle_invalid_usage(error):
     return jsonify(results)
 
 if __name__ == '__main__':
-    if os.environ.get('PBL_NO_CACHE'):
-        app.debug = True
-        app.trace = False
+    app.debug = False
+    app.trace = False
+    for arg in sys.argv[1:]:
+        if arg == '--debug':
+            app.debug = True
+        if arg == '--trace':
+            app.trace = True
+    if app.debug:
         print 'debug  mode'
         app.run(threaded=True)
     else:
         from gevent.wsgi import WSGIServer
-        app.trace = False
         print 'prod  mode'
         http_server = WSGIServer(('', 5000), app)
         http_server.serve_forever()
-
-
