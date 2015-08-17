@@ -66,14 +66,16 @@ class ProgramManager:
 
         pid = make_pid(program)
         program['pid'] = pid
-        program['owner']  = user
         program['uri']  = None
-        pkey = mkkey('program', pid)
+        pkey = mkprogkey(user, pid)
         self.r.set(pkey, json.dumps(program))
 
         dirkey = mkkey('directory', user)
         self.r.rpush(dirkey, pid)
         self.add_stat(pid, 'creation_date', int(time.time()))
+        self.add_info(pid, 'shared', False)
+        self.add_info(pid, 'owner', user)
+        self.add_info(pid, 'name', program['name'])
 
         return pid
         
@@ -82,7 +84,7 @@ class ProgramManager:
         pids = self.r.lrange(dirkey, start, count - 1)
         pipe = self.r.pipeline()
         for pid in pids:
-            pkey = mkkey('program', pid)
+            pkey = mkprogkey(user, pid)
             pipe.get(pkey)
         programs = pipe.execute()
         out = []
@@ -98,12 +100,14 @@ class ProgramManager:
             info.update(program['extra'])
             info.update(self.get_stats(pid))
             info.update(self.get_info(pid))
+            info['shared'] = info['shared'] == 'True'
             out.append(info)
+        out.sort(key=lambda x:x['name'].lower())
         return total, out
             
 
-    def get_program(self, pid):
-        pkey = mkkey('program', pid)
+    def get_program(self, user, pid):
+        pkey = mkprogkey(user, pid)
         val = self.r.get(pkey)
         if val:
             program = json.loads(val)
@@ -111,22 +115,58 @@ class ProgramManager:
             program = None
         return program
 
+    def copy_program(self, user, pid):
+        pkey = mkprogkey(user, pid)
+        val = self.r.get(pkey)
+        pid = None
+        if val:
+            program = json.loads(val)
+            program['name'] = 'copy of ' + program['name']
+            pid = self.add_program(user, program)
+        return program
+
+    def import_program(self, user, pid):
+        new_pid = None
+        info = self.get_info(pid)
+        if info and 'shared' in info:
+            is_shared =  info['shared'] == 'True'
+            if is_shared:
+                owner =  info['owner']
+                program = self.get_program(owner, pid)
+                program['name'] = 'import of ' + program['name']
+                new_pid = self.add_program(user, program)
+        return new_pid
+
+    def publish_program(self, user, pid, state):
+        self.add_info(pid, 'shared', state)
+        if state:
+            self.r.sadd('published-programs', pid)
+        else:
+            self.r.srem('published-programs', pid)
+
+    def get_published_programs(self):
+        return self.r.smembers('published-programs')
+            
+        
     def delete_program(self, user, pid):
         dirkey = mkkey('directory', user)
         removed_count = self.r.lrem(dirkey, 1, pid)
         if removed_count >= 1:
-            pkey = mkkey('program', pid)
+            pkey = mkprogkey(user, pid)
             self.r.delete(pkey)
         return removed_count >= 1
 
     def update_program(self, user, program):
         pid = program['pid']
-        pkey = mkkey('program', pid)
+        pkey = mkprogkey(user, pid)
         self.r.set(pkey, json.dumps(program))
+
 
         dirkey = mkkey('directory', user)
         self.r.lrem(dirkey, 1, pid)
         self.r.rpush(dirkey, pid)
+        self.add_info(pid, 'owner', user)
+        self.add_info(pid, 'name', program['name'])
 
     def add_stat(self, pid, key, val):
         pkey = mkkey('program-stats', pid)
@@ -159,7 +199,6 @@ class ProgramManager:
     def execute_program(self, auth_code, pid, save_playlist):
         start = time.time()
 
-        program = self.get_program(pid)
         results = { }
 
         try:
@@ -174,6 +213,10 @@ class ProgramManager:
                 print 'cur token expires in', delta, 'secs'
                 print 'token', token
                 user = token['user_id']
+                program = self.get_program(user, pid)
+                if not program:
+                    return None
+                print 'program', program
                 pbl.engine.setEnv('spotify_auth_token', token['access_token'])
                 pbl.engine.setEnv('spotify_user_id', token['user_id'])
 
@@ -249,6 +292,9 @@ class ProgramManager:
 def mkkey(type, id):
     return type + ':' + id
 
+def mkprogkey(user, id):
+    return 'program:' + user + ':' + id
+
 def make_pid(program):
     salt = random.randint(0, 1000000)
     js = json.dumps(program) + str(salt)
@@ -276,7 +322,7 @@ if __name__ == '__main__':
     def show_dir(user):
         for pid in p.directory(user):
             print pid,
-            program = p.get_program(pid)
+            program = p.get_program(user, pid)
             pprint.pprint(program)
             print
 

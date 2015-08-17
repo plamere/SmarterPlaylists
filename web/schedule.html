@@ -7,13 +7,12 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link type="text/css" href="styles.css" rel="stylesheet" />
-    <!--
-    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.1.0/sp-bootstrap.min.css" rel="stylesheet">
-    -->
-    <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
+    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.2.0/sp-bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="images/favicon.png">
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
     rel="stylesheet"/>
+    <link rel="stylesheet" href="lib/bootstrap-datetimepicker.min.css" />
+
     <title>Smarter Playlists</title>
     <!-- Custom styles for this template -->
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -45,11 +44,11 @@
     <div class="top" id='intro'>
       <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
         <div id='errors'> </div>
-        <div id="content">
+        <div id="content" class="container">
           <h2> Scheduler for <a id='ptitle'></a></h2>
           <div id="#info"> </div>
           <div id="my-tab-content" class="tab-content">
-            <div class="" id="results">
+            <div class="well" id="results">
               <div class='form-group'>
                     <label> Run this program automatically</label>
                     <select id='schedule-delta'>
@@ -60,13 +59,21 @@
                         <option value="604800"> Every Week</option>
                         <option value="2592000"> Every Month</option>
                     </select>
-                    <button id='btn-schedule' class='btn btn-xs btn-primary'>
-                    Update Schedule
-                    </button>
-                    <button id='btn-refresh' class='btn btn-xs btn-primary'> 
-                        Refresh
-                    </button>
               </div>
+              <div class='form-group form-inline'>
+                    <label> Next run: </label>
+                    <span class='ncol-sm-4 input-group date' id='next-run'>
+                        <input type='text' class="form-control" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </span>
+             </div>
+            <button id='btn-schedule' class='btn btn-sm btn-primary'> Update Schedule </button>
+            </div>
+
+            <div>
+              <button id='btn-refresh' class='btn btn-sm btn-primary'> Refresh </button> </div>
               <table class="table table-striped table-bordered">
                     <tbody>
                         <tr>
@@ -99,6 +106,7 @@
                 </thead>
                 <tbody id='results-body'> </tbody>
               </table>
+            </div>
           </div>
         </div>
       </div>
@@ -116,11 +124,14 @@
       src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js">
       </script>
+    <script type="text/javascript" src="lib/bootstrap-datetimepicker.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="main.js"></script>
     <script src="program.js"></script>
 
 <script>
+
+var nextRunDate = null;
 
 function loadScheduleStats(pid) {
     fetchScheduleStats(pid, function(data) {
@@ -132,12 +143,23 @@ function loadScheduleStats(pid) {
     });
 }
 
+function getDateFromEpoch(ts) {
+    ts = parseInt(ts);
+    if (ts == 0) {
+        return moment();
+    } else {
+        var d = moment(ts * 1000);
+        return d;
+    }
+}
+
 function showSummaryTable(ss) {
     $("#status-runs").text(ss.runs);
     $("#status-errors").text(ss.errors);
     $("#status-cerrors").text(ss.cerrors);
     if (ss.next_run) {
         $("#status-next-run").text(fmtRuntime(ss.next_run));
+        nextRunDate.date( getDateFromEpoch(ss.next_run));
     } else {
         $("#status-next-run").text('Unscheduled');
     }
@@ -216,16 +238,23 @@ function initScheduler() {
     });
 
     $("#btn-schedule").on('click', function() {
-        var when = 0;
         var total = 100;
         var delta = $("#schedule-delta").val();
+        var when = nextRunDate.date().unix();
 
-        console.log('delta', delta);
+        console.log('delta/when', delta, when);
         scheduleProgram(pid, when, delta, total, function(data) {
             console.log('scheduled', data);
             loadScheduleStats(pid);
         });
     });
+
+    $('#next-run').datetimepicker({
+        "useCurrent" :true,
+        sideBySide: false,
+    });
+    nextRunDate = $('#next-run').data('DateTimePicker');
+    nextRunDate.date(new Date());
 }
 
 

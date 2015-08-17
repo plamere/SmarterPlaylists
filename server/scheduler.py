@@ -154,7 +154,8 @@ class Scheduler(object):
     def run_job(self, skey):
         self.r.hset(skey, 'status', 'running')
         results = self.execute_job(skey)
-        self.process_job_result(skey, results)
+        if results:
+            self.process_job_result(skey, results)
 
     def process_job_result(self, skey, results):
         p = self.r.pipeline()
@@ -187,6 +188,10 @@ class Scheduler(object):
         elif runs >= int(info['total']):
             results['info'] = 'total runs reached, job finished'
             self.r.hset(skey, 'status', 'finished')
+            self.r.hset(skey, 'next_run', 0)
+        elif delta == 0:
+            results['info'] = 'run cancelled by user'
+            self.r.hset(skey, 'status', 'cancelled')
             self.r.hset(skey, 'next_run', 0)
         else:
             next_time = self.now() + delta

@@ -1,6 +1,7 @@
 import pbl
 import datetime
 import random
+import spotipy
 from werkzeug.contrib.cache import SimpleCache
 from pbl import spotify_plugs
 
@@ -412,3 +413,248 @@ def save_to_playlist(title, uri, tids):
     else:
         print "Can't get authenticated access to spotify"
     return uri
+
+class MySavedTracks(object):
+    ''' A PBL Source that generates a list of the saved tracks
+        by the current suer
+    '''
+
+    def __init__(self):
+        self.name = 'MySavedTracks'
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+                limit = 50
+                offset = 0
+
+                remaining = 1
+                while remaining > 0:
+                    results = sp.current_user_saved_tracks(limit = limit, offset = offset)
+                    for item in results['items']:
+                        track = item['track']
+                        if track and 'id' in track:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                        else:
+                            raise pbl.engine.PBLException(self, 'bad track')
+
+                    if len(results['items']) < limit:
+                        remaining = 0
+                    else:
+                        remaining = results['total'] - (results['offset'] + len(results['items']))
+                    offset += limit
+
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None
+
+class MyFollowedArtists(object):
+    ''' A PBL Source that generates top tracks from followed artist
+        by the current user
+    '''
+
+    def __init__(self, num_tracks):
+        self.name = 'MyFollowedArtists'
+        self.num_tracks = num_tracks
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+                limit = 50
+                after = None
+                while True:
+                    try:
+                        results = get_spotify().current_user_followed_artists(limit = limit, after = after)
+                    except spotipy.SpotifyException as e:
+                        raise pbl.engine.PBLException(self, e.msg)
+
+                    artists = results['artists']
+                    items = artists['items']
+
+                    for item in items:
+                        artist_id = item['id']
+                        after = artist_id
+                        try:
+                            results = get_spotify().artist_top_tracks(artist_id)
+                        except spotipy.SpotifyException as e:
+                            raise pbl.engine.PBLException(self, e.msg)
+
+                        for track in results['tracks'][:self.num_tracks]:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                    if len(items) < limit:
+                        break
+
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None
+
+class MixIn(object):
+    ''' 
+        A PBL Filter that mixes two input streams based upon a small
+        set of rules
+    '''
+
+    def __init__(self, true_source, false_source, 
+        ntracks=1, nskips=1, initial_skip = 1, fail_fast = True):
+        '''
+            params:
+                * true_source
+                * false_source
+        '''
+        self.name = 'mixing ' + true_source.name  + ' with ' + \
+            false_source.name
+        self.true_source = true_source
+        self.false_source = false_source
+        self.initial_offset = initial_skip
+        self.ntracks = ntracks # false tracks in a row
+        self.nskips = nskips   # true tracks in a row
+        self.fail_fast = fail_fast
+        self.which = 0
+
+    def next_track(self):
+
+        if self.which < self.initial_offset:
+            true_count = self.initial_offset
+        else:
+            true_count = self.nskips
+
+        false_count = self.ntracks
+        total_tracks_in_cycle = true_count + false_count
+        which_in_cycle = self.which % total_tracks_in_cycle
+        use_first = which_in_cycle < true_count
+
+        if use_first:
+            next_source = self.true_source
+            other_source = self.false_source
+        else:
+            next_source = self.false_source
+            other_source = self.true_source
+
+        track = next_source.next_track()
+        if not track:
+            if not self.fail_fast:
+                track = other_source.next_track()
+        self.which += 1
+        return track
+
+class SeparateArtists(object):
+    ''' A PBL filter that reorders the input tracks to maximize
+        the separation between artists
+    '''
+
+    def __init__(self, source):
+        self.name = 'SeparateArtists'
+        self.source = source
+        self.tracks = []
+        self.filling = True
+
+    def score_list(self):
+        min_delta_allowed = 2
+        score = 0
+        indexes = set()
+
+        for i in xrange(len(self.tracks) - 1):
+            aname = self.tracks[i]['artist']
+            for j in xrange(i + 1, len(self.tracks)):
+
+                if j - i >= min_delta_allowed:
+                    break
+
+                bname = self.tracks[j]['artist']
+                if aname == bname:
+                    delta = j - i
+                    indexes.add(i)
+                    indexes.add(j)
+                    score += min_delta_allowed - delta
+
+        lindex = list(indexes)
+        lindex.sort()
+        return score, lindex
+
+    def random_index(self):
+        return random.randint(0, len(self.tracks) - 1)
+
+    def swap(self, a, b):
+        tmp = self.tracks[a]
+        self.tracks[a] = self.tracks[b]
+        self.tracks[b] = tmp
+
+    def separate_artists(self):
+        max_tries = 1000
+        cur_score = 0
+        max_no_swaps = 100
+
+        cur_score, indexes = self.score_list()
+        no_swap = 0
+
+        for i in xrange(max_tries):
+
+            if cur_score == 0 or len(indexes) == 0:
+                break
+
+            swap_1 = random.choice(indexes)
+            swap_2 = self.random_index()
+            self.swap(swap_1, swap_2)
+            new_score, new_indexes = self.score_list()
+
+            if new_score >= cur_score:
+                self.swap(swap_2, swap_1)
+                no_swap += 1
+                if no_swap > max_no_swaps:
+                    print 'max swaps'
+                    break
+            else:
+                no_swap = 0
+                print i, cur_score, new_score, len(indexes)
+                cur_score = new_score
+                indexes = new_indexes
+
+            if cur_score == 0:
+                break
+
+        return cur_score, len(indexes)
+
+    def create_buffer(self):
+        self.buffer = []
+        for ti in self.tracks:
+            self.buffer.append(ti['id'])
+
+    def next_track(self):
+        while self.filling:    
+            track = self.source.next_track()
+            if track:
+                tinfo = pbl.tlib.get_track(track)
+                self.tracks.append(tinfo)
+            else:
+                self.filling = False
+                self.separate_artists()
+                self.create_buffer()
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop()
+        else:
+            return None
+
+
+if __name__ == '__main__':
+    import sys
+    p1 = pbl.ArtistTopTracks(name='Ravenscry')
+    p2 = pbl.ArtistTopTracks(name='weezer')
+    mi = MixIn(p1, p2, 2,1,1, True)
+    pbl.show_source(mi)

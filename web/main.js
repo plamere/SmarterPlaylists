@@ -21,6 +21,10 @@ function get_auth_code() {
     return localStorage.getItem('sp-auth-code');
 }
 
+function clear_auth_code() {
+    return localStorage.removeItem('sp-auth-code');
+}
+
 function isLocalHost() {
     if (forceRemote) {
         return false;
@@ -84,9 +88,19 @@ function fmtTime(secs) {
     }
 }
 
+
+function checkForBadUser(data) {
+    console.log(data.status, data.msg);
+    if (data.status == 'error' && data.msg == 'no authorized user') {
+        clear_auth_code();
+        document.location = 'index.html';
+    }
+}
+
 function fetchInventory(callback) {
     $.getJSON(apiPath + 'inventory').then(
         function(data) {
+            checkForBadUser(data);
             var inventoryMap = {};
             _.each(data.inventory.components, function(component) {
                 inventoryMap[component.name] = component;
@@ -106,6 +120,7 @@ function fetchScheduleStats(pid, callback) {
         auth_code: get_auth_code()
     }).then(
         function(data) {
+            checkForBadUser(data);
             callback(data);
         },
         function() {
@@ -132,9 +147,11 @@ function showBuilder() {
 function showDirectoryTable(dir) {
     var body = $("#dir-body");
     body.empty();
+    /*
     dir.sort(function(a, b) {
         return b.last_run - a.last_run;
     });
+    */
 
     _.each(dir, function(entry, i) {
         var tr = $("<tr>");
@@ -154,16 +171,15 @@ function showDirectoryTable(dir) {
         }
         tr.append( $("<td>").text( fmtDate(entry.last_run) ));
         tr.append( $("<td>").text( entry.runs ));
-        tr.append( $("<td>").text( entry.ncomponents));
 
-        /*
-        tr.on('click', function() {
-            showBuilder();
-            loadProgram(inventory, entry.pid, function(program) {
-                editor.load(program);
-            });
-        });
-        */
+        if (entry.shared) {
+            var anchor = $("<a>")
+                .text('remote link')
+                .attr('href', 'importer.html?pid=' + entry.pid);
+            tr.append( $("<td>").append(anchor));
+        } else {
+            tr.append( $("<td>").text(''));
+        }
 
         // show schedule status
         {
@@ -181,7 +197,7 @@ function showDirectoryTable(dir) {
         if (true) {
             var controls = $("<td>");
 
-            {
+            if (true) {
                 var btn = getIconButton('glyphicon-edit');
                 btn.attr('title', 'edit this program');
                 btn.on('click', function(e) {
@@ -190,16 +206,25 @@ function showDirectoryTable(dir) {
                     loadProgram(inventory, entry.pid, function(program) {
                         editor.load(program);
                     });
-                })
+                });
                 controls.append(btn);
             }
 
-            {
+            if (false) {
+                var btn = getIconButton('glyphicon-edit');
+                btn.attr('title', 'edit this program');
+                btn.attr('href', 'edit.html?pid=' + entry.pid);
+                controls.append(btn);
+            }
+
+            (function() {
                 var btn = getIconButton('glyphicon-play-circle');
                 btn.attr('title', 'run this program');
                 btn.on('click', function(e) {
                     e.stopPropagation();
+                    btn.addClass('icon-red');
                     runProgram(entry.pid, true, function(data) {
+                        btn.removeClass('icon-red');
                         if (data) {
                             console.log(data);
                             if (data.status == 'ok') {
@@ -212,18 +237,35 @@ function showDirectoryTable(dir) {
                     });
                 })
                 controls.append(btn);
-            }
+            })();
 
 
             {
                 var btn = getIconButton('glyphicon-share');
                 btn.attr('title', 'share this program');
+                if (entry.shared) {
+                    btn.addClass('icon-blue');
+                } 
+
+                btn.on('click', function(e) {
+                    e.stopPropagation();
+                    shareProgram(entry.pid, !entry.shared, function(results) {
+                        showDirectory();
+                    });
+                })
                 controls.append(btn);
             }
 
             {
-                var btn = getIconButton('glyphicon-retweet');
+                var btn = getIconButton('glyphicon-duplicate');
                 btn.attr('title', 'copy this program');
+                btn.on('click', function(e) {
+                    e.stopPropagation();
+                    copyProgram(entry.pid, function(results) {
+                        console.log(results);
+                        showDirectory();
+                    });
+                })
                 controls.append(btn);
             }
 
@@ -280,28 +322,12 @@ function showDirectory() {
     });
 }
 
-function loadRemoteProgram(path, inventory, callback) {
-    $.getJSON(path).then(
-        function(sprog) {
-            var program = loadProgramFromJSON(inventory, sprog);
-            callback(program);
-        },
-        function() {
-            callback(null);
-        }
-    );
-}
 
 
 function initApp() {    
     var params = parseParams();
     var pprogram = ('program' in params) ? params['program'] : null;
 
-    if ('pid' in params) {
-        var pid = params['pid'];
-        pprogram = apiPath + 'shared?pid='  + pid;
-        console.log('pprogram', pprogram);
-    }
     
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') == '#dir') {
@@ -321,6 +347,11 @@ function initApp() {
         });
     });
 
+    $("#logout").on("click", function() {
+        clear_auth_code();
+        document.location = 'index.html';
+    });
+
 
     var newButton = $("#new-button");
     newButton.on('click', function() {
@@ -331,29 +362,15 @@ function initApp() {
     });
 
 
-    $('#tabs').tab();
     fetchInventory(function(inventoryMap, styles) {
+        $("#spinner").hide();
         if (inventoryMap == null) {
             alert("Uh Oh - Having trouble phoning home");
         } else {
+            $('#tabs').tab();
             inventory = inventoryMap;
             editor = createEditor("workspace", inventoryMap, styles);
-            if (pprogram) {
-                loadRemoteProgram(pprogram, inventory, function(remoteProgram) {
-                    if (remoteProgram) {
-                        editor.load(remoteProgram);
-                    } else {
-                        error("Can't load " + pprogram);
-                    }
-                });
-            } else {
-                var mostRecent = loadMostRecentProgram(inventory);
-                if (mostRecent) {
-                    editor.load(mostRecent);
-                } else {
-                    $('.nav-tabs a[href="#dir"]').tab('show');
-                }
-            }
+            $('.nav-tabs a[href="#dir"]').tab('show');
         }
     });
 }
@@ -363,6 +380,7 @@ function loginWithSpotifyForAuth() {
 
     scopes += " playlist-modify-public playlist-modify-private"
     scopes += " user-library-read"
+    scopes += " user-follow-read"
 
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
         '&response_type=code&show_dialog=false' +

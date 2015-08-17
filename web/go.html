@@ -7,13 +7,11 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link type="text/css" href="styles.css" rel="stylesheet" />
-    <!--
-    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.1.0/sp-bootstrap.min.css" rel="stylesheet">
-    -->
-    <link href="lib/sp-bootstrap.min.css" rel="stylesheet">
+    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.2.0/sp-bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="images/favicon.png">
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
     rel="stylesheet"/>
+    <link rel="stylesheet" href="http://css-spinners.com/css/spinner/spinner.css" type="text/css">
     <title>Smarter Playlists</title>
     <!-- Custom styles for this template -->
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -27,7 +25,7 @@
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand" href="go.html">
             <span class="navbar-logo">Spotify</span>
             <span class="navbar-title">Smarter Playlists</span>
           </a>
@@ -36,6 +34,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li class=""> <a href="examples.html">Examples</a> </li>
           <li> <a href="about.html">About</a> </li>
+          <li> <a id='logout'>Logout</a> </li>
         </ul>
         </nav>
       </div>
@@ -47,6 +46,7 @@
         <div id='errors'> </div>
         <div id="content">
           <div id="#info"> </div>
+          <div id='spinner' class="spinner-loader"> Loading… </div>
           <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="not-active"><a href="#dir" data-toggle="tab">Programs</a></li>
             <li class="active"><a href="#work" data-toggle="tab">Builder</a></li>
@@ -56,9 +56,9 @@
           </ul>
 
 
-          <div id="my-tab-content" class="tab-content">
+          <div id="my-tab-content" class="tab-content container">
 
-            <div class="tab-pane not-active" id="dir">
+            <div class="tab-pane active" id="dir">
               <button id='new-button' 
                 class='btn btn-primary btn-primary fbut pull-right'> New Program </button>
               <h2 class='pull-left'> Your Programs </h2>
@@ -70,8 +70,10 @@
                     <th>Title </th> 
                     <th> Last run </th>
                     <th> Runs </th> 
-                    <!--<th> Errors </th>  -->
+                    <th> Shared </th> 
+                    <!--<th> Errors </th>  
                     <th> # Components </th> 
+                    -->
                     <th> Schedule </th> 
                     <th> Actions </th> 
                   </tr> 
@@ -80,7 +82,7 @@
               </table>
             </div> <!-- programs pane -->
 
-            <div class="tab-pane active" id="work">
+            <div class="tab-pane not-active" id="work">
               <div class="row">
                 <div class="col-sm-2" >
                     <h4 class='text-info' id='running-state'> </h4>

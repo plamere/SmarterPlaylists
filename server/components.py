@@ -536,6 +536,39 @@ inventory = {
             }
         },
         {
+            "name" : "MySavedTracks",
+            "class": plugs.MySavedTracks,
+            "type" : "source",
+            "display": "my saved tracks",
+            "description": "produces a list of the current user's saved tracks",
+
+            "help" : """ This component will generate a stream of tracks from the 
+            current user's saved tracks
+            """,
+            "title": "My Saved tracks",
+            "params": { }
+        },
+        {
+            "name" : "MyFollowedArtists",
+            "class": plugs.MyFollowedArtists,
+            "type" : "source",
+            "display": "followed artists",
+            "description": "produces a list tracks by the current user's followed artists",
+
+            "help" : """ This component will generate a stream of tracks from the 
+            current user's saved tracks
+            """,
+            "title": "top tracks by my followed artists",
+            "params": { 
+                "num_tracks": {
+                    "type" : "number",
+                    "optional" : True,
+                    "default" : 1,
+                    "description": "The number of tracks per artist to generate",
+                }
+            }
+        },
+        {
             "name" : "First",
             "class": pbl.First,
             "type" : "filter",
@@ -783,6 +816,82 @@ inventory = {
                     "optional" : False,
                     "description": "the source of the tracks",
                 },
+            }
+        },
+        {
+            "name" : "SeparateArtists",
+            "class": plugs.SeparateArtists,
+            "type" : "filter",
+            "title" : "separate artists",
+            "display" : "separate artists",
+            "description": "minimizes the number of adjacent songs by the same artist",
+
+            "help" : """
+                This component will re-order the input tracks such that the
+                number of adjacent tracks with the same artist is minimized""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+            }
+        },
+        {
+            "name" : "MixIn",
+            "class": plugs.MixIn,
+            "display" : "mix in",
+            "title": "mix in",
+            "type" : "bool-filter",
+            "description": "mix two input streams",
+
+            "help": """ This component excepts a red and a green input stream.
+            If the <b> yes </b> parameter is set, tracks from the green stream
+            will be passed through, otherwise, tracks from the red stream will
+            be passed through""",
+
+            "params": {
+                "true_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the primary source of tracks ",
+                },
+                "false_source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the mixin source of tracks",
+                },
+                "fail_fast": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "display" : "fail fast",
+                    "description": "if true stop producing tracks "
+                        + "as soon as any input stops producing tracks"
+                },
+
+                "ntracks": {
+                    "type" : "number",
+                    "display" : "# red tracks in a row",
+                    "optional" : False,
+                    "default" : 1,
+                    "description": "the number of red tracks in a row"
+                },
+                "nskips": {
+                    "type" : "number",
+                    "display" : "# green tracks in a row",
+                    "optional" : False,
+                    "default" : 1,
+                    "description": "the number of green tracks in a row"
+                },
+                "initial_skip": {
+                    "type" : "number",
+                    "display" : "initial number of green tracks",
+                    "default" : 1,
+                    "optional" : False,
+                    "description": "the initial number of green tracks"
+                }
             }
         },
         {

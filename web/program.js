@@ -326,12 +326,9 @@ function removeProgram(pid, callback) {
 
 function loadProgramFromJSON(inventory, sprog) {
     var program = new Program(inventory, sprog.name);
-    program.name = sprog.name;
-    program.main = sprog.main;
-    program.max_tracks = sprog.max_tracks;
-    program.extra = sprog.extra;
-    program.pid = sprog.pid;
+    program = _.extendOwn(program, sprog);
     program.trans.needsSave = false;
+    program.components = {}
     _.each(sprog.components, function(comp, name) {
         program.addComponent(name, comp.type, comp.params, comp.extra);
     });
@@ -386,6 +383,32 @@ function loadProgram(inventory, pid, callback) {
     );
 }
 
+function loadSharedProgram(inventory, pid, callback) {
+    var path = apiPath + 'shared';
+    $.getJSON(path, { pid:pid}).then(
+        function(data) {
+            console.log('loaded', data);
+            if (data.status == 'ok') {
+                var programJSON = data.program;
+                var program = loadProgramFromJSON(inventory, programJSON);
+                if (program) {
+                    callback(program);
+                } else {
+                    error("Can't load program");
+                    callback(null);
+                }
+            } else {
+                error("Can't load program");
+                callback(null);
+            }
+        }, 
+        function() {
+            error("Can't load program");
+            callback(null);
+        }
+    );
+}
+
 function loadProgramInfo(pid, callback) {
     $.getJSON(apiPath + "program",
         {
@@ -413,14 +436,37 @@ function loadProgramInfo(pid, callback) {
     );
 }
 
+function loadSharedProgramInfo(pid, callback) {
+    $.getJSON(apiPath + "shared_info",
+        {
+            auth_code: get_auth_code(),
+            pid: pid
+        }, 
+        function(data) {
+            console.log('loaded', data);
+            if (data.status == 'ok') {
+                callback(data.info);
+            } else {
+                error("Can't load shared program info");
+                callback(null);
+            }
+        }, 
+        function() {
+            error("Can't load shared program");
+            callback(null);
+        }
+    );
+}
+
 function loadProgramDirectory(callback) {
     $.getJSON(apiPath + 'directory', 
         { 
             count:500,
-            auth_code: get_auth_code
+            auth_code: get_auth_code()
         },
         function(data) {
             console.log('data', data);
+            checkForBadUser(data);
             callback(data);
         },
         function() {
@@ -460,7 +506,7 @@ function scheduleProgram(pid, when, delta, total, callback) {
      var schedule_post = {
         auth_code: get_auth_code(),
         pid: pid,
-        when: 0,
+        when: when,
         delta: delta,
         total: total
      };
@@ -472,6 +518,73 @@ function scheduleProgram(pid, when, delta, total, callback) {
             data: json,
             dataType: 'json',
             url: apiPath + 'schedule',
+            success: function (data) {
+                callback(data);
+            },
+            error: function() {
+                callback();
+            },
+        });
+}
+
+function copyProgram(pid, callback) {
+     var post = {
+        auth_code: get_auth_code(),
+        pid: pid,
+     };
+     var json = JSON.stringify(post, null, 4);
+     console.log('COPY=' + json);
+     $.ajax({
+            type: "POST",
+            contentType: 'application/json',
+            data: json,
+            dataType: 'json',
+            url: apiPath + 'copy',
+            success: function (data) {
+                callback(data);
+            },
+            error: function() {
+                callback();
+            },
+        });
+}
+
+function importProgram(pid, callback) {
+     var post = {
+        auth_code: get_auth_code(),
+        pid: pid,
+     };
+     var json = JSON.stringify(post, null, 4);
+     console.log('IMPORT=' + json);
+     $.ajax({
+            type: "POST",
+            contentType: 'application/json',
+            data: json,
+            dataType: 'json',
+            url: apiPath + 'import',
+            success: function (data) {
+                callback(data);
+            },
+            error: function() {
+                callback();
+            },
+        });
+}
+
+function shareProgram(pid, state, callback) {
+     var post = {
+        auth_code: get_auth_code(),
+        pid: pid,
+        share: state
+     };
+     var json = JSON.stringify(post, null, 4);
+     console.log('SHARE=' + json);
+     $.ajax({
+            type: "POST",
+            contentType: 'application/json',
+            data: json,
+            dataType: 'json',
+            url: apiPath + 'publish',
             success: function (data) {
                 callback(data);
             },

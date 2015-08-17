@@ -60,8 +60,11 @@ def convert_val_to_type(val, type, program):
     elif type == 'bool':
         return OK, bool(val)
     elif type == 'source':
-        status, compiled_program = compile_object(val, program)
-        return status, compiled_program
+        if val:
+            status, compiled_program = compile_object(val, program)
+            return status, compiled_program
+        else:
+            return 'error - missing source', val
     elif type == 'source_list':
         list = []
         for name in val:
@@ -128,9 +131,9 @@ def compile_object(objname, program):
                         raise
                     raise pbl.PBLException(None, "creation failure", objname)
             else:
-                return 'unknown type ' + comp['_type'] + ' for ' + objname, None
+                return 'unknown type ' + comp['type'] + ' for ' + objname, None
         else:
-            return 'missing object ' + objname, None
+            return 'missing object ' + str(objname), None
     
 def compile(program):
     if 'main' in program and program['main']:

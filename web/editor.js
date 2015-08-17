@@ -1055,11 +1055,10 @@ var createEditor = function(canvasElem, inventory, types) {
         //  before we exit.
         $('#program-name').editable({
             type: 'text',
-            mode: 'inline',
             title: 'Enter Program Name',
             placement: 'bottom',
-            showbuttons: false,
-            inputclass: 'program-input',
+            showbuttons: 'bottom',
+            inputclass: 'nprogram-input',
             success: function(response, newValue) {
                 program.name = newValue;
                 program.trans.needsSave = true;
@@ -1084,6 +1083,9 @@ var createEditor = function(canvasElem, inventory, types) {
     initEditor();
     return {    
         load:function(newProgram) {
+            if (newProgram == null) {
+                return;
+            }
             initNewProgram(newProgram);
 
             _.each(program.components, function(comp, id) {

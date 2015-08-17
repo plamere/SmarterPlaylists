@@ -15,6 +15,7 @@ import program_manager
 import redis
 import scheduler
 import sys
+import random
 
 app = Flask(__name__)
 
@@ -98,6 +99,68 @@ def delete():
     results['time'] = time.time() - start
     return jsonify(results)
 
+@app.route('/SmarterPlaylists/copy', methods=['POST'])
+@cross_origin()
+def copy():
+    start = time.time()
+    results = { }
+    js = request.json
+    auth_code = js['auth_code']
+    pid = js['pid']
+    print 'copy', pid
+    print auth_code
+    if pid and auth_code:
+        token = auth.get_fresh_token(auth_code)
+        if token:
+            user = token['user_id']
+            pid = pm.copy_program(user, pid)
+            if pid:
+                results['status'] = 'ok'
+                results['pid'] = pid
+            else:
+                results['status'] = 'error'
+                results['msg'] = "Can't copy that program"
+        else:
+            results['status'] = 'error'
+            results['msg'] = 'no authorized user'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no  pid or auth'
+        
+    results['time'] = time.time() - start
+    return jsonify(results)
+
+@app.route('/SmarterPlaylists/import', methods=['POST'])
+@cross_origin()
+def import_program():
+    start = time.time()
+    results = { }
+    js = request.json
+    auth_code = js['auth_code']
+    pid = js['pid']
+    print 'import', pid
+    print auth_code
+    if pid and auth_code:
+        token = auth.get_fresh_token(auth_code)
+        if token:
+            user = token['user_id']
+            new_pid = pm.import_program(user, pid)
+            if new_pid:
+                results['status'] = 'ok'
+                results['imported_pid'] = new_pid
+            else:
+                results['status'] = 'error'
+                results['msg'] = "Can't import that program"
+        else:
+            results['status'] = 'error'
+            results['msg'] = 'no authorized user'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no  pid or auth'
+        
+    results['time'] = time.time() - start
+    return jsonify(results)
+
 @app.route('/SmarterPlaylists/directory')
 @cross_origin()
 def directory():
@@ -121,6 +184,43 @@ def directory():
 
             results['status'] = 'ok'
             results['programs'] = dir
+            results['total'] = total
+            results['start'] = start
+            results['count'] = count
+
+        else:
+            results['status'] = 'error'
+            results['msg'] = 'no authorized user'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no authorized user'
+    results['time'] = time.time() - start_time
+    return jsonify(results)
+
+@app.route('/SmarterPlaylists/imports')
+@cross_origin()
+def imports():
+    start_time = time.time()
+    results = { }
+
+    auth_code = request.args.get('auth_code', '')
+    start = request.args.get('start', 0, type=int)
+    count = request.args.get('count', 20, type=int)
+    if auth_code:
+        token = auth.get_fresh_token(auth_code)
+        if token:
+            user = token['user_id']
+            import_pids =  list(pm.get_published_programs())
+            total = len(import_pids)
+            import_pids = import_pids[start: start + count]
+
+            out = []
+            for pid in import_pids:
+                info = pm.get_info(pid)
+                out.append(info)
+
+            results['status'] = 'ok'
+            results['imports'] = out
             results['total'] = total
             results['start'] = start
             results['count'] = count
@@ -174,9 +274,13 @@ def program():
         token = auth.get_fresh_token(auth_code)
         if token:
             user = token['user_id']
-            program = pm.get_program(pid)
-            results['status'] = 'ok'
-            results['program'] = program
+            program = pm.get_program(user, pid)
+            if program:
+                results['status'] = 'ok'
+                results['program'] = program
+            else:
+                results['status'] = 'error'
+                results['msg'] = 'no program found'
         else:
             results['status'] = 'error'
             results['msg'] = 'no authorized user'
@@ -186,25 +290,93 @@ def program():
     results['time'] = time.time() - start_time
     return jsonify(results)
 
+@app.route('/SmarterPlaylists/shared')
+@cross_origin()
+def shared():
+    start_time = time.time()
+    results = { }
+
+    pid = request.args.get('pid', None)
+    if pid:
+        info = pm.get_info(pid)
+        if 'shared' in info:
+            is_shared =  info['shared'] == 'True'
+            if is_shared:
+                owner =  info['owner']
+                program = pm.get_program(owner, pid)
+                if program:
+                    results['status'] = 'ok'
+                    results['program'] = program
+                else:
+                    results['status'] = 'error'
+                    results['msg'] = 'no program found'
+            else:
+                results['status'] = 'error'
+                results['program'] = 'program is not shared'
+        else:
+            results['status'] = 'error'
+            results['program'] = 'unknown shared program id'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no pid'
+    results['time'] = time.time() - start_time
+    return jsonify(results)
+
+@app.route('/SmarterPlaylists/shared_info')
+@cross_origin()
+def shared_info():
+    start_time = time.time()
+    results = { }
+    keep_set = set(['name', 'owner', 'description'])
+
+    pid = request.args.get('pid', None)
+    if pid:
+        info = pm.get_info(pid)
+        if 'shared' in info:
+            is_shared =  info['shared'] == 'True'
+            if is_shared:
+                results['status'] = 'ok'
+                out = {}
+                for k, v in info.items():
+                    if k in keep_set:
+                        out[k] = v
+                results['info'] = out
+            else:
+                results['status'] = 'error'
+                results['program'] = 'program is not shared'
+        else:
+            results['status'] = 'error'
+            results['program'] = 'unknown shared program id'
+    else:
+        results['status'] = 'error'
+        results['msg'] = 'no pid'
+
+    results['time'] = time.time() - start_time
+    return jsonify(results)
+
 
 @app.route('/SmarterPlaylists/publish', methods=['POST'])
 @cross_origin(allow_headers=['Content-Type'])
 def publish():
-    # TODO fix this
-    start = time.time()
-    program = request.json
-    print 'got program', program
+    start_time = time.time()
+
+    params = request.json
+    auth_code = params['auth_code']
+    token = auth.get_fresh_token(auth_code)
+
     results = { }
-    if is_valid_program(program):
-        pid = make_pid(program)
-        program['extra']['pid'] = pid
-        
-        # path = os.path.join(save_directory, pid + ".json")
-        results['status'] = 'ok'
-        results['pid'] = pid
-    else:
+    if not token:
+        print 'WARNING: bad auth token', auth_code
         results['status'] = 'error'
-        results['msg'] = 'bad program'
+        results['message'] = 'not authorized'
+    else:
+        user = token['user_id']
+        pid = params['pid']
+        share = params['share']
+        pm.publish_program(user, pid, share)
+        results['status'] = 'ok'
+
+    results['time'] = time.time() - start_time
     return jsonify(results)
 
 @app.route('/SmarterPlaylists/user_info')
@@ -239,14 +411,6 @@ def is_valid_program(program):
             return False
     return True;
 
-@app.route('/SmarterPlaylists/shared')
-@cross_origin(allow_headers=['Content-Type'])
-def shared():
-    pid = request.args.get('pid', '')
-    if '..' in pid:
-        abort(404)
-    return send_from_directory(save_directory, pid + ".json")
-
 
 @app.route('/SmarterPlaylists/run', methods=['POST'])
 @cross_origin(allow_headers=['Content-Type'])
@@ -275,6 +439,8 @@ def schedule():
     results = {}
     params = request.json
     auth_code = params['auth_code']
+    min_delta = 60
+    max_total = 100
 
     token = auth.get_fresh_token(auth_code)
     if not token:
@@ -287,18 +453,33 @@ def schedule():
         when = params['when']
         delta = params['delta']
         total = params['total']
-        if delta > 0:
-            if scheduler.schedule(auth_code, user, pid, when, delta, total):
-                results['status'] = 'ok'
-            else:
-                results['status'] = 'error'
-                results['message'] = "Can't schedule that job"
-        else:   
-            if scheduler.cancel(user, pid):
-                results['status'] = 'ok'
-            else:
-                results['status'] = 'error'
-                results['message'] = "Can't cancel that job"
+        ok = True
+
+        print 'delta', delta, 'when', when, 'total', total
+
+        if delta != 0 and delta < min_delta:
+            results['status'] = 'error'
+            results['message'] = "Too frequent a schedule"
+            ok = False
+
+        if total > max_total:
+            results['status'] = 'error'
+            results['message'] = "Too many runs scheduled"
+            ok = False
+
+        if ok:
+            if delta > 0:
+                if scheduler.schedule(auth_code, user, pid, when, delta, total):
+                    results['status'] = 'ok'
+                else:
+                    results['status'] = 'error'
+                    results['message'] = "Can't schedule that job"
+            else:   
+                if scheduler.cancel(user, pid):
+                    results['status'] = 'ok'
+                else:
+                    results['status'] = 'error'
+                    results['message'] = "Can't cancel that job"
 
     results['time'] = time.time() - start
     return jsonify(results)

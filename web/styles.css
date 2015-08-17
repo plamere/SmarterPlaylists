@@ -217,3 +217,11 @@ body {
 .icon-red {
     color:red !important;
 }
+
+.icon-blue {
+    color:blue !important;
+}
+
+#logout {
+    cursor:pointer;
+}
