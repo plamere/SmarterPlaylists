@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="images/favicon.png">
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
     rel="stylesheet"/>
-    <link rel="stylesheet" href="http://css-spinners.com/css/spinner/spinner.css" type="text/css">
+    <link rel="stylesheet" href="lib/spinner.css" type="text/css">
     <title>Smarter Playlists</title>
     <!-- Custom styles for this template -->
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -60,7 +60,9 @@
 
             <div class="tab-pane active" id="dir">
               <button id='new-button' 
-                class='btn btn-primary btn-primary fbut pull-right'> New Program </button>
+                class='btn btn-primary btn-primary fbut pull-right'> 
+                    <span class="glyphicon glyphicon-plus"></span>
+                New Program </button>
               <h2 class='pull-left'> Your Programs </h2>
               <br class='br-clear'>
               <table class="table table-striped table-bordered">
@@ -90,18 +92,33 @@
                 <div class="col-sm-offset-2" id="workspace-parent">
                   <div id='program-name'> untitled </div>
                   <div id="controls" class='form-inline'> 
+                    <!--
                     <button id='run-button' 
                       class='btn btn-primary btn-xs pull-left form-group'> run </button>
-                    <button id='share-button' 
-                      class='btn btn-default btn-xs pull-right form-group'>
-                      share </button>
+
                     <button id='save-button' 
                       class='btn btn-default btn-xs pull-right form-group'>
                       save </button>
                     <button id='clear-button' 
                       class='btn btn-danger btn-xs pull-right form-group'>
                       clear </button>
-                    <span id='save-check' class="checkbox pull-left checkbox-ninline">
+
+                    -->
+
+                    <a title='run the program' id='run-button' 
+                        class="pull-left icon-btn btn-xlarge"><span
+                    class="glyphicon glyphicon-play"></span></a>
+                    <a title='save the program' id='save-button' 
+                        class="pull-left icon-btn btn-xlarge">
+                        <span class="glyphicon glyphicon-save"></span>
+                    </a>
+
+                    <a title='clear all' id='clear-button' 
+                        class="pull-left icon-btn btn-xlarge">
+                        <span class="glyphicon glyphicon-remove icon-red"></span>
+                    </a>
+
+                    <span id='save-check' class="checkbox pull-right checkbox-ninline">
                       <label>
                         <input id='save-playlist' type="checkbox"> 
                         Save playlist to Spotify 

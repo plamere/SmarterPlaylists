@@ -59,7 +59,7 @@ body {
 }
 
 #workspace-parent {
-    margin-top:10px;
+    /*margin-top:10px;*/
 }
 
 #workspace {
@@ -78,9 +78,9 @@ body {
 #controls {
     margin-left:20px;
     margin-right:20px;
-    margin-bottom:10px;
     margin-top:10px;
-    padding-bottom:20px;
+    /*padding-bottom:20px;*/
+    /*margin-bottom:10px;*/
 }
 
 #playlist-title {
@@ -224,4 +224,13 @@ body {
 
 #logout {
     cursor:pointer;
+}
+
+
+.btn-xlarge {
+    font-size: 32px; //change this to your desired size
+}
+
+.s-form-elem {
+    margin-right: 16px;
 }

@@ -141,7 +141,7 @@ function fmtDate(ts) {
 }
 
 function showBuilder() {
-    $('#tabs a[href="#work"]').tab('show') // Select tab by name
+    $('#tabs a[href="#work"]').tab('show'); // Select tab by name
 }
 
 function showDirectoryTable(dir) {
@@ -274,6 +274,12 @@ function showDirectoryTable(dir) {
                 btn.attr('href', 'schedule.html?pid=' + entry.pid);
                 btn.attr('title', 'schedule this program to run periodically');
                 controls.append(btn);
+
+                if (entry.schedule_status.status) {
+                    if (ss  == 'queued' || ss == 'running') {
+                        btn.addClass('icon-blue');
+                    }
+                } 
             }
 
             {

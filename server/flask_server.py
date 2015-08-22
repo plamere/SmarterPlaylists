@@ -468,7 +468,7 @@ def schedule():
             ok = False
 
         if ok:
-            if delta > 0:
+            if delta > 0 and total > 0:
                 if scheduler.schedule(auth_code, user, pid, when, delta, total):
                     results['status'] = 'ok'
                 else:

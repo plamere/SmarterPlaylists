@@ -1,4 +1,4 @@
-var createEditor = function(canvasElem, inventory, types) {
+var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     var spotifyGreen = '#1ED760';
     var spotifyRed = '#D71E60';
     var tileWidth = 100;
@@ -23,6 +23,7 @@ var createEditor = function(canvasElem, inventory, types) {
     var canvasHasFocus = true;
     var CT_NORMAL = 0;
     var CT_SHIFTED = 1;
+    var readOnly = isReadOnly === true;
 
     var nameToRect = {}
 
@@ -763,14 +764,16 @@ var createEditor = function(canvasElem, inventory, types) {
 
         rect.inEdges = {};
         rect.outEdges = {};
-        rect.drag(move, dragger, up);
-        rect.label.drag(move, dragger, up);
+        if (!readOnly) {
+            rect.drag(move, dragger, up);
+            rect.label.drag(move, dragger, up);
 
-        rect.dblclick(edit);
-        rect.label.dblclick(edit);
+            rect.dblclick(edit);
+            rect.label.dblclick(edit);
 
-        rect.click(select);
-        rect.label.click(select);
+            rect.click(select);
+            rect.label.click(select);
+        }
 
         if (comp) {
             rect.component = comp;
@@ -892,10 +895,12 @@ var createEditor = function(canvasElem, inventory, types) {
             var text = verb || 'running';
             $("#running-state").text(text);
             $("#run-button").prop("disabled", true);
+            $("#run-button").addClass("icon-red");
 
         } else {
             $("#running-state").text('');
             $("#run-button").prop("disabled", false);
+            $("#run-button").removeClass("icon-red");
         }
     }
 
@@ -976,7 +981,9 @@ var createEditor = function(canvasElem, inventory, types) {
 
         var clearButton = $("#clear-button");
         clearButton.on('click', function() {
-            deleteAll();
+            if (window.confirm('Clear all components from this program?')) {
+                deleteAll();
+            }
         });
 
         $("#share-button").on('click', function() {
@@ -1003,8 +1010,10 @@ var createEditor = function(canvasElem, inventory, types) {
 
 
     function initUI() {
-        addControls();
-        showInventoryUI();
+        if (!readOnly) {
+            addControls();
+            showInventoryUI();
+        }
     }
 
     function getNextColor() {
@@ -1031,8 +1040,10 @@ var createEditor = function(canvasElem, inventory, types) {
         assignColorsToInventory();
         initUI();
         var elemName = "#" + canvasElem;
-        $(document).keydown(keydown);
-        $(document).keyup(keyup);
+        if (!readOnly) {
+            $(document).keydown(keydown);
+            $(document).keyup(keyup);
+        }
 
         // if the callback.html was able to successfully save
         // we get this event, so update the program and save it

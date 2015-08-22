@@ -12,6 +12,7 @@
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
     rel="stylesheet"/>
     <link rel="stylesheet" href="lib/bootstrap-datetimepicker.min.css" />
+    <script src="editor.js?v1"></script>
 
     <title>Smarter Playlists</title>
     <!-- Custom styles for this template -->
@@ -50,10 +51,10 @@
           <div id="my-tab-content" class="tab-content">
 
             <div class="well" id="confirm-import">
-              <div class='form-group form-inline'>
-                <p class="import-text"> Import the program 
-                    <span class="label label-primary" id="title"> Title </span> 
-                    by <span class="label label-primary" id="owner"> Owner </span> into your set of programs?
+              <div id='is-logged-in' class='form-group form-inline'>
+                <p class="import-text"> Import 
+                    <span class="label label-primary prog-title" > Title </span> 
+                    by <span class="label label-primary prog-owner" > Owner </span> into your set of programs?
                 </p>
 
                 <div> <br> </div>
@@ -61,8 +62,27 @@
                     <button id='cancel' class='btn btn-sm btn-warning'> Cancel </button>
                     <button id='import' class='btn btn-sm btn-primary'> Import </button>
                 </div>
+                <div> <br> </div>
              </div>
+
+              <div id='not-logged-in' class='form-group form-inline hidden'>
+                <p class="import-text"> Viewing 
+                    <span class="label label-primary prog-title" > Title </span> 
+                    by <span class="label label-primary prog-owner"> Owner </span> 
+                </p>
+
+                To import this program you will need to login.
+                <div> <br> </div>
+                <div class="">
+                    <a id='login' class='btn btn-sm btn-primary'
+                    href='index.html'> Login </a>
+                </div>
+                <div> <br> </div>
+             </div>
+
+            <div id="import-workspace"> </div>
             </div>
+
 
             <div class="well" id="confirm-continue">
               <div class='form-group form-inline'>
@@ -95,12 +115,20 @@
       </script>
     <script type="text/javascript" src="lib/bootstrap-datetimepicker.min.js"></script>
     <script src="lib/underscore-min.js"></script>
+    <script src="lib/raphael-min.js"></script>
+    <script src="lib/scale.raphael.js"></script>
+    <script src="lib/graffle.js"></script>
     <script src="main.js"></script>
     <script src="program.js"></script>
 
 <script>
 
 function initImporter() {    
+    if (!get_auth_code()) {
+        $("#is-logged-in").hide();
+        $("#not-logged-in").removeClass("hidden");
+    } 
+
     $("#confirm-import").show();
     $("#confirm-continue").hide();
 
@@ -110,8 +138,8 @@ function initImporter() {
         pid = params['pid'];
         loadSharedProgramInfo(pid, function(info) {
             if (info) {
-                $("#title").text(info.name);
-                $("#owner").text(info.owner);
+                $(".prog-title").text(info.name);
+                $(".prog-owner").text(info.owner);
             } else {
                 document.location = 'go.html';
             }
@@ -134,6 +162,19 @@ function initImporter() {
 
     $("#cancel").on('click', function() {
         document.location = 'go.html';
+    });
+
+    fetchInventory(function(inventoryMap, styles) {
+        $("#spinner").hide();
+        if (inventoryMap == null) {
+            alert("Uh Oh - Having trouble phoning home");
+        } else {
+            inventory = inventoryMap;
+            editor = createEditor("import-workspace", inventoryMap, styles, true);
+            loadSharedProgram(inventory, pid, function(program) {
+                editor.load(program);
+            });
+        }
     });
 }
 
