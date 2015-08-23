@@ -174,7 +174,7 @@ function showDirectoryTable(dir) {
 
         if (entry.shared) {
             var anchor = $("<a>")
-                .text('remote link')
+                .text('shareable link')
                 .attr('href', 'importer.html?pid=' + entry.pid);
             tr.append( $("<td>").append(anchor));
         } else {

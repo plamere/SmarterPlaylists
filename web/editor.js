@@ -1064,18 +1064,19 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         // TODO:  Instead of always saving programs, we might add
         //  and onbeforeunload event that will save just the dirty ones
         //  before we exit.
-        $('#program-name').editable({
-            type: 'text',
-            title: 'Enter Program Name',
-            placement: 'bottom',
-            showbuttons: 'bottom',
-            inputclass: 'nprogram-input',
-            success: function(response, newValue) {
-                program.name = newValue;
-                program.trans.needsSave = true;
-             }
-        });
-
+        if (!isReadOnly) {
+            $('#program-name').editable({
+                type: 'text',
+                title: 'Enter Program Name',
+                placement: 'bottom',
+                showbuttons: 'bottom',
+                inputclass: 'nprogram-input',
+                success: function(response, newValue) {
+                    program.name = newValue;
+                    program.trans.needsSave = true;
+                 }
+            });
+        }
     }
 
     function initNewProgram(newProgram) {
@@ -1132,7 +1133,9 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 selectRect(curSelected, true);
             }
             $("#program-name").text(program.name);
-            $("#program-name").editable('setValue', program.name);
+            if (!isReadOnly) {
+                $("#program-name").editable('setValue', program.name);
+            }
 
             program.trans.needsSave = false;
         },

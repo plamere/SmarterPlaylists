@@ -479,6 +479,23 @@ function loadInitialDirectory(inventory, callback) {
     loadProgramDirectory(callback);
 }
 
+function loadImports(callback) {
+    $.getJSON(apiPath + 'imports', 
+        { 
+            count:500,
+            auth_code: get_auth_code()
+        },
+        function(data) {
+            console.log('data', data);
+            checkForBadUser(data);
+            callback(data);
+        },
+        function() {
+            callback(null);
+        }
+    );
+}
+
 function runProgram(pid, save, callback) {
      var program_post = {
         pid: pid,

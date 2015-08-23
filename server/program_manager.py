@@ -135,6 +135,7 @@ class ProgramManager:
                 program = self.get_program(owner, pid)
                 program['name'] = 'import of ' + program['name']
                 new_pid = self.add_program(user, program)
+                self.incr_import(pid)
         return new_pid
 
     def publish_program(self, user, pid, state):
@@ -194,6 +195,10 @@ class ProgramManager:
             return self.r.hgetall(pkey)
         else:
             return self.r.hget(pkey, key)
+
+    def incr_import(self, pid):
+        pkey = mkkey('program-info', pid)
+        self.r.hincrby(pkey, 'imports', 1)
 
 
     def execute_program(self, auth_code, pid, save_playlist):

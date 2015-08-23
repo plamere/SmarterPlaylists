@@ -47,58 +47,9 @@
       <div id='main' class="worker jumbotron bjumbotron-hero container-fluid">
         <div id='errors'> </div>
         <div id="content" class="container">
-          <h2> Import a program</h2>
+          <h2 class="prog-title"> </h2>
           <div id="#info"> </div>
-          <div id="my-tab-content" class="tab-content">
-
-            <div class="well" id="confirm-import">
-              <div id='is-logged-in' class='form-group form-inline'>
-                <p class="import-text"> Import 
-                    <span class="label label-primary prog-title" > Title </span> 
-                    by <span class="label label-primary prog-owner" > Owner </span> into your set of programs?
-                </p>
-
-                <div> <br> </div>
-                <div class="">
-                    <button id='cancel' class='btn btn-sm btn-warning'> Cancel </button>
-                    <button id='import' class='btn btn-sm btn-primary'> Import </button>
-                </div>
-                <div> <br> </div>
-             </div>
-
-              <div id='not-logged-in' class='form-group form-inline hidden'>
-                <p class="import-text"> Viewing 
-                    <span class="label label-primary prog-title" > Title </span> 
-                    by <span class="label label-primary prog-owner"> Owner </span> 
-                </p>
-
-                To import this program you will need to login.
-                <div> <br> </div>
-                <div class="">
-                    <a id='login' class='btn btn-sm btn-primary'
-                    href='index.html'> Login </a>
-                </div>
-                <div> <br> </div>
-             </div>
-
-            <div id="import-workspace"> </div>
-            </div>
-
-
-            <div class="well" id="confirm-continue">
-              <div class='form-group form-inline'>
-                <p class="import-status"> Import complete </p>
-                </p>
-
-                <div> <br> </div>
-                <div class="">
-                    <a id='continue' href="go.html" 
-                        class='btn btn-sm btn-primary'> Continue </a>
-                </div>
-             </div>
-            </div>
-
-          </div>
+          <div id="viewer-workspace"> </div>
         </div>
       </div>
     </div>
@@ -110,29 +61,15 @@
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
-    <script
-      src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js">
-      </script>
-    <script type="text/javascript" src="lib/bootstrap-datetimepicker.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="lib/raphael-min.js"></script>
     <script src="lib/scale.raphael.js"></script>
     <script src="lib/graffle.js"></script>
     <script src="main.js"></script>
     <script src="program.js"></script>
-
 <script>
 
-function initImporter() {    
-    if (!get_auth_code()) {
-        $("#is-logged-in").hide();
-        $("#not-logged-in").removeClass("hidden");
-    } 
-
-    $("#confirm-import").show();
-    $("#confirm-continue").hide();
-
+function initViewer() {    
     var params = parseParams();
     var pid = null;
     if ('pid' in params) {
@@ -142,28 +79,10 @@ function initImporter() {
                 $(".prog-title").text(info.name);
                 $(".prog-owner").text(info.owner);
             } else {
-                document.location = 'go.html';
+                error("Can't load that program");
             }
         });
     }
-
-    $("#import").on('click', function() {
-        console.log('importing', pid);
-        importProgram(pid, function(data) {
-            $("#confirm-import").hide();
-            $("#confirm-continue").show();
-            if (data) {
-                $("#import-status").text("Import complete");
-            } else {
-                $("#import-status").text("Could not import");
-                $("#import-status").addClass("label label-warning");
-            }
-        });
-    });
-
-    $("#cancel").on('click', function() {
-        document.location = 'go.html';
-    });
 
     fetchInventory(function(inventoryMap, styles) {
         $("#spinner").hide();
@@ -171,7 +90,7 @@ function initImporter() {
             alert("Uh Oh - Having trouble phoning home");
         } else {
             inventory = inventoryMap;
-            editor = createEditor("import-workspace", inventoryMap, styles, true);
+            editor = createEditor("viewer-workspace", inventoryMap, styles, true);
             loadSharedProgram(inventory, pid, function(program) {
                 editor.load(program);
             });
@@ -182,7 +101,7 @@ function initImporter() {
 
 $(document).ready(
     function() {
-        initImporter();
+        initViewer();
     }
 );
 </script>

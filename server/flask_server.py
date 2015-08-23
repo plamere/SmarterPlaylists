@@ -217,8 +217,14 @@ def imports():
             out = []
             for pid in import_pids:
                 info = pm.get_info(pid)
+                if not 'imports' in info:
+                    info['imports'] = 0
+                info['imports'] = int(info['imports'])
+                info['pid'] = pid
                 out.append(info)
 
+            out.sort(key=lambda info:info['imports'], reverse=True)
+            out = out[start:start+count]
             results['status'] = 'ok'
             results['imports'] = out
             results['total'] = total
