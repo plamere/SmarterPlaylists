@@ -3,7 +3,9 @@ var editor = null;
 var apiLocalPath = 'http://localhost:5000/SmarterPlaylists/';
 var apiRemotePath = 'http://labs2.echonest.com/SmarterPlaylists/';
 
-var client_id = 'bb61fcfe1423449ba3d8e3b016316316';
+var client_id = 'bb61fcfe1423449ba3d8e3b016316316'; // smarter playlists
+var client_id = '31469b011d4941bf8dd4ac9cf8495bac'; // sort your music ID
+
 var local_redirect_uri = 'http://localhost:8000/callback.html';
 var remote_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/callback.html';
 var local_auth_redirect_uri = 'http://localhost:8000/auth.html';
@@ -18,7 +20,9 @@ var confirmDelete = true;
 
 
 function get_auth_code() {
-    return localStorage.getItem('sp-auth-code');
+    var code = localStorage.getItem('sp-auth-code');
+    console.log('go auth', code);
+    return code;
 }
 
 function clear_auth_code() {
@@ -93,7 +97,8 @@ function checkForBadUser(data) {
     console.log(data.status, data.msg);
     if (data.status == 'error' && data.msg == 'no authorized user') {
         clear_auth_code();
-        document.location = 'index.html';
+        // document.location = 'index.html';
+        console.log('no auth user', data);
     }
 }
 
@@ -158,8 +163,8 @@ function showDirectoryTable(dir) {
 
         tr.append( $("<td>").text( (i + 1) ));
         if (entry.uri) {
-            tr.append( 
-                $("<td>").append( 
+            tr.append(
+                $("<td>").append(
                     $("<a>")
                         .attr('href', entry.uri)
                         .text(entry.name)
@@ -245,7 +250,7 @@ function showDirectoryTable(dir) {
                 btn.attr('title', 'share this program');
                 if (entry.shared) {
                     btn.addClass('icon-blue');
-                } 
+                }
 
                 btn.on('click', function(e) {
                     e.stopPropagation();
@@ -279,7 +284,7 @@ function showDirectoryTable(dir) {
                     if (ss  == 'queued' || ss == 'running') {
                         btn.addClass('icon-blue');
                     }
-                } 
+                }
             }
 
             {
@@ -330,11 +335,11 @@ function showDirectory() {
 
 
 
-function initApp() {    
+function initApp() {
     var params = parseParams();
     var pprogram = ('program' in params) ? params['program'] : null;
 
-    
+
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') == '#dir') {
             showDirectory();
@@ -402,7 +407,7 @@ function error(msg) {
         .addClass('alert')
         .addClass('alert-danger')
         .text(msg)
-        .append( 
+        .append(
             $("<a>")
                 .attr('href', '#')
                 .addClass('close')
@@ -429,6 +434,3 @@ function parseParams() {
     }
     return params;
 }
-
-
-

@@ -5,6 +5,7 @@ import pyen
 
 exported_inventory = None
 en = pyen.Pyen()
+en.debug=True
 
 
 inventory = {
@@ -26,7 +27,8 @@ inventory = {
          ],
          "annotations": [
             { "name" : "Spotify", "value" : "spotify" },
-            { "name" : "Echo Nest", "value" : "echonest" }
+            { "name" : "Echo Nest", "value" : "echonest" },
+            { "name" : "audio", "value" : "audio" }
          ],
 
          "scale": [
@@ -38,66 +40,69 @@ inventory = {
          ],
 
          "range_attributes" : [
-            { "name" : "artist discovery", "value" : "echonest.artist_discovery"},
-            { "name" : "speechiness", "value" : "echonest.speechiness"},
-            { "name" : "song currencey rank", "value" : "echonest.song_currency_rank"},
-            { "name" : "acousticness", "value" : "echonest.acousticness"},
-            { "name" : "danceability", "value" : "echonest.danceability"},
-            { "name" : "song currency", "value" : "echonest.song_currency"},
-            { "name" : "artist familiarity", "value" : "echonest.artist_familiarity"},
-            { "name" : "energy", "value" : "echonest.energy"},
-            { "name" : "song hotttnesss", "value" : "echonest.song_hotttnesss"},
-            { "name" : "tempo", "value" : "echonest.tempo"},
-            { "name" : "instrumentalness", "value" : "echonest.instrumentalness"},
-            { "name" : "key", "value" : "echonest.key"},
-            { "name" : "album date", "value" : "echonest.album_date"},
-            { "name" : "liveness", "value" : "echonest.liveness"},
-            { "name" : "artist hotttnesss", "value" : "echonest.artist_hotttnesss"},
-            { "name" : "artist hotttnesss rank", "value" : "echonest.song_hotttnesss_rank"},
-            { "name" : "mode", "value" : "echonest.mode"},
-            { "name" : "time signature", "value" : "echonest.time_signature"},
-            { "name" : "loudness", "value" : "echonest.loudness"},
-            { "name" : "valence", "value" : "echonest.valence"},
+            { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},
+            { "name" : "artist followers", "value" : "spotify.primary_artist_followers"},
+            { "name" : "album popularity", "value" : "spotify.album_popularity"},
+            { "name" : "album date", "value" : "spotify.album_release_date"},
+            { "name" : "track popularity", "value" : "spotify.popularity"},
+
+            { "name" : "speechiness", "value" : "audio.speechiness"},
+            { "name" : "acousticness", "value" : "audio.acousticness"},
+            { "name" : "danceability", "value" : "audio.danceability"},
+            { "name" : "energy", "value" : "audio.energy"},
+            { "name" : "tempo", "value" : "audio.tempo"},
+            { "name" : "instrumentalness", "value" : "audio.instrumentalness"},
+            { "name" : "key", "value" : "audio.key"},
+            { "name" : "liveness", "value" : "audio.liveness"},
+            { "name" : "mode", "value" : "audio.mode"},
+            { "name" : "time signature", "value" : "audio.time_signature"},
+            { "name" : "loudness", "value" : "audio.loudness"},
+
             { "name" : "src", "value" : "src"},
             { "name" : "duration", "value" : "duration"},
             { "name" : "artist", "value" : "artist"},
             { "name" : "title", "value" : "title"},
+
             { "name" : "popularity", "value" : "spotify.popularity"},
             { "name" : "explicit", "value" : "spotify.explicit"},
             { "name" : "track number", "value" : "spotify.track_number"},
             { "name" : "disc number", "value" : "spotify.disc_number"}
          ],
          "sort_attributes" : [
+            { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},
+            { "name" : "artist followers", "value" : "spotify.primary_artist_followers"},
+            { "name" : "album popularity", "value" : "spotify.album_popularity"},
+            { "name" : "album date", "value" : "spotify.album_release_date"},
+            { "name" : "track popularity", "value" : "spotify.popularity"},
+
+            { "name" : "speechiness", "value" : "audio.speechiness"},
+            { "name" : "acousticness", "value" : "audio.acousticness"},
+            { "name" : "danceability", "value" : "audio.danceability"},
+            { "name" : "energy", "value" : "audio.energy"},
+            { "name" : "tempo", "value" : "audio.tempo"},
+            { "name" : "instrumentalness", "value" : "audio.instrumentalness"},
+            { "name" : "key", "value" : "audio.key"},
+            { "name" : "liveness", "value" : "audio.liveness"},
+            { "name" : "mode", "value" : "audio.mode"},
+            { "name" : "time signature", "value" : "audio.time_signature"},
+            { "name" : "loudness", "value" : "audio.loudness"},
+
             { "name" : "artist name ", "value" : "artist"},
             { "name" : "title", "value" : "title"},
-            { "name" : "artist discovery", "value" : "echonest.artist_discovery"},
-            { "name" : "speechiness", "value" : "echonest.speechiness"},
-            { "name" : "song currencey rank", "value" : "echonest.song_currency_rank"},
-            { "name" : "acousticness", "value" : "echonest.acousticness"},
-            { "name" : "danceability", "value" : "echonest.danceability"},
-            { "name" : "song currency", "value" : "echonest.song_currency"},
-            { "name" : "artist familiarity", "value" : "echonest.artist_familiarity"},
-            { "name" : "energy", "value" : "echonest.energy"},
-            { "name" : "song hotttnesss", "value" : "echonest.song_hotttnesss"},
-            { "name" : "tempo", "value" : "echonest.tempo"},
-            { "name" : "instrumentalness", "value" : "echonest.instrumentalness"},
-            { "name" : "key", "value" : "echonest.key"},
-            { "name" : "album date", "value" : "echonest.album_date"},
-            { "name" : "liveness", "value" : "echonest.liveness"},
-            { "name" : "artist hotttnesss", "value" : "echonest.artist_hotttnesss"},
-            { "name" : "artist hotttnesss rank", "value" : "echonest.song_hotttnesss_rank"},
-            { "name" : "mode", "value" : "echonest.mode"},
-            { "name" : "time signature", "value" : "echonest.time_signature"},
-            { "name" : "loudness", "value" : "echonest.loudness"},
-            { "name" : "valence", "value" : "echonest.valence"},
             { "name" : "src", "value" : "src"},
             { "name" : "duration", "value" : "duration"},
             { "name" : "artist", "value" : "artist"},
             { "name" : "title", "value" : "title"},
+
             { "name" : "popularity", "value" : "spotify.popularity"},
             { "name" : "explicit", "value" : "spotify.explicit"},
             { "name" : "track number", "value" : "spotify.track_number"},
             { "name" : "disc number", "value" : "spotify.disc_number"}
+
+            # TODO - get rid of echonest stuff, add full album attributes, to
+            # get the release date, album type, genre and so on
+            # add full artist attributes to get artist popularity, genres
+            #
          ]
     },
     "components" : [
@@ -109,8 +114,8 @@ inventory = {
             "description": "Annotates tracks with external information",
             "help" : """This component will add information to the tracks on the
             input stream. This can make downstream operations like range filters
-            run much faster.  Supported annotation types are <i>echonest</i>
-            and <i>spotify</i>""",
+            run much faster.  Supported annotation types are <i>echonest</i>,
+            <i>audio</i> and <i>spotify</i>""",
             "title" : "annotate with $type data",
             "params": {
                 "source": {
@@ -121,7 +126,7 @@ inventory = {
                 "type": {
                     "type" : "annotations",
                     "optional" : False,
-                    "default" : "echonest",
+                    "default" : "audio",
                     "description": "the type of annotation",
                 },
             }
@@ -197,7 +202,7 @@ inventory = {
             "description": "removes track from a stream by artist",
             "help": """ This component takes two input streams. It produces a
             stream of tracks that consist of the tracks on the green input
-            stream with the tracks by artists of the tracks on the red input 
+            stream with the tracks by artists of the tracks on the red input
             stream removed""",
             "params": {
                 "true_source": {
@@ -536,13 +541,26 @@ inventory = {
             }
         },
         {
+            "name" : "MySavedAlbums",
+            "class": plugs.MySavedAlbums,
+            "type" : "source",
+            "display": "my saved albums",
+            "description": "produces a list of tracks from the current user's saved albums",
+
+            "help" : """ This component will generate a stream of tracks from the
+            current user's saved albums
+            """,
+            "title": "My Saved albums",
+            "params": { }
+        },
+        {
             "name" : "MySavedTracks",
             "class": plugs.MySavedTracks,
             "type" : "source",
             "display": "my saved tracks",
             "description": "produces a list of the current user's saved tracks",
 
-            "help" : """ This component will generate a stream of tracks from the 
+            "help" : """ This component will generate a stream of tracks from the
             current user's saved tracks
             """,
             "title": "My Saved tracks",
@@ -555,11 +573,11 @@ inventory = {
             "display": "followed artists",
             "description": "produces a list tracks by the current user's followed artists",
 
-            "help" : """ This component will generate a stream of tracks from the 
+            "help" : """ This component will generate a stream of tracks from the
             current user's saved tracks
             """,
             "title": "top tracks by my followed artists",
-            "params": { 
+            "params": {
                 "num_tracks": {
                     "type" : "number",
                     "optional" : True,
@@ -1238,13 +1256,11 @@ def get_genres():
         gn = g['name']
         gstyle.append( { 'name': gn, 'value': gn} )
     return gstyle
-        
-    
+
+
 exported_inventory = export_inventory()
 
 
 if __name__ == '__main__':
     import json
     print json.dumps(exported_inventory, indent=4)
-    
-

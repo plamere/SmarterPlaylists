@@ -26,14 +26,14 @@ OK = 'ok'
 
             "filter": {
                 "_type":"AttributeRangeFilter",
-                "attr": "echonest.energy",
+                "attr": "audio.energy",
                 "max_val" : 0.5,
                 "source": "alt"
             },
 
             "sorter": {
                 "_type":"Sorter",
-                "attr": "echonest.loudness",
+                "attr": "audio.loudness",
                 "source": "filter"
             }
         },

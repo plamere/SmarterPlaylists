@@ -171,8 +171,10 @@ def directory():
     start = request.args.get('start', 0, type=int)
     count = request.args.get('count', 20, type=int)
     if auth_code:
+        print 'auth', auth_code
         token = auth.get_fresh_token(auth_code)
         if token:
+            print 'token', token
             user = token['user_id']
             total, dir = pm.directory(user, start, count)
 
@@ -189,6 +191,7 @@ def directory():
             results['count'] = count
 
         else:
+            print 'no auth', token
             results['status'] = 'error'
             results['msg'] = 'no authorized user'
     else:

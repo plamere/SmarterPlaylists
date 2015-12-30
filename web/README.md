@@ -2,6 +2,8 @@ To DOs
 =======
   * Server site stats
   * Components that take URIs should also take URLs and provide better diagnostics for malformed addresses
+  * get audio attributes from audio features api
+  * get album attributes to get 
 
 
 Auth Issues
@@ -56,14 +58,14 @@ More components
   * light shuffle
   * artist separation
   * genre filter
-  * advanced echo nest playlist 
+  * advanced echo nest playlist
   * dedup-artists - playlist but with only one song per artist
 
 
 Bugs
 =====
   * track uris needs a strip
-    
+
 
 Later
 =====
@@ -81,7 +83,7 @@ Later
   * add city components
 
 
-  * add some targeted filters 
+  * add some targeted filters
     (explicit, length, release date)
   * Reorganize component menu so most common components are visible and the rest
     are in Deep Cuts
@@ -93,7 +95,7 @@ Big Stuff
   * Figure out onboarding
     * help for editing and connecting
   * Better way to connect components?
-    * prompt 
+    * prompt
     * connect button? Delete button?
     * do we ever need a delete connection control?
     * smart connect - figures out source and dest based on:
@@ -134,7 +136,7 @@ Done
   * danceable
   * tempo
   * attribute help range filters?
-  * attribute help for sort 
+  * attribute help for sort
   * extract active components so we only error check ones that will run
   * Empty track list should be prettier
   * add clear all button? (shift-delete)

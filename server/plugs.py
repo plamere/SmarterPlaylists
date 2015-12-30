@@ -4,6 +4,7 @@ import random
 import spotipy
 from werkzeug.contrib.cache import SimpleCache
 from pbl import spotify_plugs
+import simplejson as json
 
 cache = SimpleCache()
 
@@ -174,7 +175,7 @@ class Danceable(pbl.AttributeRangeFilter):
     def __init__(self, source, scale):
         min_val = self.ranges[scale] [0]
         max_val = self.ranges[scale] [1]
-        super(Danceable, self).__init__(source, "echonest.danceability",
+        super(Danceable, self).__init__(source, "audio.danceability",
             match=None, min_val=min_val, max_val=max_val)
 
 class Energy(pbl.AttributeRangeFilter):
@@ -189,7 +190,7 @@ class Energy(pbl.AttributeRangeFilter):
     def __init__(self, source, scale):
         min_val = self.ranges[scale] [0]
         max_val = self.ranges[scale] [1]
-        super(Energy, self).__init__(source, "echonest.energy",
+        super(Energy, self).__init__(source, "audio.energy",
             match=None, min_val=min_val, max_val=max_val)
 
 class Live(pbl.AttributeRangeFilter):
@@ -204,7 +205,7 @@ class Live(pbl.AttributeRangeFilter):
     def __init__(self, source, scale):
         min_val = self.ranges[scale] [0]
         max_val = self.ranges[scale] [1]
-        super(Live, self).__init__(source, "echonest.liveness",
+        super(Live, self).__init__(source, "audio.liveness",
             match=None, min_val=min_val, max_val=max_val)
 
 class SpokenWord(pbl.AttributeRangeFilter):
@@ -219,7 +220,7 @@ class SpokenWord(pbl.AttributeRangeFilter):
     def __init__(self, source, scale):
         min_val = self.ranges[scale] [0]
         max_val = self.ranges[scale] [1]
-        super(SpokenWord, self).__init__(source, "echonest.speechiness",
+        super(SpokenWord, self).__init__(source, "audio.speechiness",
             match=None, min_val=min_val, max_val=max_val)
 
 class Tempo(pbl.AttributeRangeFilter):
@@ -227,7 +228,7 @@ class Tempo(pbl.AttributeRangeFilter):
     def __init__(self, source, min_tempo, max_tempo):
         min_val = min_tempo
         max_val = max_tempo
-        super(Tempo, self).__init__(source, "echonest.tempo",
+        super(Tempo, self).__init__(source, "audio.tempo",
             match=None, min_val=min_val, max_val=max_val)
 
 class AllButTheFirst(object):
@@ -374,7 +375,7 @@ def get_pid_from_playlist_uri(uri):
 def find_playlist_by_name(sp, user, name):
     key = user + ':::' + name
     uri = cache.get(key)
-    if not uri: 
+    if not uri:
         uri = spotify_plugs._find_playlist_by_name(sp, user, name)
         if uri:
             cache.set(key, uri)
@@ -401,7 +402,7 @@ def save_to_playlist(title, uri, tids):
     pid = get_pid_from_playlist_uri(uri)
     if pid:
         batch_size = 100
-        uris = [ 'spotify:track:' + id for id in tids] 
+        uris = [ 'spotify:track:' + id for id in tids]
         for start in xrange(0, len(uris), batch_size):
             turis = uris[start:start+batch_size]
             if start == 0:
@@ -504,13 +505,56 @@ class MyFollowedArtists(object):
         else:
             return None
 
+class MySavedAlbums(object):
+    ''' A PBL Source that the tracks from albums saved 
+        by the current user
+    '''
+
+    def __init__(self):
+        self.name = 'MySavedAlbums'
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            sp = get_spotify()
+            limit = 50
+            total = limit
+            offset = 0
+
+            print 'next_track'
+            while offset < total:
+                try:
+                    results = get_spotify().current_user_saved_albums(limit = limit, offset = offset)
+                except spotipy.SpotifyException as e:
+                    raise pbl.engine.PBLException(self, e.msg)
+
+                items = results['items']
+                #print json.dumps(results, indent=4)
+                #break
+
+                for item in items:
+                    album = item['album']
+                    for track in album['tracks']['items']:
+                        self.buffer.append(track['id'])
+                        spotify_plugs._add_track(self.name, track)
+                if results['next'] == None:
+                    break
+                offset = results['limit'] + results['offset']
+                total = results['total']
+
+        if len(self.buffer) > 0:
+            return self.buffer.pop(0)
+        else:
+            return None
+
 class MixIn(object):
-    ''' 
+    '''
         A PBL Filter that mixes two input streams based upon a small
         set of rules
     '''
 
-    def __init__(self, true_source, false_source, 
+    def __init__(self, true_source, false_source,
         ntracks=1, nskips=1, initial_skip = 1, fail_fast = True):
         '''
             params:
@@ -636,7 +680,7 @@ class SeparateArtists(object):
             self.buffer.append(ti['id'])
 
     def next_track(self):
-        while self.filling:    
+        while self.filling:
             track = self.source.next_track()
             if track:
                 tinfo = pbl.tlib.get_track(track)
