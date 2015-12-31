@@ -1,0 +1,2 @@
+kill `cat redis.pid`
+kill `cat redis-cache.pid`

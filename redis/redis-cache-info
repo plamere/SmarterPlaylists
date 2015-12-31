@@ -1,0 +1,1 @@
+echo INFO | redis-cli -p 6380 | more
