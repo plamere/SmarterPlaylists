@@ -16,7 +16,6 @@ import redis
 import scheduler
 import sys
 import random
-from  example_programs import example_table
 
 app = Flask(__name__)
 
@@ -241,25 +240,6 @@ def imports():
     else:
         results['status'] = 'error'
         results['msg'] = 'no authorized user'
-    results['time'] = time.time() - start_time
-    return jsonify(results)
-
-@app.route('/SmarterPlaylists/examples')
-@cross_origin()
-def examples():
-    start_time = time.time()
-    total = len(example_table)
-    out = []
-    for pid in example_table:
-        info = pm.get_info(pid)
-        if info:
-            info['pid'] = pid
-            out.append(info)
-
-    results = { }
-    results['status'] = 'ok'
-    results['examples'] = out
-    results['total'] = total
     results['time'] = time.time() - start_time
     return jsonify(results)
 
