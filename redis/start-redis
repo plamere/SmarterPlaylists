@@ -1,2 +1,2 @@
-redis-server ./redis.conf
-redis-server ./redis-cache.conf
+/usr/local/bin/redis-server ./redis.conf
+/usr/local/bin/redis-server ./redis-cache.conf
