@@ -505,6 +505,7 @@ def handle_invalid_usage(error):
 if __name__ == '__main__':
     app.debug = False
     app.trace = False
+    app.wsgi = False
     for arg in sys.argv[1:]:
         if arg == '--debug':
             app.debug = True
@@ -513,8 +514,10 @@ if __name__ == '__main__':
     if app.debug:
         print 'debug  mode'
         app.run(threaded=True)
-    else:
+    elif app.wsgi:
         from gevent.wsgi import WSGIServer
         print 'prod  mode'
         http_server = WSGIServer(('', 5000), app)
         http_server.serve_forever()
+    else:
+        app.run()
