@@ -30,7 +30,7 @@ variables
   * $hour - the our of the day
   * $daypart - morning, afternoon, evening, night
 
-typical us would be a script that has a 'playlist' component with a 'My banned
+typical use would be a script that has a 'playlist' component with a 'My banned
 artists' - the user could be $me.
 
 personalized components

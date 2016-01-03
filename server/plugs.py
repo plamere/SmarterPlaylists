@@ -304,13 +304,14 @@ class PlaylistSave(object):
 
         :param source: the source of tracks to be saved
         :param playlist_name: the name of the playlist
-        :param uri: the uri of the playlist
-
+        :param playlist_uri: the uri of the playlist
+        :param append: if true, append to the playlist
     '''
-    def __init__(self, source, playlist_name= None, append=False):
+    def __init__(self, source, playlist_name= None, playlist_uri=None, append=False):
         self.source = source
         self.name = 'save to ' + playlist_name
         self.playlist_name = playlist_name
+        self.playlist_uri = playlist_uri
         self.append = append
         self.buffer = []
         self.saved = False
@@ -340,9 +341,27 @@ class PlaylistSave(object):
 
         # TODO - this can be slow if the user has lots of playlists
         # should cache?
-        uri = find_playlist_by_name(sp, user, self.playlist_name)
+        if self.playlist_uri:
+            uri = self.playlist_uri
+            puser = get_user_from_playlist_uri(uri)
+            pid = get_pid_from_playlist_uri(uri)
+
+            if not user:
+                raise pbl.PBLException(self, "bad uri")
+
+            # it is an error if we don't own the playlist
+            # TBD - what about collab playlists?
+
+            if user != puser:
+                raise pbl.PBLException(self, "Can't save to that playlist")
+
+            if not pid:
+                raise pbl.PBLException(self, "bad uri")
+        else:
+            uri = find_playlist_by_name(sp, user, self.playlist_name)
+
         if uri:
-            print 'found', self.playlist_name, uri
+            print 'found',  uri
         else:
             print 'creating new', self.playlist_name, 'playlist'
             response = sp.user_playlist_create(user, self.playlist_name)
@@ -369,6 +388,14 @@ def get_pid_from_playlist_uri(uri):
     split_uri = uri.split(':')
     if len(split_uri) == 5:
         return split_uri[4]
+    else:
+        return None
+
+def get_user_from_playlist_uri(uri):
+ # spotify:user:plamere:playlist:5pjUedV8eoCJUiYzyo79eq
+    split_uri = uri.split(':')
+    if len(split_uri) == 5:
+        return split_uri[2]
     else:
         return None
 
@@ -506,7 +533,7 @@ class MyFollowedArtists(object):
             return None
 
 class MySavedAlbums(object):
-    ''' A PBL Source that the tracks from albums saved 
+    ''' A PBL Source that the tracks from albums saved
         by the current user
     '''
 

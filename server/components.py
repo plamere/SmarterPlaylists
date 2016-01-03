@@ -623,7 +623,8 @@ inventory = {
             "description": "save the tracks to a spotify playlist",
 
             "help": """ This filter will save all the tracks that pass through
-            it to the Spotify playlist. If a playlist with the given name
+            it to the Spotify playlist. If a playlist uri is given, it will
+            be used, otherwise, if a playlist with the given name
             already exists it will be written to. If no playlist with the given
             name exists, it will be created.  If the <b> append </b> flag is
             set, the tracks will be appended to the playlist
@@ -639,8 +640,14 @@ inventory = {
                     "display": "name",
                     "type" : "string",
                     "default" : "My Smarter Playlist",
-                    "optional" : False,
+                    "optional" : True,
                     "description": "the name of the playlist"
+                },
+                "playlist_uri": {
+                    "display": "uri",
+                    "type" : "uri",
+                    "optional" : True,
+                    "description": "the uri of the playlist"
                 },
                 "append": {
                     "display": "append",
@@ -864,10 +871,9 @@ inventory = {
             "type" : "bool-filter",
             "description": "mix two input streams",
 
-            "help": """ This component excepts a red and a green input stream.
-            If the <b> yes </b> parameter is set, tracks from the green stream
-            will be passed through, otherwise, tracks from the red stream will
-            be passed through""",
+            "help": """ This component allows for more sophisticatd mixing of two
+            streams. Tracks are alternately selected from the red and the green
+            streams based upon the settings """,
 
             "params": {
                 "true_source": {

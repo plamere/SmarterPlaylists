@@ -49,6 +49,7 @@
         <div id="content" class="container">
           <h2 class="prog-title"> </h2>
           <div id="#info"> </div>
+          <a id='import' class='btn btn-sm btn-primary pull-left'> Import </a>
           <div id="viewer-workspace"> </div>
         </div>
       </div>
@@ -56,7 +57,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -69,7 +70,7 @@
     <script src="program.js"></script>
 <script>
 
-function initViewer() {    
+function initViewer() {
     var params = parseParams();
     var pid = null;
     if ('pid' in params) {
@@ -78,6 +79,7 @@ function initViewer() {
             if (info) {
                 $(".prog-title").text(info.name);
                 $(".prog-owner").text(info.owner);
+                $("#import").attr("href", "importer.html?pid=" + pid);
             } else {
                 error("Can't load that program");
             }

@@ -234,3 +234,7 @@ body {
 .s-form-elem {
     margin-right: 16px;
 }
+
+.description-input {
+    width:600px;
+}

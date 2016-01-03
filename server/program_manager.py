@@ -24,7 +24,7 @@ debug_exceptions = False
 
         directory
             directory:user list-of-pids
-            
+
 
 '''
 
@@ -42,6 +42,7 @@ class ProgramManager:
             {
                 name: '',
                 main:'',
+                description:"",
                 pid:'',
                 components : [],
                 extra : {},
@@ -76,9 +77,10 @@ class ProgramManager:
         self.add_info(pid, 'shared', False)
         self.add_info(pid, 'owner', user)
         self.add_info(pid, 'name', program['name'])
+        self.add_info(pid, 'description', program['description'])
 
         return pid
-        
+
     def directory(self, user, start, count):
         dirkey = mkkey('directory', user)
         pids = self.r.lrange(dirkey, start, count - 1)
@@ -91,9 +93,13 @@ class ProgramManager:
         total  = self.r.llen(dirkey)
         for p, pid in zip(programs, pids):
             program = json.loads(p)
+            if 'description' in program:
+                desc = program['description']
+            else:
+                desc = ""
             info = {
                 'name': program['name'],
-                #'pid': program['pid'],
+                'description': desc,
                 'pid': pid,
                 'ncomponents': len(program['components']),
             }
@@ -104,7 +110,7 @@ class ProgramManager:
             out.append(info)
         out.sort(key=lambda x:x['name'].lower())
         return total, out
-            
+
 
     def get_program(self, user, pid):
         pkey = mkprogkey(user, pid)
@@ -147,8 +153,8 @@ class ProgramManager:
 
     def get_published_programs(self):
         return self.r.smembers('published-programs')
-            
-        
+
+
     def delete_program(self, user, pid):
         dirkey = mkkey('directory', user)
         removed_count = self.r.lrem(dirkey, 1, pid)
@@ -168,6 +174,7 @@ class ProgramManager:
         self.r.rpush(dirkey, pid)
         self.add_info(pid, 'owner', user)
         self.add_info(pid, 'name', program['name'])
+        self.add_info(pid, 'description', program['description'])
 
     def add_stat(self, pid, key, val):
         pkey = mkkey('program-stats', pid)
@@ -338,7 +345,3 @@ if __name__ == '__main__':
     program = mk_program()
     p.add_program(user, program)
     show_dir(user)
-
-
-
-

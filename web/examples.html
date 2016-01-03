@@ -61,7 +61,7 @@ and try it for yourself.
           <div class="blog-post">
             <h2 class="blog-post-title">Combine two playlists</h2>
             <p class="blog-post-meta">
-                <a href="go.html?program=examples/combine2.json"> 
+                <a href="viewer.html?pid=9214ca776c9908fe7225f74c4da572d2">
                 <img alt="program image" src="images/combine2.png">
                 </a>
                 <p>
@@ -69,7 +69,7 @@ and try it for yourself.
                     between tracks from two Spotify playlists (Morning Commute
                     and Your Favorite Coffeehouse).  The resulting track stream
                     is de-dupped to ensure that we don't hear the same song
-                    twice.  
+                    twice.
                 </p>
 
           </div><!-- /.blog-post -->
@@ -78,7 +78,7 @@ and try it for yourself.
           <div class="blog-post">
             <h2 class="blog-post-title">Ultimate coffee playlist</h2>
             <p class="blog-post-meta">
-                <a href="go.html?program=examples/coffee-extra.json"> 
+                <a href="go.html?program=examples/coffee-extra.json">
                 <img alt="program image" src="images/coffee-extra.png">
                 </a>
                 <p>
@@ -96,7 +96,7 @@ and try it for yourself.
           <div class="blog-post">
             <h2 class="blog-post-title">Less Teen-Oriented New Music</h2>
             <p class="blog-post-meta">
-                <a href="go.html?program=examples/less-teen.json"> 
+                <a href="go.html?program=examples/less-teen.json">
                 <img alt="program image" src="images/less-teen.png">
                 </a>
                 <p>
@@ -113,7 +113,7 @@ and try it for yourself.
           <div class="blog-post">
             <h2 class="blog-post-title">Gothic Metal front-loaded with Ravenscry</h2>
             <p class="blog-post-meta">
-                <a href="go.html?program=examples/ravenscry.json"> 
+                <a href="go.html?program=examples/ravenscry.json">
                 <img alt="program image" src="images/ravenscry.png">
                 </a>
                 <p>
@@ -125,38 +125,120 @@ and try it for yourself.
           </div><!-- /.blog-post -->
 
           <div class="blog-post">
-            <h2 class="blog-post-title">Low level kitchen sink examples</h2>
-            <p class="blog-post-meta">
-                <ul>
-                <li> <a href="go.html?program=examples/source kitchen sink.json">
-                    Sources Kitchen Sink </a>
-                <li> <a href="go.html?program=examples/filter kitchen sink.json">
-                    Filters Kitchen Sink </a>
-                <li> <a href="go.html?program=examples/filter kitchen sink2.json">
-                    More Filters Kitchen Sink </a>
-                </a>
-                </ul>
-            </p>
-
-          </div><!-- /.blog-post -->
-
+              <h2 class="blog-post-title">More Examples</h2>
+                <table class="table">
+                    <thead>
+                        <tr> <th width="20%"> Name <th width="40%"> Description
+                        <th width="10%"> Elems <th width="30%"> Components Used </tr>
+                    </thead>
+                    <tbody id='program-table-body'>
+                        <tr>
+                          <td> Hello World </td>
+                          <td> My test example, it has lots of interesting data</td>
+                          <td> 4 </td>
+                          <td> SpotifyPlaylist, Sort </td>
+                        </tr>
+                    </tbody>
+                </table>
+          </div>
         </div><!-- /.blog-main -->
-
-
       </div><!-- /.row -->
-
     </div><!-- /.container -->
-
 
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
     <script src="lib/underscore-min.js"></script>
+    <script src="main.js"></script>
+    <script src="program.js"></script>
+<script>
+
+var inventory;
+
+var examplePrograms = [
+    {
+      pid: "9214ca776c9908fe7225f74c4da572d2",
+    },
+    {
+      pid: "048556c5800bfa53dcc542cad2124b1c", // the daily dozen
+    }
+]
+
+function populateExamples() {
+    var examples = examplePrograms.slice();
+    $("#program-table-body").empty();
+    populateNextExample(examples);
+}
+
+function populateNextExample(examples) {
+    if (examples.length > 0) {
+      var next = examples.shift();
+      loadSharedProgram(inventory, next.pid, function(program) {
+        if (program) {
+          console.log('got program', program);
+          addProgramToTable(program);
+        }
+        populateNextExample(examples);
+      });
+    }
+}
+
+function addProgramToTable(program) {
+    /*
+    <tr>
+      <td> Hello World </td>
+      <td> My test example, it has lots of interesting data</td>
+      <td> 4 </td>
+      <td> SpotifyPlaylist, Sort </td>
+    </tr>
+    */
+    var types = new Set();
+
+    _.each(program.components, function(comp, name){
+        types.add(comp.type);
+    });
+
+    types = Array.from(types);
+    types.sort(function (a, b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+
+    console.log("types", types);
+
+    var tr = $("<tr>");
+    var anchor = $("<a>").attr("href", "viewer.html?pid=" + program.pid);
+    anchor.append(program.name);
+    tr.append($("<td>").append(anchor));
+    tr.append($("<td>").append(program.description));
+    tr.append($("<td>").append(Object.keys(program.components).length));
+    tr.append($("<td>").append(types.join(', ')));
+    $("#program-table-body").append(tr);
+}
+
+function initApp() {
+    fetchInventory(function(inventoryMap, styles) {
+        if (inventoryMap == null) {
+            alert("Uh Oh - Having trouble phoning home");
+        } else {
+            inventory = inventoryMap;
+            console.log("got inventory");
+            populateExamples();
+        }
+    });
+}
+
+$(document).ready(
+    function() {
+        initApp();
+    }
+);
+
+</script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

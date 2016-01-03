@@ -53,8 +53,8 @@
 
             <div class="well" id="confirm-import">
               <div id='is-logged-in' class='form-group form-inline'>
-                <p class="import-text"> Import 
-                    <span class="label label-primary prog-title" > Title </span> 
+                <p class="import-text"> Import
+                    <span class="label label-primary prog-title" > Title </span>
                     by <span class="label label-primary prog-owner" > Owner </span> into your set of programs?
                 </p>
 
@@ -67,9 +67,9 @@
              </div>
 
               <div id='not-logged-in' class='form-group form-inline hidden'>
-                <p class="import-text"> Viewing 
-                    <span class="label label-primary prog-title" > Title </span> 
-                    by <span class="label label-primary prog-owner"> Owner </span> 
+                <p class="import-text"> Viewing
+                    <span class="label label-primary prog-title" > Title </span>
+                    by <span class="label label-primary prog-owner"> Owner </span>
                 </p>
 
                 To import this program you will need to login.
@@ -92,7 +92,7 @@
 
                 <div> <br> </div>
                 <div class="">
-                    <a id='continue' href="go.html" 
+                    <a id='continue' href="go.html"
                         class='btn btn-sm btn-primary'> Continue </a>
                 </div>
              </div>
@@ -105,7 +105,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -124,11 +124,11 @@
 
 <script>
 
-function initImporter() {    
+function initImporter() {
     if (!get_auth_code()) {
         $("#is-logged-in").hide();
         $("#not-logged-in").removeClass("hidden");
-    } 
+    }
 
     $("#confirm-import").show();
     $("#confirm-continue").hide();
@@ -162,7 +162,7 @@ function initImporter() {
     });
 
     $("#cancel").on('click', function() {
-        document.location = 'go.html';
+        history.go(-1);
     });
 
     fetchInventory(function(inventoryMap, styles) {

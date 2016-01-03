@@ -117,8 +117,8 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function moveTo(rect, x, y) {
-        var att = rect.type == "rect" ? 
-            {x: x, y: y} : 
+        var att = rect.type == "rect" ?
+            {x: x, y: y} :
             {cx: x, cy: y};
 
         rect.attr(att);
@@ -199,7 +199,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         }
     }
 
-    
+
    var  move = function (dx, dy) {
         var rect = this;
         if (this.parent) {
@@ -309,14 +309,14 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             }
             if (alt.component.trans.maxOutputs > 0 && cur.component.trans.minInputs > 0) {
                 if (cur.component.trans.cls.type == 'bool-filter') {
-                    prompt('SHIFT-SPACE to connect <span class="rcname">' 
-                        + alt.displayName  
+                    prompt('SHIFT-SPACE to connect <span class="rcname">'
+                        + alt.displayName
                         + '</span> to the red port of <span class="cname">'
                         + cur.displayName + "</span>"
                         + ' or SPACE to connect to the green port');
                 } else {
-                    prompt('SPACE to connect <span class="cname">' 
-                        + alt.displayName  + '</span> to <span class="cname">' 
+                    prompt('SPACE to connect <span class="cname">'
+                        + alt.displayName  + '</span> to <span class="cname">'
                         + cur.displayName + "</span>");
                 }
             }
@@ -333,7 +333,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         if (this.parent) {
             rect = this.parent;
         }
-        
+
         if (!rect.selectable) {
             return;
         }
@@ -389,7 +389,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         if (rect.hasError) {
             $("#edit-modal .error").append($("<h3>").text('Errors'));
             $("#edit-modal .error").append($("<span>").text(rect.errorMessage));
-        } 
+        }
 
         var curParams = {};
 
@@ -533,9 +533,9 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             if (div.children().length > 0) {
                 pdiv.append(div);
             }
-        } 
+        }
 
-        
+
         var pdiv = $("#edit-modal .params");
         pdiv.empty();
 
@@ -723,10 +723,10 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             rect.color = "#eeeeee";
             rect.selectable = false;
             rect.attr({
-                fill: "#eeeeee", 
+                fill: "#eeeeee",
                 stroke: rect.color,
-                opacity: .4, 
-                "stroke-width": 0, 
+                opacity: .4,
+                "stroke-width": 0,
                 cursor: "move",
                 });
             fontSize = 18;
@@ -737,22 +737,22 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             rect.textXOffset = tileWidth / 2;
             rect.textYOffset = 30;
             rect.attr({
-                fill: "#ffffff", 
-                stroke: rect.color, 
-                "stroke-width": 2, 
+                fill: "#ffffff",
+                stroke: rect.color,
+                "stroke-width": 2,
                 cursor: "move",
                 });
         }
 
 
-        rect.label = paper.text(xpos + rect.textXOffset, 
+        rect.label = paper.text(xpos + rect.textXOffset,
             ypos + rect.textYOffset, componentType.name);
         rect.label.parent = rect;
 
 
         rect.label.attr({
-            fill: color, 
-            stroke: color, 
+            fill: color,
+            stroke: color,
             cursor: "move",
             "stroke-width": 0,
             "font-family":"Arial",
@@ -824,7 +824,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         return (_.keys(comp.outEdges).length > 0);
     }
 
-    function isConnectedTo(src, dest) { 
+    function isConnectedTo(src, dest) {
         return dest.name in src.outEdges;
     }
 
@@ -883,7 +883,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             }
             else if (component.type == 'source') {
                 sources.push(component);
-            } 
+            }
             else {
                 alert('unsupported ' + component.type);
             }
@@ -929,6 +929,12 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             if (program.name != title) {
                 program.name = title;
             }
+
+            var description = $("#program-description").text();
+            if (program.description != description) {
+                program.description = description;
+            }
+
             clearComponentErrors();
             if (curSelected) {
                 var main = curSelected.name;
@@ -970,6 +976,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         saveButton.on('click', function() {
             var title = $("#program-name").text();
             program.name = title;
+            program.description = $("#program-description").text();
             program.save(function(data) {
                 if (data.status == 'ok') {
                     setInfo(true, 'Saved');
@@ -1071,8 +1078,21 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 placement: 'bottom',
                 showbuttons: 'bottom',
                 inputclass: 'nprogram-input',
+                tpl: "<input type='text' style='width: 600px'>",
                 success: function(response, newValue) {
                     program.name = newValue;
+                    program.trans.needsSave = true;
+                 }
+            });
+            $('#program-description').editable({
+                type: 'text',
+                title: 'Enter Program Description',
+                placement: 'bottom',
+                showbuttons: 'bottom',
+                inputclass: 'description-input',
+                tpl: "<input type='text' style='width: 600px'>",
+                success: function(response, newValue) {
+                    program.description = newValue;
                     program.trans.needsSave = true;
                  }
             });
@@ -1093,7 +1113,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     initEditor();
-    return {    
+    return {
         load:function(newProgram) {
             if (newProgram == null) {
                 return;
@@ -1133,8 +1153,10 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 selectRect(curSelected, true);
             }
             $("#program-name").text(program.name);
+            $("#program-description").text(program.description);
             if (!isReadOnly) {
                 $("#program-name").editable('setValue', program.name);
+                $("#program-description").editable('setValue', program.description);
             }
 
             program.trans.needsSave = false;
@@ -1146,4 +1168,3 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         }
     }
 }
-

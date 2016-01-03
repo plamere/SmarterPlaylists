@@ -2,6 +2,7 @@ Program = function(inventory, name) {
     this.inventory = inventory;
     this.name = name;
     this.main = null;
+    this.description = "my description";
     this.max_tracks = 200;
     this.components = {}
     this.extra = { },
@@ -336,11 +337,11 @@ function loadProgramFromJSON(inventory, sprog) {
     _.each(sprog.components, function(comp, name) {
         if (comp.sources.true_source) {
             program.addConnection(comp.sources.true_source, name, 0);
-        } 
+        }
 
         if (comp.sources.false_source) {
             program.addConnection(comp.sources.false_source, name, 1);
-        } 
+        }
 
         if (comp.sources.source) {
             program.addConnection(comp.sources.source, name, 0);
@@ -359,7 +360,7 @@ function loadProgram(inventory, pid, callback) {
         {
             auth_code: get_auth_code(),
             pid: pid
-        }, 
+        },
         function(data) {
             console.log('loaded', data);
             if (data.status == 'ok') {
@@ -375,7 +376,7 @@ function loadProgram(inventory, pid, callback) {
                 error("Can't load program");
                 callback(null);
             }
-        }, 
+        },
         function() {
             error("Can't load program");
             callback(null);
@@ -401,7 +402,7 @@ function loadSharedProgram(inventory, pid, callback) {
                 error("Can't load program");
                 callback(null);
             }
-        }, 
+        },
         function() {
             error("Can't load program");
             callback(null);
@@ -414,7 +415,7 @@ function loadProgramInfo(pid, callback) {
         {
             auth_code: get_auth_code(),
             pid: pid
-        }, 
+        },
         function(data) {
             console.log('loaded', data);
             if (data.status == 'ok') {
@@ -428,7 +429,7 @@ function loadProgramInfo(pid, callback) {
                 error("Can't load program");
                 callback(null);
             }
-        }, 
+        },
         function() {
             error("Can't load program");
             callback(null);
@@ -441,7 +442,7 @@ function loadSharedProgramInfo(pid, callback) {
         {
             auth_code: get_auth_code(),
             pid: pid
-        }, 
+        },
         function(data) {
             console.log('loaded', data);
             if (data.status == 'ok') {
@@ -450,7 +451,7 @@ function loadSharedProgramInfo(pid, callback) {
                 error("Can't load shared program info");
                 callback(null);
             }
-        }, 
+        },
         function() {
             error("Can't load shared program");
             callback(null);
@@ -459,8 +460,8 @@ function loadSharedProgramInfo(pid, callback) {
 }
 
 function loadProgramDirectory(callback) {
-    $.getJSON(apiPath + 'directory', 
-        { 
+    $.getJSON(apiPath + 'directory',
+        {
             count:500,
             auth_code: get_auth_code()
         },
@@ -480,9 +481,25 @@ function loadInitialDirectory(inventory, callback) {
 }
 
 function loadImports(callback) {
-    $.getJSON(apiPath + 'imports', 
-        { 
+    $.getJSON(apiPath + 'imports',
+        {
             count:500,
+            auth_code: get_auth_code()
+        },
+        function(data) {
+            console.log('data', data);
+            checkForBadUser(data);
+            callback(data);
+        },
+        function() {
+            callback(null);
+        }
+    );
+}
+
+function loadExamples(callback) {
+    $.getJSON(apiPath + 'examples',
+        {
             auth_code: get_auth_code()
         },
         function(data) {
