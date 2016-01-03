@@ -168,6 +168,7 @@ def directory():
     results = { }
 
     auth_code = request.args.get('auth_code', '')
+    print 'auth', auth_code
     start = request.args.get('start', 0, type=int)
     count = request.args.get('count', 20, type=int)
     if auth_code:

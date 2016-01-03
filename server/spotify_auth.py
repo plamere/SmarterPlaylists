@@ -33,22 +33,32 @@ class SpotifyAuth(object):
         self.client_redirect_uri = os.environ.get('SPOTIPY_REDIRECT_URI')
         self.trace = False
 
+        print 'client id', self.client_id 
+        print 'client secret', self.client_secret 
+        print 'client rediret uri', self.client_redirect_uri 
+
         if self.client_id == None or self.client_secret == None or \
             self.client_redirect_uri == None:
             raise Exception('Missing SPOTIPY credentials in the environment')
 
 
     def get_fresh_token(self, code):
+        print 'gft code', code
         now = time.time()
         token = self._get_token(code)
+        print 'gft token', token
         if token:
             if (token['expires_at'] - now) < self.EXPIRES_THRESHOLD:
+                print 'gft token refresh', token
                 token = self._refresh_token(token)
                 if token:
                     self._add_token(code, token)
+                    print 'gft token refreshed', token
         else:
             token = self._add_auth_code(code)
+            print 'gft token add_auth', token
 
+        print 'gft ret', token
         return token
 
     def get_fresh_token_for_user(self, user):
@@ -93,6 +103,7 @@ class SpotifyAuth(object):
             'redirect_uri': self.client_redirect_uri,
             'code' : authorization_code
         }
+        print 'get_new_token', json.dumps(params, indent=4)
         r = requests.post('https://accounts.spotify.com/api/token', params)
         if r.status_code >= 200 and r.status_code < 300:
             token = r.json()
