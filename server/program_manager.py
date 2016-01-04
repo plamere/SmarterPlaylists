@@ -102,6 +102,7 @@ class ProgramManager:
                 'description': desc,
                 'pid': pid,
                 'ncomponents': len(program['components']),
+                'shared' : False
             }
             info.update(program['extra'])
             info.update(self.get_stats(pid))

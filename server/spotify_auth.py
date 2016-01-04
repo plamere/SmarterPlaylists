@@ -35,7 +35,7 @@ class SpotifyAuth(object):
 
         print 'client id', self.client_id 
         print 'client secret', self.client_secret 
-        print 'client rediret uri', self.client_redirect_uri 
+        print 'client redirect uri', self.client_redirect_uri 
 
         if self.client_id == None or self.client_secret == None or \
             self.client_redirect_uri == None:
