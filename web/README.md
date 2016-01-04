@@ -1,22 +1,13 @@
 To DOs
 =======
   * Server site stats
-  * Components that take URIs should also take URLs and provide better diagnostics for malformed addresses
-  * get audio attributes from audio features api
-  * get album attributes to get 
+  * get album attributes to get
 
 
-Auth Issues
+Bugs to fix
 ============
-Auth .... to use the app you will need to login, but his makes it hard to share
-examples if there's a login page in between the share, that will be a challenge.
-One approach would be to allow non-auth users to get to the examples page. If
-they 'run' a program that requires auth, they will get an error and they will be
-prompted to login.  Login button should be in the upper right of the app. (or
-conversly, make sure people are logged in
+  * when a program is deleted, if it is shared, also delete it from the shared list
 
-Save should take place on the server side (to avoid needing two kinds of auth
-for the user).  when they go to 'run' a program.
 
 variables
 =========
@@ -44,7 +35,6 @@ schedule program:
     need to stop a scheduled update
     see your scheduled programs
     see status of latest run (time run, number of tracks generated, any errors)
-
 
 user management:
     - s
@@ -176,3 +166,18 @@ Done
   * Add clear button to editor
   * Scaling rapheal
   * Download program link is unreliable
+  * Components that take URIs should also take URLs and provide better diagnostics for malformed addresses
+  * get audio attributes from audio features api
+
+
+Auth Issues (done)
+============
+Auth .... to use the app you will need to login, but his makes it hard to share
+examples if there's a login page in between the share, that will be a challenge.
+One approach would be to allow non-auth users to get to the examples page. If
+they 'run' a program that requires auth, they will get an error and they will be
+prompted to login.  Login button should be in the upper right of the app. (or
+conversly, make sure people are logged in
+
+Save should take place on the server side (to avoid needing two kinds of auth
+for the user).  when they go to 'run' a program.

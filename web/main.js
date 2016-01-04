@@ -1,21 +1,24 @@
+var forceRemote = true;
 var inventory = null
 var editor = null;
 var apiLocalPath = 'http://localhost:5000/SmarterPlaylists/';
-var apiRemotePath = 'http://labs2.echonest.com/SmarterPlaylists/';
+var apiRemotePath = 'http://smarterplaylists.playlistmachinery.com/SmarterPlaylists/'
 
 var client_id = 'bb61fcfe1423449ba3d8e3b016316316'; // smarter playlists
 var client_id = '31469b011d4941bf8dd4ac9cf8495bac'; // sort your music ID
 
 var local_redirect_uri = 'http://localhost:8000/callback.html';
 var remote_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/callback.html';
+var remote_redirect_uri = 'http://smarterplaylists.playlistmachinery.com/callback.html';
+
 var local_auth_redirect_uri = 'http://localhost:8000/auth.html';
 var remote_auth_redirect_uri = 'http://static.echonest.com/SmarterPlaylists/auth.html';
+var remote_auth_redirect_uri = 'http://smarterplaylists.playlistmachinery.com/auth.html';
 
 var apiPath = isLocalHost() ? apiLocalPath : apiRemotePath;
 var redirect_uri = isLocalHost() ? local_redirect_uri : remote_redirect_uri;
 var auth_redirect_uri = isLocalHost() ? local_auth_redirect_uri : remote_auth_redirect_uri;
 
-var forceRemote = false;
 var confirmDelete = true;
 
 
