@@ -161,6 +161,7 @@ class ProgramManager:
         if removed_count >= 1:
             pkey = mkprogkey(user, pid)
             self.r.delete(pkey)
+            self.del_info(pid)
         return removed_count >= 1
 
     def update_program(self, user, program):
@@ -202,6 +203,10 @@ class ProgramManager:
             return self.r.hgetall(pkey)
         else:
             return self.r.hget(pkey, key)
+
+    def del_info(self, pid):
+        pkey = mkkey('program-info', pid)
+        self.r.delete(pkey)
 
     def incr_import(self, pid):
         pkey = mkkey('program-info', pid)

@@ -94,8 +94,10 @@ class Scheduler(object):
     def cancel(self, user, pid):
         skey = mk_sched_key('job', user, pid)
         self.r.zrem(self.job_queue, skey)
+        pipe = self.r.pipeline()
         pipe.hset(skey, 'next_run', 0)
         pipe.hset(skey, 'status', 'stopped')
+        pipe.execute()
         return True
 
     def get_run_stats(self, user, pid):

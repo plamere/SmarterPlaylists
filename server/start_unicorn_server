@@ -1,0 +1,5 @@
+source credentials.sh
+export PBL_CACHE=REDIS
+#python flask_server.py
+gunicorn -w 4 flask_server:app -b localhost:5000
+

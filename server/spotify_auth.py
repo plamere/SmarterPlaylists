@@ -43,22 +43,16 @@ class SpotifyAuth(object):
 
 
     def get_fresh_token(self, code):
-        print 'gft code', code
         now = time.time()
         token = self._get_token(code)
-        print 'gft token', token
         if token:
             if (token['expires_at'] - now) < self.EXPIRES_THRESHOLD:
-                print 'gft token refresh', token
                 token = self._refresh_token(token)
                 if token:
                     self._add_token(code, token)
-                    print 'gft token refreshed', token
         else:
             token = self._add_auth_code(code)
-            print 'gft token add_auth', token
 
-        print 'gft ret', token
         return token
 
     def get_fresh_token_for_user(self, user):

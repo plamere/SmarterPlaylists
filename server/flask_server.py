@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request, jsonify, send_from_directory
 from flask.ext.cors import cross_origin
+from werkzeug.contrib.fixers import ProxyFix
+
 import json
 import components
 import compiler
@@ -221,11 +223,12 @@ def imports():
             out = []
             for pid in import_pids:
                 info = pm.get_info(pid)
-                if not 'imports' in info:
-                    info['imports'] = 0
-                info['imports'] = int(info['imports'])
-                info['pid'] = pid
-                out.append(info)
+                if info:
+                    if not 'imports' in info:
+                        info['imports'] = 0
+                    info['imports'] = int(info['imports'])
+                    info['pid'] = pid
+                    out.append(info)
 
             out.sort(key=lambda info:info['imports'], reverse=True)
             out = out[start:start+count]
@@ -485,11 +488,13 @@ def schedule():
                     results['status'] = 'error'
                     results['message'] = "Can't schedule that job"
             else:
+                print 'schedule cancel', user, pid
                 if scheduler.cancel(user, pid):
                     results['status'] = 'ok'
                 else:
                     results['status'] = 'error'
                     results['message'] = "Can't cancel that job"
+                print 'done'
 
     results['time'] = time.time() - start
     return jsonify(results)
@@ -502,6 +507,8 @@ def handle_invalid_usage(error):
     results = { 'status': 'exception: '  + str(error)}
     print 'invalid usage', time.time() - start
     return jsonify(results)
+
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
     app.debug = False
