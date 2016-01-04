@@ -1,1 +1,1 @@
-s3cmd sync --acl-public *  s3://static.echonest.com/SmarterPlaylists/
+rsync -azv . plamere@playlistmachinery.com:/home/www/smarterplaylists

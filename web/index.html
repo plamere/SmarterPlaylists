@@ -44,26 +44,26 @@
         <h1 id='ttitle' >Smarter Playlists</h1>
         <p id='ttext'>
             Smarter Playlists lets you automate the process of making
-            complex playlists. 
+            complex playlists.
         </p>
         <p class="pdescription">
             With Smarter Playlists you can create new playlists
             by combining a wide range of music sources - artists, albums,
             genres, pre-programmed playlists and filtering and manipulating them
-            with a nifty graph-based UI.  
+            with a nifty graph-based UI.
         </p>
-        <p class="text-danger"> This is an early alpha version. Send feedback to
+        <p class="text-danger"> This is an alpha V2 version. Send feedback to
         <a href="http://twitter.com/plamere">@plamere </a></p>
 
-        <p><a class="btn btn-default btn-lg" href="examples.html" 
+        <p><a class="btn btn-default btn-lg" href="examples.html"
             id='examples' role="button">See examples</a>
-        <a class="btn btn-primary btn-lg" 
+        <a class="btn btn-primary btn-lg"
             id='login' role="button">Login to get Started</a></p>
-            
+
         <img alt="program image" class="img-centered" src='images/fav-mix-or-new-music-friday.png'>
         <p class="pdescription">
-            Above is a Smarter Playlist that generates an energetic mix of 
-            some of my favorite music, along with Spotify recommendations, 
+            Above is a Smarter Playlist that generates an energetic mix of
+            some of my favorite music, along with Spotify recommendations,
             unless it is Friday when the focus is on energetic <i>new</i> music.
         </p>
       </div>
@@ -72,7 +72,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -81,9 +81,9 @@
       src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="main.js"></script>
-<script> 
+<script>
 
-function initLogin() {    
+function initLogin() {
     $("#login").on("click", function() {
         console.log('login');
         loginWithSpotifyForAuth();

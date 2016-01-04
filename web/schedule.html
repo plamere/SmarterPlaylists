@@ -113,16 +113,16 @@
 
               <h2> Status of recent runs </h2>
               <table class="table table-striped table-bordered">
-                <thead> 
-                  <tr> 
-                    <th> # </th> 
-                    <th> Run Date </th> 
+                <thead>
+                  <tr>
+                    <th> # </th>
+                    <th> Run Date </th>
                     <th> Status </th>
-                    <th> Execution time </th> 
-                    <th> Schedule Info</th> 
-                    <th> Output</th> 
-                    <th> Error info</th> 
-                  </tr> 
+                    <th> Execution time </th>
+                    <th> Schedule Info</th>
+                    <th> Output</th>
+                    <th> Error info</th>
+                  </tr>
                 </thead>
                 <tbody id='results-body'> </tbody>
               </table>
@@ -135,7 +135,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -185,7 +185,9 @@ function showSummaryTable(ss) {
     }
     $("#status-status").text(ss.status);
     $("#status-delta").text(getDeltaName(ss.delta));
-    if (isValidDelta(ss.delta)) {
+    if (ss.status == 'stopped') {
+        $("#schedule-delta").val(0);
+    } else if (isValidDelta(ss.delta)) {
         $("#schedule-delta").val(ss.delta);
     }
     $("#schedule-runs").val(ss.total);
@@ -204,7 +206,7 @@ function fmtRuntime(ts) {
 }
 
 function oldfmtRuntime(ts) {
-    var d = new Date(0); 
+    var d = new Date(0);
     d.setUTCSeconds(ts);
     return d.toString();
 }
@@ -247,7 +249,7 @@ function showResultsTable(results) {
 }
 
 
-function initScheduler() {    
+function initScheduler() {
     var params = parseParams();
     var pid = null;
     if ('pid' in params) {

@@ -48,8 +48,8 @@
         <div id='errors'> </div>
         <div id="content" class="container">
           <h2 class="prog-title"> </h2>
-          <div id="#info"> </div>
-          <a id='import' class='btn btn-sm btn-primary pull-left'> Import </a>
+          <div class="prog-description"> </div>
+          <a id='import' class='btn btn-sm btn-primary'> Import </a>
           <div id="viewer-workspace"> </div>
         </div>
       </div>
@@ -78,6 +78,7 @@ function initViewer() {
         loadSharedProgramInfo(pid, function(info) {
             if (info) {
                 $(".prog-title").text(info.name);
+                $(".prog-description").text(info.description);
                 $(".prog-owner").text(info.owner);
                 $("#import").attr("href", "importer.html?pid=" + pid);
             } else {
