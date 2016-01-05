@@ -100,7 +100,7 @@ function checkForBadUser(data) {
     console.log(data.status, data.msg);
     if (data.status == 'error' && data.msg == 'no authorized user') {
         clear_auth_code();
-        // document.location = 'index.html';
+        document.location = 'index.html';
         console.log('no auth user', data);
     }
 }
