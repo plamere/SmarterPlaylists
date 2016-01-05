@@ -29,7 +29,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
         print ' '.join(users)
 
     def do_progs(self, line):
-        total = 0
+        prog_total = 0
         if len(line) == 0:
             users = []
             for key in self.my_redis.keys("directory:*"):
@@ -43,9 +43,9 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
             print user, total, 'programs'
             for prog in progs:
                 print '   ', prog['pid'], prog['name']
-                total += 1
+                prog_total += 1
 
-        print total, 'programs, for', len(users), 'users'
+        print prog_total, 'programs, for', len(users), 'users'
 
     def do_pinfo(self, line):
         for pid in line.strip().split():
