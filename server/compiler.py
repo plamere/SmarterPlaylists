@@ -121,7 +121,6 @@ def compile_object(objname, program):
                         return status + " in " + objname, None
 
                 try:
-                    print 'creating', comp['type'], params
                     obj = spec['class'](**params)
                     symbols[objname] = obj
                     hsymbols[obj] = objname

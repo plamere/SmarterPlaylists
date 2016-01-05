@@ -193,6 +193,10 @@ class Energy(pbl.AttributeRangeFilter):
         super(Energy, self).__init__(source, "audio.energy",
             match=None, min_val=min_val, max_val=max_val)
 
+class Match(pbl.AttributeRangeFilter):
+    def __init__(self, source, attr, val):
+        super(Match, self).__init__(source, attr, match=val)
+
 class Live(pbl.AttributeRangeFilter):
     ranges = [
         (.8, 1),
@@ -374,10 +378,8 @@ class PlaylistSave(object):
             for start in xrange(0, len(uris), batch_size):
                 turis = uris[start:start+batch_size]
                 if start == 0 and not self.append:
-                    print 'replace', start
                     sp.user_playlist_replace_tracks(user, pid, turis)
                 else:
-                    print 'add', start
                     sp.user_playlist_add_tracks(user, pid, turis)
         else:
             print "Can't get authenticated access to spotify"
@@ -419,7 +421,6 @@ def save_to_playlist(title, uri, tids):
         raise Exception("no authenticated user")
 
     if not uri:
-        print 'creating new', title, 'playlist'
         response = sp.user_playlist_create(user, title)
         if 'uri' in response:
             uri = response['uri']
@@ -433,10 +434,8 @@ def save_to_playlist(title, uri, tids):
         for start in xrange(0, len(uris), batch_size):
             turis = uris[start:start+batch_size]
             if start == 0:
-                print 'replace', start
                 sp.user_playlist_replace_tracks(user, pid, turis)
             else:
-                print 'add', start
                 sp.user_playlist_add_tracks(user, pid, turis)
     else:
         print "Can't get authenticated access to spotify"
@@ -549,7 +548,6 @@ class MySavedAlbums(object):
             total = limit
             offset = 0
 
-            print 'next_track'
             while offset < total:
                 try:
                     results = get_spotify().current_user_saved_albums(limit = limit, offset = offset)
@@ -688,11 +686,9 @@ class SeparateArtists(object):
                 self.swap(swap_2, swap_1)
                 no_swap += 1
                 if no_swap > max_no_swaps:
-                    print 'max swaps'
                     break
             else:
                 no_swap = 0
-                print i, cur_score, new_score, len(indexes)
                 cur_score = new_score
                 indexes = new_indexes
 

@@ -20,6 +20,8 @@ import sys
 import random
 
 app = Flask(__name__)
+app.debug = False
+app.trace = False
 
 my_redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 auth = spotify_auth.SpotifyAuth(r=my_redis)
@@ -77,16 +79,11 @@ def delete():
     js = request.json
     auth_code = js['auth_code']
     pid = js['pid']
-    #auth_code ='asdf'
-    #pid ='123'
-    print 'delete', pid
-    print auth_code
     if pid and auth_code:
         token = auth.get_fresh_token(auth_code)
         if token:
             user = token['user_id']
             if pm.delete_program(user, pid):
-                print 'deleted', user, pid
                 results['status'] = 'ok'
             else:
                 results['status'] = 'error'
@@ -109,8 +106,6 @@ def copy():
     js = request.json
     auth_code = js['auth_code']
     pid = js['pid']
-    print 'copy', pid
-    print auth_code
     if pid and auth_code:
         token = auth.get_fresh_token(auth_code)
         if token:
@@ -140,8 +135,6 @@ def import_program():
     js = request.json
     auth_code = js['auth_code']
     pid = js['pid']
-    print 'import', pid
-    print auth_code
     if pid and auth_code:
         token = auth.get_fresh_token(auth_code)
         if token:
@@ -170,14 +163,11 @@ def directory():
     results = { }
 
     auth_code = request.args.get('auth_code', '')
-    print 'auth', auth_code
     start = request.args.get('start', 0, type=int)
     count = request.args.get('count', 20, type=int)
     if auth_code:
-        print 'auth', auth_code
         token = auth.get_fresh_token(auth_code)
         if token:
-            print 'token', token
             user = token['user_id']
             total, dir = pm.directory(user, start, count)
 
@@ -194,7 +184,6 @@ def directory():
             results['count'] = count
 
         else:
-            print 'no auth', token
             results['status'] = 'error'
             results['msg'] = 'no authorized user'
     else:
@@ -432,17 +421,14 @@ def run():
     auth_code = params['auth_code']
     save_playlist = params['save']
     pid = params['pid']
-    print 'running', pid
     results = pm.execute_program(auth_code, pid, save_playlist)
     if results['status'] == 'ok':
         tracks = []
         results['tracks'] = tracks
-        print
         for i, tid in enumerate(results['tids']):
-            print i, pbl.tlib.get_tn(tid)
+            if app.trace:
+                print i, pbl.tlib.get_tn(tid)
             tracks.append(pbl.tlib.get_track(tid))
-    if app.trace:
-        print json.dumps(results, indent=4)
     return jsonify(results)
 
 @app.route('/SmarterPlaylists/schedule', methods=['POST'])
@@ -488,24 +474,33 @@ def schedule():
                     results['status'] = 'error'
                     results['message'] = "Can't schedule that job"
             else:
-                print 'schedule cancel', user, pid
                 if scheduler.cancel(user, pid):
                     results['status'] = 'ok'
                 else:
                     results['status'] = 'error'
                     results['message'] = "Can't cancel that job"
-                print 'done'
 
     results['time'] = time.time() - start
     return jsonify(results)
 
-
-#@app.errorhandler(Exception)
-def handle_invalid_usage(error):
+@app.route('/SmarterPlaylists/force_error')
+@cross_origin()
+def force_error():
     start = time.time()
-    print error
-    results = { 'status': 'exception: '  + str(error)}
-    print 'invalid usage', time.time() - start
+    results = {
+        'status': 'ok',
+    }
+    bad = {}
+    if bad['missing']:
+        print "forced error"
+    return jsonify(results)
+
+@app.errorhandler(Exception)
+def handle_invalid_usage(error):
+    results = { 
+        'status': 'internal_error',
+        "reason": str(error)
+    }
     return jsonify(results)
 
 app.wsgi_app = ProxyFix(app.wsgi_app)

@@ -229,12 +229,10 @@ class ProgramManager:
             else:
                 delta = token['expires_at'] - time.time()
                 print 'cur token expires in', delta, 'secs'
-                print 'token', token
                 user = token['user_id']
                 program = self.get_program(user, pid)
                 if not program:
                     return None
-                print 'program', program
                 pbl.engine.setEnv('spotify_auth_token', token['access_token'])
                 pbl.engine.setEnv('spotify_user_id', token['user_id'])
 

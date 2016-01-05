@@ -22,7 +22,6 @@ import redis
 class SpotifyAuth(object):
 
     def __init__(self, r = None):
-        print 'creating spotify auth'
         if r:
             self.r = r
         else:
@@ -97,7 +96,6 @@ class SpotifyAuth(object):
             'redirect_uri': self.client_redirect_uri,
             'code' : authorization_code
         }
-        print 'get_new_token', json.dumps(params, indent=4)
         r = requests.post('https://accounts.spotify.com/api/token', params)
         if r.status_code >= 200 and r.status_code < 300:
             token = r.json()
@@ -162,7 +160,6 @@ class SpotifyAuth(object):
 
     def _put(self, key, val):
         js = json.dumps(val)
-        print 'put', key, val
         self.r.set(key, js)
 
     def delete_auth(self, code):
