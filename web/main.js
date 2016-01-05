@@ -1,4 +1,4 @@
-var forceRemote = true;
+var forceRemote = false;
 var inventory = null
 var editor = null;
 var apiLocalPath = 'http://localhost:5000/SmarterPlaylists/';

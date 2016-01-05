@@ -598,7 +598,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                     if (component.params[key]) {
                         return key;
                     } else {
-                        return null;
+                        return "not " + key;
                     }
                 } else if (keyType == 'time') {
                     return fmtTime(component.params[key]);

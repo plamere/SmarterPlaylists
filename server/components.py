@@ -1162,6 +1162,31 @@ inventory = {
             }
         },
         {
+            "name" : "Explicit",
+            "class": plugs.Explicit,
+            "type" : "filter",
+            "title" : "$explicit",
+            "display": "explicit",
+            "description": "filters tracks by their explicit attribute",
+
+            "help" : """ This component will pass through tracks that match
+            the given explicit criteria.""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "explicit": {
+                    "type" : "bool",
+                    "default" : False,
+                    "description": """if true, only explicit tracks are passed
+                    through, if false no explicit tracks are passed through"""
+                }
+            }
+        },
+        {
             "name" : "Live",
             "class": plugs.Live,
             "type" : "filter",

@@ -193,9 +193,9 @@ class Energy(pbl.AttributeRangeFilter):
         super(Energy, self).__init__(source, "audio.energy",
             match=None, min_val=min_val, max_val=max_val)
 
-class Match(pbl.AttributeRangeFilter):
-    def __init__(self, source, attr, val):
-        super(Match, self).__init__(source, attr, match=val)
+class Explicit(pbl.AttributeRangeFilter):
+    def __init__(self, source, explicit):
+        super(Explicit, self).__init__(source, "spotify.explicit", match=explicit)
 
 class Live(pbl.AttributeRangeFilter):
     ranges = [
