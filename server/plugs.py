@@ -5,6 +5,7 @@ import spotipy
 from werkzeug.contrib.cache import SimpleCache
 from pbl import spotify_plugs
 import simplejson as json
+import time
 
 cache = SimpleCache()
 
@@ -303,18 +304,16 @@ def get_user():
 def get_spotify():
     return pbl.spotify_plugs._get_spotify()
 
-class PlaylistSaveToNew(object):
-    ''' A PBL Sink that saves the source stream of tracks to a new playlist
-
+class PlaylistSave(object):
+    ''' A PBL Sink that saves the source stream of tracks to the given playlist
         :param source: the source of tracks to be saved
         :param playlist_name: the name of the playlist
-        :param suffix - time(default), date, day-of-week, day-of-month
+        :param playlist_uri: the uri of the playlist
+        :param append: if true, append to the playlist
     '''
-    def __init__(self, source, playlist_name, suffix = None):
+    def __init__(self, source, playlist_name= None, playlist_uri=None, append=False):
         self.source = source
-        self.name = 'save to ' + playlist_name 
-        if suffix:
-            self.name += ' ' + suffix
+        self.name = source.name + ' saved to ' + playlist_name
         self.playlist_name = playlist_name
         self.playlist_uri = playlist_uri
         self.append = append
@@ -382,6 +381,78 @@ class PlaylistSaveToNew(object):
                     sp.user_playlist_replace_tracks(user, pid, turis)
                 else:
                     sp.user_playlist_add_tracks(user, pid, turis)
+        else:
+            print "Can't get authenticated access to spotify"
+
+
+class PlaylistSaveToNew(object):
+    ''' A PBL Sink that saves the source stream of tracks to a new playlist
+
+        :param source: the source of tracks to be saved
+        :param playlist_name: the name of the playlist
+        :param suffix_type - time(default), date, day-of-week, day-of-month
+    '''
+    formatters = {
+        "none": lambda: "",
+        "time": lambda: " - " + now().strftime("%x %X"),
+        "date": lambda: " - " + now().strftime("%x"),
+        "day-of-week": lambda: " - " + get_day_of_week(),
+        "day-of-month": lambda: " - " + now().strftime("%d"),
+    }
+
+    def __init__(self, source, playlist_name, suffix_type = "none"):
+        self.source = source
+        self.name = source.name + ' saved to ' + playlist_name 
+        self.buffer = []
+        self.saved = False
+        self.max_size = 1000
+
+        if suffix_type == None:
+            suffix_type = 'none'
+
+        if suffix_type not in self.formatters:
+            raise pbl.PBLException(self, "bad suffix type" + suffix_type)
+
+        suffix = self.formatters[suffix_type]()
+        self.playlist_name = playlist_name + suffix
+        print 'st', suffix_type, 's', suffix, 'pn', playlist_name, 'spn', self.playlist_name
+
+
+
+    def next_track(self):
+        if not is_authenticated():
+            raise pbl.PBLException(self, "not authenticated for save")
+
+        track = self.source.next_track()
+        if track and len(self.buffer) < self.max_size:
+            self.buffer.append(track)
+        elif not self.saved:
+            self._save_playlist()
+        return track
+
+
+    def _save_playlist(self):
+        self.saved = True
+        sp = get_spotify()
+        user = get_user()
+
+        if not sp:
+            raise pbl.PBLException(self, "not authenticated for save")
+
+        if not user:
+            raise pbl.PBLException(self, "no user")
+
+        print 'creating', self.playlist_name
+        response = sp.user_playlist_create(user, self.playlist_name)
+        uri = response['uri']
+
+        pid = get_pid_from_playlist_uri(uri)
+        if pid:
+            batch_size = 100
+            uris = [ 'spotify:track:' + id for id in self.buffer]
+            for start in xrange(0, len(uris), batch_size):
+                turis = uris[start:start+batch_size]
+                sp.user_playlist_add_tracks(user, pid, turis)
         else:
             print "Can't get authenticated access to spotify"
 
@@ -719,10 +790,19 @@ class SeparateArtists(object):
         else:
             return None
 
+def now():
+    return datetime.datetime.now()
+
+def get_day_of_week():
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'monday']
+    day = now().weekday()
+    return days[day]
 
 if __name__ == '__main__':
     import sys
     p1 = pbl.ArtistTopTracks(name='Ravenscry')
-    p2 = pbl.ArtistTopTracks(name='weezer')
-    mi = MixIn(p1, p2, 2,1,1, True)
-    pbl.show_source(mi)
+    #p2 = pbl.ArtistTopTracks(name='weezer')
+    #mi = MixIn(p1, p2, 2,1,1, True)
+    #pbl.show_source(mi)
+    save = PlaylistSaveToNew(p1, 'test', 'day-of-month')
+    pbl.show_source(save)

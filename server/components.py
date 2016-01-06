@@ -31,6 +31,14 @@ inventory = {
             { "name" : "audio", "value" : "audio" }
          ],
 
+         "playlist_suffix": [
+            { "name" : "none", "value" : "none" },
+            { "name" : "time", "value" : "time" },
+            { "name" : "date", "value" : "date" },
+            { "name" : "day-of-week", "value" : "day-of-week" },
+            { "name" : "day-of-month", "value" : "day-of-month" }
+         ],
+
          "scale": [
             { "name" : "most", "value" : 0 },
             { "name" : "more", "value" : 1 },
@@ -655,6 +663,41 @@ inventory = {
                     "default" : False,
                     "description": "if true, append tracks to the playlist"
                 }
+            }
+        },
+
+        {
+            "name" : "PlaylistSaveToNew",
+            "class": plugs.PlaylistSaveToNew,
+            "type" : "filter",
+            "title" : "save to new playlist",
+            "display": "save to new playlist",
+            "description": "save the tracks to a new Spotify playlist with an optional automatically supplied suffix",
+
+            "help": """ This filter will save all the tracks that pass through
+            it to the Spotify playlist. A new playlist will always be created.
+            Specify a suffix type to automatically vary the playlist name with
+            the date, time, day of the week, or the day of the month. """,
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "playlist_name": {
+                    "display": "name",
+                    "type" : "string",
+                    "default" : "My Smarter Playlist",
+                    "optional" : True,
+                    "description": "the name of the playlist"
+                },
+                "suffix_type": {
+                    "display": "suffix_type",
+                    "type" : "playlist_suffix",
+                    "default" : "time",
+                    "description": "type of suffix automatically applied to the playlist name"
+                },
             }
         },
 
