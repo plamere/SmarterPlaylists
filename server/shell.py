@@ -27,6 +27,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
             users.append(key.split(':')[1])
         users.sort()
         print ' '.join(users)
+        print "total users:", len(users)
 
     def do_progs(self, line):
         prog_total = 0
@@ -89,6 +90,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
                     if key not in self.skips:
                         print "   ", key, val
                 print
+        print 'total jobs', len(items)
                 
     
 def fmt_delta(delta):

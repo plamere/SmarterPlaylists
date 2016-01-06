@@ -303,17 +303,18 @@ def get_user():
 def get_spotify():
     return pbl.spotify_plugs._get_spotify()
 
-class PlaylistSave(object):
-    ''' A PBL Sink that saves the source stream of tracks to the given playlist
+class PlaylistSaveToNew(object):
+    ''' A PBL Sink that saves the source stream of tracks to a new playlist
 
         :param source: the source of tracks to be saved
         :param playlist_name: the name of the playlist
-        :param playlist_uri: the uri of the playlist
-        :param append: if true, append to the playlist
+        :param suffix - time(default), date, day-of-week, day-of-month
     '''
-    def __init__(self, source, playlist_name= None, playlist_uri=None, append=False):
+    def __init__(self, source, playlist_name, suffix = None):
         self.source = source
-        self.name = 'save to ' + playlist_name
+        self.name = 'save to ' + playlist_name 
+        if suffix:
+            self.name += ' ' + suffix
         self.playlist_name = playlist_name
         self.playlist_uri = playlist_uri
         self.append = append
