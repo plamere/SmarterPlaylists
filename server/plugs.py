@@ -179,6 +179,11 @@ class Danceable(pbl.AttributeRangeFilter):
         super(Danceable, self).__init__(source, "audio.danceability",
             match=None, min_val=min_val, max_val=max_val)
 
+class ReleaseDateFilter(pbl.AttributeRangeFilter):
+    def __init__(self, source, min_val, max_val):
+        super(ReleaseDateFilter, self).__init__(source, "spotify.album_release_date",
+            match=None, min_val=min_val, max_val=max_val)
+
 class Energy(pbl.AttributeRangeFilter):
     ranges = [
         (.8, 1),
