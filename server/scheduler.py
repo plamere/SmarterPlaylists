@@ -90,6 +90,7 @@ class Scheduler(object):
         pipe.zadd(self.job_queue, when, skey)
         pipe.lpush(self.wait_queue, 1)
         pipe.execute()
+        self.pm.inc_global_counter("jobs_posted")
 
     def cancel(self, user, pid):
         skey = mk_sched_key('job', user, pid)
@@ -98,6 +99,7 @@ class Scheduler(object):
         pipe.hset(skey, 'next_run', 0)
         pipe.hset(skey, 'status', 'stopped')
         pipe.execute()
+        self.pm.inc_global_counter("jobs_canceled")
         return True
 
     def get_run_stats(self, user, pid):
@@ -151,6 +153,7 @@ class Scheduler(object):
             auth_code = info['auth_code']
             pid = info['pid']
             results = self.pm.execute_program(auth_code, pid, True)
+            self.pm.inc_global_counter("jobs_executed")
         return results
 
     def run_job(self, skey):
@@ -187,14 +190,17 @@ class Scheduler(object):
             results['info'] = 'max consecutive errors exceeded, job cancelled'
             self.r.hset(skey, 'next_run', 0)
             self.r.hset(skey, 'status', 'cancelled')
+            self.pm.inc_global_counter("jobs_max_errors_reached")
         elif runs >= int(info['total']):
             results['info'] = 'total runs reached, job finished'
             self.r.hset(skey, 'status', 'finished')
             self.r.hset(skey, 'next_run', 0)
+            self.pm.inc_global_counter("jobs_total_runs_reached")
         elif delta == 0:
             results['info'] = 'run cancelled by user'
             self.r.hset(skey, 'status', 'cancelled')
             self.r.hset(skey, 'next_run', 0)
+            self.pm.inc_global_counter("jobs_cancelled_by_user")
         else:
             next_time = self.now() + delta
             next_date = datetime.fromtimestamp(next_time).strftime('%Y-%m-%d %H:%M:%S')
