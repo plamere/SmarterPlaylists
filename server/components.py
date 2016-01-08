@@ -2,6 +2,7 @@ import pbl
 import plugs
 import copy
 import pyen
+import datetime
 
 exported_inventory = None
 en = pyen.Pyen()
@@ -51,7 +52,6 @@ inventory = {
             { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},
             { "name" : "artist followers", "value" : "spotify.primary_artist_followers"},
             { "name" : "album popularity", "value" : "spotify.album_popularity"},
-            { "name" : "album date", "value" : "spotify.album_release_date"},
             { "name" : "track popularity", "value" : "spotify.popularity"},
 
             { "name" : "speechiness", "value" : "audio.speechiness"},
@@ -68,11 +68,8 @@ inventory = {
 
             { "name" : "src", "value" : "src"},
             { "name" : "duration", "value" : "duration"},
-            { "name" : "artist", "value" : "artist"},
-            { "name" : "title", "value" : "title"},
 
             { "name" : "popularity", "value" : "spotify.popularity"},
-            { "name" : "explicit", "value" : "spotify.explicit"},
             { "name" : "track number", "value" : "spotify.track_number"},
             { "name" : "disc number", "value" : "spotify.disc_number"}
          ],
@@ -113,6 +110,7 @@ inventory = {
             #
          ]
     },
+
     "components" : [
         {
             "name" : "Annotator",
@@ -1149,6 +1147,40 @@ inventory = {
                     "optional" : True,
                     "display" : "max value",
                     "description": "if not empty attribute value must be less than this"
+                }
+            }
+        },
+        {
+            "name" : "ReleaseDateFilter",
+            "class": plugs.ReleaseDateFilter,
+            "type" : "filter",
+            "description": "filter tracks by the date of release",
+            "title": "released between $min_val and $max_val",
+            "display" : "date filter",
+
+            "help" : """ This component will filter the input stream and only
+            pass through tracks that have a release date within the specified
+            range""",
+
+            "params": {
+                "source": {
+                    "type" : "source",
+                    "optional" : False,
+                    "description": "the source of the tracks",
+                },
+                "min_val": {
+                    "type" : "string",
+                    "optional" : True,
+                    "display" : "Earliest Date",
+                    "default" : "1935-01-08",
+                    "description": "tracks must be released no earlier than this date"
+                },
+                "max_val": {
+                    "type" : "string",
+                    "optional" : True,
+                    "display" : "Latest date",
+                    "default" : datetime.datetime.now().strftime("%Y-%m-%d"),
+                    "description": "tracks must be released no later than this date"
                 }
             }
         },
