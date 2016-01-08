@@ -1,4 +1,5 @@
 server {
+    server_name smarterplaylists.playlistmachinery.com;
     location /api {
         proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
@@ -15,5 +16,12 @@ server {
     }
     location / {
         alias  /home/www/smarterplaylists/;
+    }
+}
+
+server {
+    server_name www.playlistmachinery.com;
+    location / {
+        alias  /home/www/playlistmachinery/;
     }
 }
