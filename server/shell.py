@@ -29,6 +29,15 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
         print ' '.join(users)
         print "total users:", len(users)
 
+    def do_gstats(self, line):
+        stats = self.my_redis.hgetall("global_stats")
+        skeys = [key for key in stats.keys()]
+        skeys.sort()
+
+        for key in skeys:
+            print '  ', key, stats[key]
+        
+
     def do_progs(self, line):
         prog_total = 0
         if len(line) == 0:

@@ -143,12 +143,14 @@ class ProgramManager:
                 program['name'] = 'import of ' + program['name']
                 new_pid = self.add_program(user, program)
                 self.incr_import(pid)
+        self.inc_global_counter("program_imports")
         return new_pid
 
     def publish_program(self, user, pid, state):
         self.add_info(pid, 'shared', state)
         if state:
             self.r.sadd('published-programs', pid)
+            self.inc_global_counter("program_published")
         else:
             self.r.srem('published-programs', pid)
 
@@ -163,6 +165,7 @@ class ProgramManager:
             pkey = mkprogkey(user, pid)
             self.r.delete(pkey)
             self.del_info(pid)
+            self.inc_global_counter("program_deletes")
         return removed_count >= 1
 
     def update_program(self, user, program):
@@ -177,6 +180,7 @@ class ProgramManager:
         self.add_info(pid, 'owner', user)
         self.add_info(pid, 'name', program['name'])
         self.add_info(pid, 'description', program['description'])
+        self.inc_global_counter("program_updates")
 
     def add_stat(self, pid, key, val):
         pkey = mkkey('program-stats', pid)
@@ -219,6 +223,7 @@ class ProgramManager:
 
         results = { }
 
+        self.inc_global_counter("programs_executed")
         try:
             pbl.engine.clearEnvData()
             token = self.auth.get_fresh_token(auth_code)
@@ -250,9 +255,11 @@ class ProgramManager:
                     results['name'] = obj.name
                     tids = pbl.get_tracks(obj, max_tracks)
                     results['tids'] = tids
+                    self.inc_global_counter("tracks_generated", len(tids))
 
                     if save_playlist:
                         uri = self.get_info(pid, 'uri')
+                        self.inc_global_counter("playlists_updated")
                         new_uri = plugs.save_to_playlist(program['name'], uri, tids)
                         if uri != new_uri:
                             self.add_info(pid, 'uri', new_uri)
@@ -262,6 +269,7 @@ class ProgramManager:
                             results['status'] = 'error'
                             results['message'] = "Can't save playlist to Spotify"
                 else:
+                    self.inc_global_counter("programs_execute_errors")
                     results['status'] = 'error'
                     results['message'] = status
 
@@ -303,6 +311,12 @@ class ProgramManager:
 
     def schedule_program(self, token, user, pid):
         pass
+
+    def inc_global_counter(self, name, count=1):
+        self.r.hincrby("global_stats", name, count)
+
+    def get_global_stats(self):
+        return self.r.hgetall("global_stats")
 
 
 def mkkey(type, id):
