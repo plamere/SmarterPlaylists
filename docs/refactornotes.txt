@@ -1,0 +1,91 @@
+
+
+problem - current port scheme is not flexible enough for all use cases. For
+example, the MixIn component wants a source list and two different kinds of
+negative inputs.  
+
+No requirements (yet) for multiple outputs
+
+solution - instead of having a plethora of different types to support all sorts
+of different connection types, introduce a more generic approach that will
+support all anticipated types.
+
+Need multiple different input types. Propose that there be four, labeled
+green, blue, red and orange.  When specifying a component that takes inputs
+these are defined like so:
+
+source_list {
+    type: 'port',
+    port:'green',   # green is the default port
+    'maximum_inputs': 10  # 1 is the default number
+}
+
+for a component like mixin, we'd have a spec like so:
+
+        {
+            "name" : "Mixer",
+            "class": mixer.Mixer,
+            "type" : "port",
+            "title" : "mixer",
+            "params": {
+                "source_list": {
+                    "type" : "input-port",
+                    "display": "sources"
+                    "description": "the list of sources",
+                    "color": "green",
+                    "maximum_inputs" : 20
+                },
+                "bad_track_source_list": {
+                    "type" : "input-port",
+                    "maximum_inputs" : 1
+                    "color":  "red",
+                    "display" : "bad tracks",
+                    "description": "tracks that should be removed from the output",
+                },
+                "bad_artist_source_list": {
+                    "type" : "input-port",
+                    "maximum_inputs" : 1,
+                    "color":  "orange",
+                    "display" : "bad artists",
+                    "description": "artists from this source are removed from the output",
+                },
+            }
+        },
+
+when writing the server side of this component, source lists should be used to
+represent the source inputs (even if maximum inputs is 1). For instance:
+
+class Mixer(object):
+    def __init__(self, source_list, bad_track_source_list, bad_artist_source_list,
+        dedup, min_artist_separation, fail_fast, max_tracks):
+
+
+    # and later on in next_track()
+
+            if self.bad_track_source:
+                while True:
+                    for bad_track_source in self.bad_track_source_list:
+                        bad_track = bad_track_source.next_track()
+                        if bad_track:
+                            self.bad_tracks.add(bad_track)
+                        else:
+                            break
+
+We should switch the default for new components so that they can take multiple
+inputs by default.
+
+No changes should be needed in pbl or the compiler, which means that the change
+is backward compatible with previously saved programs. New components can use
+the new port system, older ones will continue to use the older style
+
+In the web client there are a bunch of changes:
+
+    1) when creating new components that is of type port the proper info is
+    recoreded in the trans portion of the component
+
+   2) when connecting to a component, the available ports port sizes are noted,
+   and UI afforances are customized for the available ports
+     SPACE - for green
+     Shift Space - fr red
+     ctrl-space - for orange
+     
