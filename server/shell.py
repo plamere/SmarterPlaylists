@@ -36,7 +36,41 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
 
         for key in skeys:
             print '  ', key, stats[key]
-        
+
+    def do_system_status(self, line):
+        admin = self.my_redis.hgetall("system-status")
+        for k, v in admin.items():
+            print k,v
+
+    def do_motd(self, line):
+        if len(line) == 0:
+            self.do_system_status(line)
+        else:
+            pipe = self.my_redis.pipeline()
+            pipe.hset('system-status', 'motd', line)
+            pipe.hincrby('system-status', 'motd_count', 1)
+            pipe.execute()
+
+    def do_version(self, line):
+        if len(line) == 0:
+            self.do_system_status(line)
+        else:
+            self.my_redis.hset('system-status', 'version', line)
+
+    def do_maint_mode(self, line):
+        if len(line) == 0:
+            mode = self.my_redis.hget("system-status", "maint_mode")
+            print "maint_mode", mode
+        else:
+            mode = 'true' if line == 'true' else 'false'
+            self.my_redis.hset('system-status', 'maint_mode', mode)
+
+    def do_maint_key(self, line):
+        if len(line) == 0:
+            key = self.my_redis.hget("system-status", "maint_key")
+            print "maint_key", key
+        else:
+            self.my_redis.hset('system-status', 'maint_key', line)
 
     def do_progs(self, line):
         prog_total = 0

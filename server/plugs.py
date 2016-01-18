@@ -420,7 +420,7 @@ class PlaylistSaveToNew(object):
 
         suffix = self.formatters[suffix_type]()
         self.playlist_name = playlist_name + suffix
-        print 'st', suffix_type, 's', suffix, 'pn', playlist_name, 'spn', self.playlist_name
+        # print 'st', suffix_type, 's', suffix, 'pn', playlist_name, 'spn', self.playlist_name
 
 
 
@@ -447,7 +447,7 @@ class PlaylistSaveToNew(object):
         if not user:
             raise pbl.PBLException(self, "no user")
 
-        print 'creating', self.playlist_name
+        # print 'creating', self.playlist_name
         response = sp.user_playlist_create(user, self.playlist_name)
         uri = response['uri']
 
@@ -524,7 +524,7 @@ class MySavedTracks(object):
     '''
 
     def __init__(self):
-        self.name = 'MySavedTracks'
+        self.name = 'My Saved Tracks'
         self.buffer = None
 
     def next_track(self):
@@ -534,9 +534,9 @@ class MySavedTracks(object):
                 sp = get_spotify()
                 limit = 50
                 offset = 0
+                total = 50
 
-                remaining = 1
-                while remaining > 0:
+                while offset < total:
                     results = sp.current_user_saved_tracks(limit = limit, offset = offset)
                     for item in results['items']:
                         track = item['track']
@@ -545,19 +545,18 @@ class MySavedTracks(object):
                             spotify_plugs._add_track(self.name, track)
                         else:
                             raise pbl.engine.PBLException(self, 'bad track')
-
-                    if len(results['items']) < limit:
-                        remaining = 0
-                    else:
-                        remaining = results['total'] - (results['offset'] + len(results['items']))
                     offset += limit
-
+                    total = results['total']
+                # print self.name, len(self.buffer), offset, total
             except spotipy.SpotifyException as e:
                 raise pbl.engine.PBLException(self, e.msg)
 
         if len(self.buffer) > 0:
-            return self.buffer.pop(0)
+            tid =  self.buffer.pop(0)
+            # print 'ret', self.name, tid
+            return tid
         else:
+            # print 'ret', self.name, 'empty'
             return None
 
 class MyFollowedArtists(object):
@@ -614,7 +613,7 @@ class MySavedAlbums(object):
     '''
 
     def __init__(self):
-        self.name = 'MySavedAlbums'
+        self.name = 'My Saved Albums'
         self.buffer = None
 
     def next_track(self):
@@ -628,7 +627,9 @@ class MySavedAlbums(object):
             while offset < total:
                 try:
                     results = get_spotify().current_user_saved_albums(limit = limit, offset = offset)
+                    # print 'cusa', self.name, limit, offset, results['limit'], results['offset'], results['total']
                 except spotipy.SpotifyException as e:
+                    # print 'woah'
                     raise pbl.engine.PBLException(self, e.msg)
 
                 items = results['items']
@@ -640,14 +641,19 @@ class MySavedAlbums(object):
                     for track in album['tracks']['items']:
                         self.buffer.append(track['id'])
                         spotify_plugs._add_track(self.name, track)
+                offset += limit
+                total = results['total']
+                # print 'interim', self.name, len(self.buffer), offset, total
                 if results['next'] == None:
                     break
-                offset = results['limit'] + results['offset']
-                total = results['total']
+            # print 'final', self.name, len(self.buffer), offset, total
 
         if len(self.buffer) > 0:
-            return self.buffer.pop(0)
+            tid =  self.buffer.pop(0)
+            # print 'ret', self.name, tid
+            return tid
         else:
+            # print 'ret', self.name, 'empty'
             return None
 
 class MixIn(object):

@@ -3,12 +3,13 @@ Program = function(inventory, name) {
     this.name = name;
     this.main = null;
     this.description = "my description";
-    this.max_tracks = 200;
+    this.max_tracks = 1000;
     this.components = {}
     this.extra = { },
     this.trans = {
         needsSave: true,
     }
+    this.portTypes = ['green', 'blue', 'red', 'orange'];
 }
 
 Program.prototype = {
@@ -19,63 +20,49 @@ Program.prototype = {
         var component = {
             name: name,
             type: type,
-            trans : {
+            trans : { // this is transient stuff, not shipped over the wire
                 cls: this.inventory[type],
+                ports: {} // describes the various ports
             },
             params: params,
             extra: extra,
             sources: {}
         }
 
-        if (component.trans.cls.name == 'comment') {
-            component.trans.maxInputs = 0;
-            component.trans.maxOutputs = 0;
-        } else if (component.trans.cls.type == 'source') {
-            component.trans.maxInputs = 0;
-            component.trans.minInputs = 0;
-            component.trans.maxOutputs = 1;
-        } else if (component.trans.cls.type == 'bool-filter') {
-            component.trans.maxInputs = 2;
-            component.trans.minInputs = 2;
-            component.trans.maxOutputs = 1;
-            component.sources.true_source = null;
-            component.sources.false_source = null;
-        } else if (component.trans.cls.type == 'multi-in-filter') {
-            component.trans.maxInputs = 20;
-            component.trans.minInputs = 1;
-            component.trans.maxOutputs = 1;
-            component.sources.source_list = [];
-        } else {
-            component.trans.maxInputs = 1;
-            component.trans.minInputs = 1;
-            component.trans.maxOutputs = 1;
-            component.sources.source = null;
-        }
-        return component;
-    },
+        // by default, all ports are closed
+        component.trans.maxOutputs = 1;
+        _.each(this.portTypes, function(port) {
+            component.trans.ports[port] = {name:null, maxInputs:0};
+        });
 
-    hasMultiSource: function(component) {
-        //return component.maxInputs > 1;
-        return component.sources.source_list != undefined;
+        if ('max_outputs' in component.trans.cls) {
+          component.trans.maxOutputs = component.trans.cls.max_outputs;
+        }
+        _.each(this.portTypes, function(port) {
+            var portInfo = getPortInfo(component, port);
+            if (portInfo) {
+              component.trans.ports[port] = portInfo;
+              if (portInfo.maxInputs > 0) {
+                  if (portInfo.maxInputs == 1) {
+                    component.sources[portInfo.name] = null;
+                  } else {
+                    component.sources[portInfo.name] = [];
+                  }
+              }
+            }
+        });
+        return component;
     },
 
     getSources:function(c) {
         var sources = [];
-
-        if (c.sources.source_list) {
-            sources.push.apply(sources, c.sources.source_list)
-        }
-        if (c.sources.source) {
-            sources.push(c.sources.source);
-        }
-
-        if (c.sources.true_source) {
-            sources.push(c.sources.true_source);
-        }
-
-        if (c.sources.false_source) {
-            sources.push(c.sources.false_source);
-        }
+        _.each(c.sources, function(src) {
+            if (Array.isArray(src)) {
+              sources.push.apply(sources, src);
+            } else {
+              sources.push(src);
+            }
+        });
         return sources;
     },
 
@@ -115,41 +102,38 @@ Program.prototype = {
 
     addConnection: function(name1, name2, type) {
         var c2 = this.components[name2];
-        if (c2.trans.cls.type == 'bool-filter') {
-            if (type == 0) {
-                c2.sources.true_source = name1;
+        if (type in c2.trans.ports) {
+            var port = c2.trans.ports[type];
+            if (port.maxInputs == 1) {
+              c2.sources[port.name] = name1
+            } else if (port.maxInputs > 1) {
+              c2.sources[port.name].push(name1);
+              while (c2.sources[port.name].length > port.maxInputs) {
+                c2.sources[port.name].shift();
+              }
             } else {
-                c2.sources.false_source = name1;
+                alert("no inputs allowed for " + name2);
             }
-        } else if (this.hasMultiSource(c2)) {
-            c2.sources.source_list.push(name1);
         } else {
-            c2.sources.source = name1;
+              alert("no inputs allowed for that type of port on " + name2);
         }
         this.trans.needsSave = true;
     },
 
     removeConnection: function(name1, name2) {
         var c2 = this.components[name2];
-
-        if (c2.sources.true_source && c2.sources.true_source == name1) {
-            c2.sources.true_source = null;
-        }
-
-        if (c2.sources.false_source && c2.sources.false_source == name1) {
-            c2.sources.false_source = null;
-        }
-
-        if (this.hasMultiSource(c2)) {
-            var idx = c2.sources.source_list.indexOf(name1);
-            if (idx >= 0) {
-                c2.sources.source_list.splice(idx, 1);
+        _.each(c2.sources, function(src, name) {
+            if (Array.isArray(src)) {
+              var idx = src.indexOf(name1);
+              if (idx >= 0) {
+                  src.splice(idx, 1);
+              }
+            } else {
+                if (src == name1) {
+                  c2.sources[name] = null;
+                }
             }
-        } else {
-            if (c2.sources.source == name1) {
-                c2.sources.source = null;
-            }
-        }
+        });
         this.trans.needsSave = true;
     },
 
@@ -162,7 +146,6 @@ Program.prototype = {
     },
 
     publishProgram: function(json, callback) {
-     // console.log('publish PROGRAM=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -183,7 +166,6 @@ Program.prototype = {
       };
       var json = JSON.stringify(data, null, 4);
 
-      console.log('saving', this.pid, json);
       $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -195,7 +177,6 @@ Program.prototype = {
                 if (data.status == 'ok') {
                     that.pid = data.pid;
                 }
-                console.log(data);
                 if (callback) {
                     callback(data);
                 }
@@ -261,10 +242,8 @@ Program.prototype = {
     saveIfNecessary: function(callback) {
         var that = this;
         if (this.trans.needsSave) {
-            console.log('SAVED before run');
             this.save(callback);
         } else {
-            console.log('NO Need for SAVE before run');
             var results = {
                 status: 'ok',
                 pid: this.pid
@@ -282,6 +261,7 @@ Program.prototype = {
         obj.components = {};
         delete obj.inventory;
         delete obj.trans;
+        delete obj.portTypes;
 
         _.each(this.components, function(comp, id) {
             var cc = {};
@@ -314,16 +294,13 @@ function removeProgram(pid, callback) {
             dataType: 'json',
             url: apiPath + 'delete',
             success: function (status) {
-                console.log('removed', status);
                 callback(status);
             },
             error: function() {
-                console.log('not removed', status);
                 callback(null);
             }
         });
 }
-
 
 function loadProgramFromJSON(inventory, sprog) {
     var program = new Program(inventory, sprog.name);
@@ -334,22 +311,20 @@ function loadProgramFromJSON(inventory, sprog) {
         program.addComponent(name, comp.type, comp.params, comp.extra);
     });
 
-    _.each(sprog.components, function(comp, name) {
-        if (comp.sources.true_source) {
-            program.addConnection(comp.sources.true_source, name, 0);
-        }
-
-        if (comp.sources.false_source) {
-            program.addConnection(comp.sources.false_source, name, 1);
-        }
-
-        if (comp.sources.source) {
-            program.addConnection(comp.sources.source, name, 0);
-        } else if (comp.sources.source_list) {
-            _.each(comp.sources.source_list, function(source) {
-                program.addConnection(source, name, 0);
-            });
-        }
+    _.each(sprog.components, function(comp, componentName) {
+        _.each(comp.sources, function(source, connectionName) {
+            var cls = inventory[comp.type];
+            var ctype = getConnectionType(cls, connectionName);
+            if (Array.isArray(source)) {
+                _.each(source, function(src) {
+                    program.addConnection(src, componentName, ctype);
+                });
+            } else {
+                if (source) {
+                  program.addConnection(source, componentName, ctype);
+                }
+            }
+        });
     });
     return program;
 }
@@ -362,7 +337,6 @@ function loadProgram(inventory, pid, callback) {
             pid: pid
         },
         function(data) {
-            console.log('loaded', data);
             if (data.status == 'ok') {
                 var programJSON = data.program;
                 var program = loadProgramFromJSON(inventory, programJSON);
@@ -388,7 +362,6 @@ function loadSharedProgram(inventory, pid, callback) {
     var path = apiPath + 'shared';
     $.getJSON(path, { pid:pid}).then(
         function(data) {
-            console.log('loaded', data);
             if (data.status == 'ok') {
                 var programJSON = data.program;
                 var program = loadProgramFromJSON(inventory, programJSON);
@@ -417,7 +390,6 @@ function loadProgramInfo(pid, callback) {
             pid: pid
         },
         function(data) {
-            console.log('loaded', data);
             if (data.status == 'ok') {
                 if (data.program) {
                     callback(data.program);
@@ -444,7 +416,6 @@ function loadSharedProgramInfo(pid, callback) {
             pid: pid
         },
         function(data) {
-            console.log('loaded', data);
             if (data.status == 'ok') {
                 callback(data.info);
             } else {
@@ -466,7 +437,6 @@ function loadProgramDirectory(callback) {
             auth_code: get_auth_code()
         },
         function(data) {
-            console.log('data', data);
             checkForBadUser(data);
             callback(data);
         },
@@ -487,7 +457,6 @@ function loadImports(callback) {
             auth_code: get_auth_code()
         },
         function(data) {
-            console.log('data', data);
             checkForBadUser(data);
             callback(data);
         },
@@ -503,7 +472,6 @@ function loadExamples(callback) {
             auth_code: get_auth_code()
         },
         function(data) {
-            console.log('data', data);
             checkForBadUser(data);
             callback(data);
         },
@@ -520,7 +488,7 @@ function runProgram(pid, save, callback) {
         auth_code: get_auth_code()
      };
      var json = JSON.stringify(program_post, null, 4);
-     console.log('PROGRAM=' + json);
+     // console.log('PROGRAM=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -545,7 +513,7 @@ function scheduleProgram(pid, when, delta, total, callback) {
         total: total
      };
      var json = JSON.stringify(schedule_post, null, 4);
-     console.log('SCHEDULE=' + json);
+     // console.log('SCHEDULE=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -567,7 +535,7 @@ function copyProgram(pid, callback) {
         pid: pid,
      };
      var json = JSON.stringify(post, null, 4);
-     console.log('COPY=' + json);
+     // console.log('COPY=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -589,7 +557,7 @@ function importProgram(pid, callback) {
         pid: pid,
      };
      var json = JSON.stringify(post, null, 4);
-     console.log('IMPORT=' + json);
+     // console.log('IMPORT=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -612,7 +580,7 @@ function shareProgram(pid, state, callback) {
         share: state
      };
      var json = JSON.stringify(post, null, 4);
-     console.log('SHARE=' + json);
+     // console.log('SHARE=' + json);
      $.ajax({
             type: "POST",
             contentType: 'application/json',
@@ -626,4 +594,36 @@ function shareProgram(pid, state, callback) {
                 callback();
             },
         });
+}
+
+function getPortInfo(component, color) {
+    var matches = 0;
+
+    var portInfo = {
+        maxInputs:0,
+        name:null
+    };
+    _.each(component.trans.cls.params, function(param, name) {
+        if (param.type == 'port' && color == param.port) {
+            portInfo.name = name;
+            portInfo.maxInputs = param.max_inputs;
+            matches += 1;
+        }
+    });
+    if (matches > 1) {
+      alert("too many " + color + " ports for " + name);
+    }
+    return portInfo;
+}
+
+
+function getConnectionType(cls, connectionName) {
+    var connectionType = null;
+    var params = cls.params;
+    if (connectionName in params) {
+        if ('port' in params[connectionName]) {
+          connectionType = params[connectionName].port;
+        }
+    }
+    return connectionType;
 }

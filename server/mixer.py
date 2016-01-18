@@ -1,4 +1,5 @@
 import pbl
+import sys
 
 class Mixer(object):
     '''
@@ -6,14 +7,14 @@ class Mixer(object):
         based upon a set of rules
     '''
 
-    def __init__(self, source_list, bad_track_source, bad_artist_source,
-        dedup, min_artist_separation, fail_fast, max_tracks):
+    def __init__(self, source_list, bad_track_source_list, bad_artist_source_list, 
+    dedup, min_artist_separation, fail_fast, max_tracks):
         '''
         '''
         self.name = 'mixer'
         self.source_list = [pbl.PushableSource(s) for s in source_list]
-        self.bad_track_source = bad_track_source
-        self.bad_artist_source = bad_artist_source
+        self.bad_track_source = pbl.Concatenate(bad_track_source_list) if bad_track_source_list else None
+        self.bad_artist_source = pbl.Concatenate(bad_artist_source_list) if bad_artist_source_list else None
         self.dedup = dedup 
         self.min_artist_separation = min_artist_separation
         self.fail_fast = fail_fast
@@ -147,7 +148,7 @@ if __name__ == '__main__':
     p4 = pbl.AlbumSource('Tarkus', 'Emerson, Lake & Palmer')
     p5 = pbl.AlbumSource('Brain Salad Surgery', 'Emerson, Lake & Palmer')
     skip = pbl.AlbumSource('Brain Salad Surgery', 'Emerson, Lake & Palmer')
-    mi = Mixer([p1, p2, p3, p4, p5], None, None, True, 2, False, 100)
+    mi = Mixer([p1, p2, p3, p4, p5], [skip], [], True, 2, False, 100)
     pbl.show_source(mi, props=['source'])
     # second test
 

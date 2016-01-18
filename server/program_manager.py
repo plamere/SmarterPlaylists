@@ -12,7 +12,7 @@ import pbl
 import compiler
 import plugs
 
-debug_exceptions = False
+debug_exceptions = True
 
 
 '''
@@ -241,6 +241,8 @@ class ProgramManager:
                 pbl.engine.setEnv('spotify_auth_token', token['access_token'])
                 pbl.engine.setEnv('spotify_user_id', token['user_id'])
 
+                print 'executing', user, pid
+                #print 'executing', json.dumps(program, indent=4)
                 status, obj = compiler.compile(program)
                 print 'compiled in', time.time() - start, 'secs'
 

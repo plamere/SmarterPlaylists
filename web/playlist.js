@@ -10,7 +10,7 @@ function play(url) {
         audio.get(0).pause();
         if (audio.attr('src') == url) {
             return;
-        } 
+        }
     }
     audio.attr('src', url);
     audio.get(0).play();
@@ -90,6 +90,3 @@ function loginWithSpotify() {
         '&redirect_uri=' + encodeURIComponent(redirect_uri);
     var w = window.open(url, 'asdf', 'WIDTH=400,HEIGHT=500');
 }
-
-
-

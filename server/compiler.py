@@ -59,21 +59,39 @@ def convert_val_to_type(val, type, program):
         return OK, val
     elif type == 'bool':
         return OK, bool(val)
+    elif type == 'port':
+        if isinstance(val, basestring):
+            status, compiled_program = compile_object(val, program)
+            return status, compiled_program
+        elif isinstance(val, list):
+            plist = []
+            for name in val:
+                status, compiled_program = compile_object(name, program)
+                if status == OK:
+                    plist.append(compiled_program)
+                else:
+                    return status, None
+            return OK, plist
+        else:
+            return 'error - bad port type'
+            
     elif type == 'source':
+        return 'archaic type', type, 'for', val 
         if val:
             status, compiled_program = compile_object(val, program)
             return status, compiled_program
         else:
             return 'error - missing source', val
     elif type == 'source_list':
-        list = []
+        return 'archaic type', type, 'for', val 
+        plist = []
         for name in val:
             status, compiled_program = compile_object(name, program)
             if status == OK:
-                list.append(compiled_program)
+                plist.append(compiled_program)
             else:
                 return status, None
-        return OK, list
+        return OK, plist
     else:
         return 'unknown type ' + type, None
             

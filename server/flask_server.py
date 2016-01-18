@@ -22,6 +22,7 @@ import random
 app = Flask(__name__)
 app.debug = False
 app.trace = False
+app.testing = False
 
 my_redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 auth = spotify_auth.SpotifyAuth(r=my_redis)
@@ -50,7 +51,7 @@ def save():
         auth_code = js['auth_code']
         token = auth.get_fresh_token(auth_code)
         user = token['user_id']
-        print 'got program', program
+        print 'got program', json.dumps(program, indent=4)
         if 'pid' in program:
             print 'got pid', program['pid']
         if is_valid_program(program):
@@ -189,6 +190,21 @@ def directory():
     else:
         results['status'] = 'error'
         results['msg'] = 'no authorized user'
+    results['time'] = time.time() - start_time
+    return jsonify(results)
+
+@app.route('/SmarterPlaylists/system-status')
+@cross_origin()
+def system_status():
+    start_time = time.time()
+    results = { }
+    sys_status = my_redis.hgetall("system-status")
+    if 'maint_mode' in sys_status:
+        sys_status['maint_mode'] = sys_status['maint_mode'] == 'true'
+    if 'motd_count' in sys_status:
+        sys_status['motd_count'] = int(sys_status['motd_count'])
+    results['status'] = 'OK'
+    results['system_status'] = sys_status
     results['time'] = time.time() - start_time
     return jsonify(results)
 
@@ -497,6 +513,7 @@ def force_error():
 
 @app.errorhandler(Exception)
 def handle_invalid_usage(error):
+    print "error", error
     results = { 
         'status': 'internal_error',
         "reason": str(error)
@@ -516,11 +533,11 @@ if __name__ == '__main__':
             app.trace = True
     if app.debug:
         print 'debug  mode'
-        app.run(threaded=True)
+        app.run(threaded=False, debug=True)
     elif app.wsgi:
         from gevent.wsgi import WSGIServer
         print 'prod  mode'
         http_server = WSGIServer(('', 5000), app)
         http_server.serve_forever()
     else:
-        app.run()
+        app.run(threaded=True, debug=False)

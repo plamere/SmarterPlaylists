@@ -117,8 +117,34 @@
 
                     <a title='clear all' id='clear-button'
                         class="pull-left icon-btn btn-xlarge">
+                        <span class="glyphicon glyphicon-trash icon-red"></span>
+                    </a>
+
+                    <a title='delete cur component' id='delete-component-button'
+                        class="pull-left icon-btn btn-xlarge">
                         <span class="glyphicon glyphicon-remove icon-red"></span>
                     </a>
+
+                    <!--
+                    <span>
+                      <a title='run the program' id='g-conn'
+                          class="btn btn-xs btn-success">G</a>
+                      </a>
+                      <a title='run the program' id='r-conn'
+                          class="btn btn-xs btn-danger">R</a>
+                      </a>
+                      <a title='run the program' id='o-conn'
+                          class="btn btn-xs btn-warning">O</a>
+                      </a>
+                      <a title='run the program' id='b-conn'
+                          class="btn btn-xs btn-info">B</a>
+                      </a>
+                      <a title='run the program' id='del-conn'
+                          class="btn btn-xs">B</a>
+                      </a>
+                    </span>
+                  -->
+
 
                     <span id='save-check' class="checkbox pull-right checkbox-ninline">
                       <label>
@@ -143,6 +169,40 @@
                   <ul id="sources"
                     class="collapse in nav-inverse nav-tabs nav-stacked">
                   </ul>
+
+                  <h4>
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#combiners"
+                      aria-expanded="false" aria-controls="filters">
+                      Combiners
+                    </a>
+                  </h4>
+                  <ul id="combiners"
+                    class="collapse nav-inverse nav-tabs nav-stacked">
+                  </ul>
+
+                  <h4>
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#orders"
+                      aria-expanded="false" aria-controls="filters">
+                      Orderers
+                    </a>
+                  </h4>
+                  <ul id="orders"
+                    class="collapse nav-inverse nav-tabs nav-stacked">
+                  </ul>
+
+                  <h4>
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#selectors"
+                      aria-expanded="false" aria-controls="filters">
+                      Selectors
+                    </a>
+                  </h4>
+                  <ul id="selectors"
+                    class="collapse nav-inverse nav-tabs nav-stacked">
+                  </ul>
+
                   <h4>
                     <a role="button" data-toggle="collapse"
                       data-parent="#accordion" href="#filters"
@@ -161,6 +221,16 @@
                     </a>
                   </h4>
                   <ul id="conditionals"
+                    class="collapse nav-inverse nav-tabs nav-stacked">
+                  </ul>
+                  <h4>
+                    <a role="button" data-toggle="collapse"
+                      data-parent="#accordion" href="#miscs"
+                      aria-expanded="false" aria-controls="miscs">
+                      Miscs
+                    </a>
+                  </h4>
+                  <ul id="miscs"
                     class="collapse nav-inverse nav-tabs nav-stacked">
                   </ul>
                 </div>
@@ -224,7 +294,9 @@
     <br>
     <div id="footer">
       <div class="container text-center">
+        SmarterPlaylists <span class="version"></span>
         Created by <a href="http://twitter.com/plamere">@plamere</a>
+        <span class="mmode"></span>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>

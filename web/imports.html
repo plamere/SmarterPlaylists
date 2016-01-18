@@ -50,14 +50,14 @@
           <div id="#info"> </div>
 
           <table class="table table-striped table-bordered">
-            <thead> 
-              <tr> 
-                <th> # </th> 
-                <th> Name </th> 
+            <thead>
+              <tr>
+                <th> # </th>
+                <th> Name </th>
                 <th> Creator </th>
-                <th> # imports</th> 
-                <th> Actions </th> 
-              </tr> 
+                <th> # imports</th>
+                <th> Actions </th>
+              </tr>
             </thead>
             <tbody id='results-body'> </tbody>
           </table>
@@ -68,7 +68,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
-        Created by <a href="http://twitter.com/plamere">@plamere</a> 
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -114,7 +114,7 @@ function showImports(data) {
 }
 
 
-function initScheduler() {    
+function initScheduler() {
     var params = parseParams();
     var pid = null;
     if ('pid' in params) {
@@ -136,6 +136,7 @@ function initScheduler() {
 
 $(document).ready(
     function() {
+        maintenanceModeCheck();
         initScheduler();
     }
 );

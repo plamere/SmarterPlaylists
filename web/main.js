@@ -24,7 +24,6 @@ var confirmDelete = true;
 
 function get_auth_code() {
     var code = localStorage.getItem('sp-auth-code');
-    console.log('go auth', code);
     return code;
 }
 
@@ -39,6 +38,7 @@ function isLocalHost() {
         return window.location.host.indexOf('localhost') >= 0;
     }
 }
+
 
 var deltaNames = {
     0: "Never",
@@ -63,7 +63,7 @@ function isValidDelta(val) {
 }
 
 function info(s) {
-    $("#info").text(s);
+    $("#info").html(s);
 }
 
 function fmtTime(secs) {
@@ -97,11 +97,10 @@ function fmtTime(secs) {
 
 
 function checkForBadUser(data) {
-    console.log(data.status, data.msg);
+    console.log('cfbu', data);
     if (data.status == 'error' && data.msg == 'no authorized user') {
         clear_auth_code();
         document.location = 'index.html';
-        console.log('no auth user', data);
     }
 }
 
@@ -114,6 +113,17 @@ function fetchInventory(callback) {
                 inventoryMap[component.name] = component;
             });
             callback(inventoryMap, data.inventory.types);
+        },
+        function() {
+            callback(null);
+        }
+    );
+}
+
+function fetchSystemStatus(callback) {
+    $.getJSON(apiPath + 'system-status').then(
+        function(data) {
+            callback(data);
         },
         function() {
             callback(null);
@@ -234,7 +244,6 @@ function showDirectoryTable(dir) {
                     runProgram(entry.pid, true, function(data) {
                         btn.removeClass('icon-red');
                         if (data) {
-                            console.log(data);
                             if (data.status == 'ok') {
                                 showPlaylist(entry.name, data);
                             } else {
@@ -270,7 +279,6 @@ function showDirectoryTable(dir) {
                 btn.on('click', function(e) {
                     e.stopPropagation();
                     copyProgram(entry.pid, function(results) {
-                        console.log(results);
                         showDirectory();
                     });
                 })
@@ -337,11 +345,9 @@ function showDirectory() {
 }
 
 
-
 function initApp() {
     var params = parseParams();
     var pprogram = ('program' in params) ? params['program'] : null;
-
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         if ($(e.target).attr('href') == '#dir') {
@@ -376,6 +382,8 @@ function initApp() {
     });
 
 
+
+    updateSystemStatus();
     fetchInventory(function(inventoryMap, styles) {
         $("#spinner").hide();
         if (inventoryMap == null) {
@@ -385,6 +393,44 @@ function initApp() {
             inventory = inventoryMap;
             editor = createEditor("workspace", inventoryMap, styles);
             $('.nav-tabs a[href="#dir"]').tab('show');
+        }
+    });
+}
+
+function maintenanceModeCheck() {
+    fetchSystemStatus(function(data) {
+        if (data && data.status == "OK") {
+            var systemStatus = data.system_status;
+            if (systemStatus.maint_mode) {
+              var maint = localStorage.getItem('sp-maintenance');
+              $(".mmode").text("In maintenance mode");
+              if (maint != systemStatus.maint_key) {
+                document.location = "maintenance.html"
+                return;
+              }
+            }
+        } else {
+            alert("The SmarterPlaylists server is offline. Try later");
+        }
+    });
+}
+
+function updateSystemStatus() {
+    fetchSystemStatus(function(data) {
+        if (data && data.status == "OK") {
+            var systemStatus = data.system_status;
+            if (systemStatus.maint_mode) {
+              $(".mmode").text("In maintenance mode");
+              var maint = localStorage.getItem('sp-maintenance');
+              if (maint != systemStatus.maint_key) {
+                document.location = "maintenance.html"
+                return;
+              }
+            }
+            $(".version").text(systemStatus.version);
+            emitMessageOfTheDay(systemStatus.motd, systemStatus.motd_count);
+        } else {
+            alert("The SmarterPlaylists server is offline. Try later");
         }
     });
 }
@@ -419,6 +465,20 @@ function error(msg) {
     $("#errors").append(alert);
 }
 
+function motdInfo(msg) {
+    var alert= $("<div>")
+        .addClass('alert')
+        .addClass('alert-info')
+        .html(msg)
+        .append(
+            $("<a>")
+                .attr('href', '#')
+                .addClass('close')
+                .attr('data-dismiss', 'alert')
+                .html("&times;"))
+    $("#errors").append(alert);
+}
+
 function urldecode(str) {
    return decodeURIComponent((str+'').replace(/\+/g, '%20'));
 }
@@ -436,4 +496,24 @@ function parseParams() {
         }
     }
     return params;
+}
+
+function emitMessageOfTheDay(msg, count) {
+  // we keep a counter in local storage so we can
+  // enforce showing the MOTD to a person just once.
+  var mcount = localStorage.getItem('motd-count');
+  var showMessage = true;
+  if (mcount != null) {
+      mcount = parseInt(mcount);
+      if (mcount >= count) {
+        showMessage = false;
+      }
+  }  else {
+    mcount = 0;
+  }
+
+  if (showMessage) {
+    motdInfo(msg);
+    localStorage.setItem('motd-count', count.toString());
+  }
 }

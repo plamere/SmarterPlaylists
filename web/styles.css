@@ -155,7 +155,12 @@ body {
 }
 
 #prompt {
-    height:24px;
+    min-height:30px;
+    margin-bottom:6px;
+}
+
+.conn {
+   margin-right:4px;
 }
 
 .cname {

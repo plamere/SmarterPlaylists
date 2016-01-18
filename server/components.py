@@ -3,10 +3,13 @@ import plugs
 import copy
 import pyen
 import datetime
+import mixer
 
 exported_inventory = None
 en = pyen.Pyen()
 en.debug=True
+
+genres_enabled = True
 
 
 inventory = {
@@ -116,7 +119,7 @@ inventory = {
             "name" : "Annotator",
             "display": "annotate",
             "class": pbl.Annotator,
-            "type" : "filter",
+            "type" : "combiner",
             "description": "Annotates tracks with external information",
             "help" : """This component will add information to the tracks on the
             input stream. This can make downstream operations like range filters
@@ -125,8 +128,10 @@ inventory = {
             "title" : "annotate with $type data",
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "type": {
@@ -149,14 +154,17 @@ inventory = {
             track id""",
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "by_name": {
                     "display" : "By name",
                     "type" : "bool",
                     "optional" : True,
+                    "default": False,
                     "description": " if True also match by name in addition to the regular ID match",
                 },
             }
@@ -165,11 +173,12 @@ inventory = {
             "name" : "comment",
             "display": "comment",
             "class": plugs.Comment,
-            "type" : "filter",
+            "type" : "misc",
             "title": "$text",
             "description": "Add a comment to the program",
             "help" : """This component lets you add arbitrary comments to your
             program.  Comments have no effect on how a program will execute""",
+            "max_outputs": 0,
             "params": {
                 "text": {
                     "type" : "string",
@@ -182,20 +191,24 @@ inventory = {
             "name" : "TrackFilter",
             "class": plugs.TrackFilter,
             "display": "track filter",
-            "type" : "bool-filter",
+            "type" : "filter",
             "description": "removes track from a stream",
             "help": """ This component takes two input streams. It produces a
             stream of tracks that consist of the tracks on the green input
             stream with the tracks on the red input stream removed""",
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the source of tracks",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the tracks to be removed",
                 },
             }
@@ -204,7 +217,7 @@ inventory = {
             "name" : "ArtistFilter",
             "class": plugs.ArtistFilter,
             "display": "artist filter",
-            "type" : "bool-filter",
+            "type" : "filter",
             "description": "removes track from a stream by artist",
             "help": """ This component takes two input streams. It produces a
             stream of tracks that consist of the tracks on the green input
@@ -212,13 +225,17 @@ inventory = {
             stream removed""",
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the source of tracks",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the tracks (by artist) to be removed",
                 },
             }
@@ -227,7 +244,7 @@ inventory = {
             "name" : "YesNo",
             "class": plugs.YesNo,
             "display": "yes or no",
-            "type" : "bool-filter",
+            "type" : "conditional",
             "description": "selects a stream based on a boolean",
 
             "help": """ This component excepts a red and a green input stream.
@@ -237,13 +254,17 @@ inventory = {
 
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when yes",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when no",
                 },
                 "yes": {
@@ -257,7 +278,7 @@ inventory = {
             "name" : "IsWeekend",
             "class": plugs.IsWeekend,
             "display": "is weekend",
-            "type" : "bool-filter",
+            "type" : "conditional",
             "description": "selects a stream based on whether or not today is a weekend",
 
             "help" : """This component accepts a green and a red stream. If the
@@ -267,13 +288,17 @@ inventory = {
 
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when it is a weekend",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when it is not a weekend",
                 },
             }
@@ -281,7 +306,7 @@ inventory = {
         {
             "name" : "IsDayOfWeek",
             "class": plugs.IsDayOfWeek,
-            "type" : "bool-filter",
+            "type" : "conditional",
             "display": "is day of week",
             "title": "is $day",
             "description": "selects a stream based on whether is is the given day of the week",
@@ -293,13 +318,17 @@ inventory = {
 
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when the day matches",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the source of tracks when the day doesn't match",
                 },
                 "day": {
@@ -383,7 +412,7 @@ inventory = {
             "name" : "SimpleArtistFilter",
             "class": pbl.ArtistFilter,
             "type" : "filter",
-            "display": "Simple artist filter",
+            "display": "simple artist filter",
             "description": "removes tracks by the given artist",
 
             "help" : """ This component will remove tracks from the input stream
@@ -392,8 +421,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "artistNames": {
@@ -595,7 +626,7 @@ inventory = {
         {
             "name" : "First",
             "class": pbl.First,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "first $sample_size",
             "display": "first",
             "description": "Returns the first tracks from a stream",
@@ -606,8 +637,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
@@ -623,7 +656,7 @@ inventory = {
         {
             "name" : "PlaylistSave",
             "class": plugs.PlaylistSave,
-            "type" : "filter",
+            "type" : "misc",
             "title" : "save to Spotify",
             "display": "save to Spotify",
             "description": "save the tracks to a spotify playlist",
@@ -638,8 +671,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "playlist_name": {
@@ -659,6 +694,7 @@ inventory = {
                     "display": "append",
                     "type" : "bool",
                     "default" : False,
+                    "optional" : True,
                     "description": "if true, append tracks to the playlist"
                 }
             }
@@ -667,7 +703,7 @@ inventory = {
         {
             "name" : "PlaylistSaveToNew",
             "class": plugs.PlaylistSaveToNew,
-            "type" : "filter",
+            "type" : "misc",
             "title" : "save to new playlist",
             "display": "save to new playlist",
             "description": "save the tracks to a new Spotify playlist with an optional automatically supplied suffix",
@@ -679,8 +715,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "playlist_name": {
@@ -694,6 +732,7 @@ inventory = {
                     "display": "suffix_type",
                     "type" : "playlist_suffix",
                     "default" : "time",
+                    "optional" : True,
                     "description": "type of suffix automatically applied to the playlist name"
                 },
             }
@@ -702,7 +741,7 @@ inventory = {
         {
             "name" : "AllButTheFirst",
             "class": plugs.AllButTheFirst,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "all but the first $sample_size",
             "display": "all but the first",
             "description": "Returns all but the first tracks from a stream",
@@ -713,8 +752,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
@@ -729,7 +770,7 @@ inventory = {
         {
             "name" : "AllButTheLast",
             "class": plugs.AllButTheLast,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "all but the last $sample_size",
             "display": "all but the last",
             "description": "Returns all but the last tracks from a stream",
@@ -740,8 +781,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
@@ -756,7 +799,7 @@ inventory = {
         {
             "name" : "Last",
             "class": pbl.Last,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "last $sample_size",
             "display" : "last",
             "description": "Returns the last tracks from a stream",
@@ -766,8 +809,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
@@ -783,7 +828,7 @@ inventory = {
         {
             "name" : "Sample",
             "class": pbl.Sample,
-            "type" : "filter",
+            "type" : "selector",
             "display" : "sample",
             "title" : "sample $sample_size tracks",
             "description": "randomly sample tracks from the stream",
@@ -794,8 +839,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "sample_size": {
@@ -810,7 +857,7 @@ inventory = {
         {
             "name" : "ShorterThan",
             "class": pbl.ShorterThan,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "no longer than $time",
             "display" : "no longer than",
             "description": "Limit the stream, if possible, to tracks with " \
@@ -823,8 +870,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "time": {
@@ -839,7 +888,7 @@ inventory = {
         {
             "name" : "LongerThan",
             "class": pbl.LongerThan,
-            "type" : "filter",
+            "type" : "selector",
             "title" : "no shorter than $time",
             "display" : "no shorter than",
             "description": "Limit the stream, if possible, to tracks with " + \
@@ -852,8 +901,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "time": {
@@ -868,7 +919,7 @@ inventory = {
         {
             "name" : "Shuffler",
             "class": pbl.Shuffler,
-            "type" : "filter",
+            "type" : "order",
             "title" : "shuffle",
             "display" : "shuffle",
             "description": "Shuffles the tracks in the stream",
@@ -878,8 +929,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
             }
@@ -887,7 +940,7 @@ inventory = {
         {
             "name" : "SeparateArtists",
             "class": plugs.SeparateArtists,
-            "type" : "filter",
+            "type" : "order",
             "title" : "separate artists",
             "display" : "separate artists",
             "description": "minimizes the number of adjacent songs by the same artist",
@@ -898,8 +951,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
             }
@@ -909,7 +964,7 @@ inventory = {
             "class": plugs.MixIn,
             "display" : "mix in",
             "title": "mix in",
-            "type" : "bool-filter",
+            "type" : "combiner",
             "description": "mix two input streams",
 
             "help": """ This component allows for more sophisticatd mixing of two
@@ -918,13 +973,17 @@ inventory = {
 
             "params": {
                 "true_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs" : 1,
                     "description": "the primary source of tracks ",
                 },
                 "false_source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "red",
+                    "max_inputs" : 1,
                     "description": "the mixin source of tracks",
                 },
                 "fail_fast": {
@@ -962,7 +1021,7 @@ inventory = {
         {
             "name" : "Reverse",
             "class": pbl.Reverse,
-            "type" : "filter",
+            "type" : "order",
             "title" : "reverse",
             "display" : "reverse",
             "description": "Reverses the order of the tracks in the stream",
@@ -971,8 +1030,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
             }
@@ -980,7 +1041,7 @@ inventory = {
         {
             "name" : "Sorter",
             "class": pbl.Sorter,
-            "type" : "filter",
+            "type" : "order",
             "title": "sort by $reverse $attr",
             "display" : "sort",
             "description": "Sorts the tracks in the stream by the given attribute",
@@ -991,8 +1052,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "attr": {
@@ -1012,7 +1075,7 @@ inventory = {
         {
             "name" : "Alternate",
             "class": pbl.Alternate,
-            "type" : "multi-in-filter",
+            "type" : "combiner",
             "display" : "alternate",
             "description": "alternate tracks from multiple streams",
 
@@ -1025,9 +1088,10 @@ inventory = {
 
             "params": {
                 "source_list": {
-                    "type" : "source_list",
-                    "optional" : False,
-                    "description": "the list of sources",
+                    "type" : "port",
+                    "port": "green",
+                    "max_inputs": "20",
+                    "description": "the list of sources"
                 },
                 "fail_fast": {
                     "type" : "bool",
@@ -1042,7 +1106,7 @@ inventory = {
         {
             "name" : "RandomSelector",
             "class": plugs.RandomSelector,
-            "type" : "multi-in-filter",
+            "type" : "combiner",
             "display" : "random",
             "description": "randomly selects tracks from multiple streams",
 
@@ -1054,9 +1118,10 @@ inventory = {
 
             "params": {
                 "source_list": {
-                    "type" : "source_list",
-                    "optional" : False,
-                    "description": "the list of sources",
+                    "type" : "port",
+                    "port": "green",
+                    "max_inputs": "20",
+                    "description": "the list of sources"
                 },
                 "fail_fast": {
                     "type" : "bool",
@@ -1076,14 +1141,15 @@ inventory = {
             "help" : """This component will pick one input stream at random and
             use that stream to produce tracks""",
 
-            "type" : "multi-in-filter",
+            "type" : "combiner",
             "display" : "random stream",
             "description": "randomly selects a stream",
             "params": {
                 "source_list": {
-                    "type" : "source_list",
-                    "optional" : False,
-                    "description": "the list of sources",
+                    "type" : "port",
+                    "port": "green",
+                    "max_inputs": "20",
+                    "description": "the list of sources"
                 },
             }
         },
@@ -1091,7 +1157,7 @@ inventory = {
             "name" : "Concatenate",
             "class": pbl.Concatenate,
             "display" : "concatenate",
-            "type" : "multi-in-filter",
+            "type" : "combiner",
             "description": "Concatenate tracks from multiple streams",
 
             "help" : """ This component takes any number of input streams and
@@ -1100,9 +1166,10 @@ inventory = {
 
             "params": {
                 "source_list": {
-                    "type" : "source_list",
-                    "optional" : False,
-                    "description": "the list of sources",
+                    "type" : "port",
+                    "port": "green",
+                    "max_inputs": "20",
+                    "description": "the list of sources"
                 },
             }
         },
@@ -1120,8 +1187,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "attr": {
@@ -1164,8 +1233,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "min_val": {
@@ -1197,8 +1268,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "scale": {
@@ -1223,8 +1296,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "scale": {
@@ -1240,7 +1315,7 @@ inventory = {
             "name" : "Explicit",
             "class": plugs.Explicit,
             "type" : "filter",
-            "title" : "$explicit",
+            "title" : "$!!explicit",
             "display": "explicit",
             "description": "filters tracks by their explicit attribute",
 
@@ -1249,13 +1324,16 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "explicit": {
                     "type" : "bool",
                     "default" : False,
+                    "optional" : True,
                     "description": """if true, only explicit tracks are passed
                     through, if false no explicit tracks are passed through"""
                 }
@@ -1274,8 +1352,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "scale": {
@@ -1300,8 +1380,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "scale": {
@@ -1326,8 +1408,10 @@ inventory = {
 
             "params": {
                 "source": {
-                    "type" : "source",
+                    "type" : "port",
                     "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
                     "description": "the source of the tracks",
                 },
                 "min_tempo": {
@@ -1344,6 +1428,80 @@ inventory = {
                 }
             }
         },
+        {
+            "name" : "Mixer",
+            "display": "mixer",
+            "class": mixer.Mixer,
+            "type" : "combiner",
+            "description": "Mixes input tracks while maintaining a set of rules.",
+            "help" : """ This component will mix tracks from the various input
+            streams, while maintaining a set of rules that govern how the tracks
+            will be ordered.
+            <br>
+            Input streams are on the <b> green </b> port, banned tracks
+            are on the <b> red</b> port and banned artists are on 
+            the <b> orange </b> port.  If <b> fail fast </b> is set, then the
+            order of the input tracks is guaranteed to be preserved and the
+            mixer will stop producing tracks when it is no longer able to
+            guarantee the contraints.  If <b> fail fast </b> is not set, then
+            the mixer will find the next best track on the next input stream
+            that best fits the current constraints and will continue to produce
+            tracks as long as any stream is producing tracks.
+            """,
+
+            "title" : "mixer",
+            "params": {
+                "source_list": {
+                    "type" : "port",
+                    "port": "green",
+                    "max_inputs": "20",
+                    "description": "the list of sources"
+                },
+                "bad_track_source_list": {
+                    "type" : "port",
+                    "port":  "red",
+                    "max_inputs": "20",
+                    "display" : "bad tracks",
+                    "description": "tracks that should be removed from the output"
+                },
+                "bad_artist_source_list": {
+                    "type" : "port",
+                    "port":  "orange",
+                    "max_inputs": "20",
+                    "display" : "bad artists",
+                    "description": "artists from this source are removed from the output"
+                },
+                "fail_fast": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "display" : "fail fast",
+                    "description": "if true stop producing tracks "
+                        + "as soon as any input stops producing tracks"
+                },
+                "dedup": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "display" : "de-dup",
+                    "description": "if true don't allow duplicate tracks in the output"
+                },
+                "min_artist_separation": {
+                    "type" : "number",
+                    "optional" : True,
+                    "default" : 4,
+                    "display" : "minimum artist separation",
+                    "description": "minimum number of tracks between tracks by the same artist"
+                },
+                "max_tracks": {
+                    "type" : "number",
+                    "optional" : True,
+                    "default" : 50,
+                    "display" : "maximum tracks",
+                    "description": "the maximum number of tracks to produce"
+                },
+            }
+        },
     ]
 }
 
@@ -1356,17 +1514,89 @@ def export_inventory():
     return inv
 
 def get_genres():
-    response = en.get('genre/list', results=2000)
-    gstyle = []
-    for g in response['genres']:
-        gn = g['name']
-        gstyle.append( { 'name': gn, 'value': gn} )
-    return gstyle
+    if genres_enabled:
+        response = en.get('genre/list', results=2000)
+        gstyle = []
+        for g in response['genres']:
+            gn = g['name']
+            gstyle.append( { 'name': gn, 'value': gn} )
+        return gstyle
+    else:
+        return []
 
+def check_components():
+    for comp in inventory["components"]:
+        check_component(comp)
+
+def is_valid_param_type(type):
+    valid_types = set(['number', 'string', 'port', 'bool', 
+    'uri', 'uri_list', 'string_list', 'time', 'any'])
+    if type in valid_types:
+        return True
+    if type in inventory['types']:
+        return True
+
+    print "invalid type", type
+    return False
+
+def check_component(comp):
+    print "checking", comp["name"]
+    '''
+        {
+            "name" : "Annotator",
+            "display": "annotate",
+            "class": pbl.Annotator,
+            "type" : "filter",
+            "description": "Annotates tracks with external information",
+            "help" : """This component will add information to the tracks on the
+            input stream. This can make downstream operations like range filters
+            run much faster.  Supported annotation types are <i>echonest</i>,
+            <i>audio</i> and <i>spotify</i>""",
+            "title" : "annotate with $type data",
+            "params": {
+                "source": {
+                    "type" : "port",
+                    "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
+                    "description": "the source of the tracks",
+                },
+                "type": {
+                    "type" : "annotations",
+                    "optional" : False,
+                    "default" : "audio",
+                    "description": "the type of annotation",
+                },
+            }
+        },
+    '''
+    valid_ports = set(['green', 'red', 'orange', 'blue'])
+    assert "name" in comp
+    assert "class" in comp
+    assert "type" in comp
+    assert "description" in comp
+    if "params" in comp:
+        for name, param in comp["params"].items():
+            assert "description" in param
+            assert "type" in param
+            ptype = param['type']
+            assert ptype != "source" # archaic
+            assert ptype != "source_list" # archaic
+            if ptype == "port":
+                assert "port" in param
+                assert param['port'] in valid_ports
+            if ptype != "port":
+                assert "optional" in param
+                # assert "default" in param
+            assert is_valid_param_type(ptype)
+
+    
 
 exported_inventory = export_inventory()
-
+check_components()
 
 if __name__ == '__main__':
-    import json
-    print json.dumps(exported_inventory, indent=4)
+    #import json
+    #get_genres()
+    #print json.dumps(exported_inventory, indent=4)
+    print ""

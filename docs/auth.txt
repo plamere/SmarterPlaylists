@@ -1,0 +1,36 @@
+
+user logs in gets auth code
+
+code and user name sent to server
+
+user db created with user info:
+    - username
+    - authtoken
+    - access token (initially empty)
+    - refresh token (initially empty)
+    - auth expires time (initially empty)
+
+
+request  access token
+    get back access_token, refresh token
+
+make requests using access token
+    - pbl.spotify_access_token()
+        - one approach is to use thread local storage
+        - other approach is to refactor pbl to have a 'program config' object
+          that is part of the object graph that can contain config data
+
+
+if refresh token has expired (or will expire in less than 2 minutes?) use the
+refresh token to get a new token - update the user db with access, refresh and
+auth
+
+
+
+other db
+extra user info:
+    - country
+    - display_name
+    - birthdate
+
+

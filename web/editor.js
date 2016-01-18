@@ -1,14 +1,18 @@
 var createEditor = function(canvasElem, inventory, types, isReadOnly) {
-    var spotifyGreen = '#1ED760';
-    var spotifyRed = '#D71E60';
+    var spotifyGreen = '#1ED760'; // FIXME
+    var spotifyRed = '#D71E60'; // FIXME
     var tileWidth = 100;
     var commentWidth = 300;
     var tileHeight = 60;
     var xMargin = 40;
     var yMargin = 80;
-    var sources = []
-    var filters = []
-    var conditionals = []
+    var sources = [];
+    var filters = [];
+    var combiners = [];
+    var selectors = [];
+    var orders = [];
+    var conditionals = [];
+    var miscs = [];
     var tWidth = (tileWidth + xMargin);
 
     var widgetCount = 0;
@@ -23,7 +27,16 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     var canvasHasFocus = true;
     var CT_NORMAL = 0;
     var CT_SHIFTED = 1;
+    var CT_CTRL = 2;
+    var CT_CTRL_SHIFTED = 3;
     var readOnly = isReadOnly === true;
+    var conToColor = ['green', 'red', 'orange', 'blue'];
+    var colorValues = {
+      green:  '#1ED760',
+      red:    '#EB1E32',
+      orange: '#F59B23',
+      blue:   '#509BF5'
+    };
 
     var nameToRect = {}
 
@@ -56,7 +69,12 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function getConnType() {
-        return shifted ? CT_SHIFTED : CT_NORMAL;
+        // conn
+        var ct = shifted ? CT_SHIFTED : CT_NORMAL;
+        if (controlled) {
+          ct += CT_CTRL;
+        }
+        return conToColor[ct];
     }
 
     var dragger = function () {
@@ -64,7 +82,6 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         if (this.parent) {
             rect = this.parent;
         }
-
         rect.ox = rect.type == "rect" ? rect.attr("x") : rect.attr("cx");
         rect.oy = rect.type == "rect" ? rect.attr("y") : rect.attr("cy");
         // rect.animate({"fill-opacity": .2}, 500);
@@ -84,6 +101,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
 
 
     function connectComponents() {
+        // conn
         if (altSelected && curSelected && altSelected != curSelected) {
             connectComponent(altSelected, curSelected, getConnType());
         }
@@ -106,6 +124,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             delete nameToRect[comp.name];
         }
 
+        // conn
         disconnectComponent(comp);
         program.removeComponent(comp.name);
         comp.label.remove();
@@ -157,8 +176,6 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function keydown(evt) {
-
-
         if (!canvasHasFocus) {
             return;
         }
@@ -186,7 +203,29 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
 
         if (evt.which == 32) {
             evt.preventDefault();
-            connectComponents()
+            connectComponents() // conn
+        }
+
+        if (evt.which == "G".charCodeAt(0)) {
+            connectComponent(altSelected, curSelected, 'green');
+        }
+
+        if (evt.which == "R".charCodeAt(0)) {
+            connectComponent(altSelected, curSelected, 'red');
+        }
+
+        if (evt.which == "O".charCodeAt(0)) {
+            connectComponent(altSelected, curSelected, 'orange');
+        }
+
+        if (evt.which == "B".charCodeAt(0)) {
+            connectComponent(altSelected, curSelected, 'blue');
+        }
+
+        if (evt.which == "D".charCodeAt(0)) {
+            if (altSelected) {
+              disconnectOutputs(altSelected);
+            }
         }
     }
 
@@ -212,7 +251,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         moveTo(rect, newX, newY);
 
         for (var i = connections.length; i--;) {
-            paper.connection(connections[i]);
+            paper.connection(connections[i]); // conn
         }
     };
 
@@ -302,31 +341,77 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function showConnectPrompts(cur, alt) {
+        // conn
+        prompt("");
         if (cur != null && alt != null)  {
+          var promptText = "";
+
             if (isConnectedTo(alt, cur)) {
                 // prompt('(already connected)');
-                return;
+                promptText =
+                  "<a class='label label-danger conn del-conn'>(D)elete</a> " +
+                  "the connection between " +
+                  "<span class='text-primary'>" + alt.displayName + "</span>"
+                  + " and " +
+                  "<span class='text-primary'>" + cur.displayName + "</span>";
+              } else {
+                if (alt.component.trans.maxOutputs > 0) {
+                  var suffix = "";
+                  var portCount = 0;
+                  if (hasInputPort(cur, "green")) {
+                      suffix += " <a class='label label-primary conn green-conn'> (g)reen </a>";
+                      portCount += 1;
+                  }
+                  if (hasInputPort(cur, "red")) {
+                      suffix += " <span class='label label-danger conn red-conn'> (r)ed </span>";
+                      portCount += 1;
+                  }
+                  if (hasInputPort(cur, "orange")) {
+                      suffix += " <span class='label label-warning conn orange-conn'>(o)range</span>";
+                      portCount += 1;
+                  }
+                  if (hasInputPort(cur, "blue")) {
+                      suffix += " <span class='label label-info conn blue-conn'>(b)lue</span>";
+                      portCount += 1;
+                  }
+                  if (portCount > 0) {
+                      promptText = "Connect " +
+                      "<span class='text-primary'>" + alt.displayName + "</span>"
+                      + " to " +
+                      "<span class='text-primary'>" + cur.displayName + "</span>"
+                      + " via "
+                      + suffix + (portCount > 1 ? " ports" : " port");
+                  }
+               }
             }
-            if (alt.component.trans.maxOutputs > 0 && cur.component.trans.minInputs > 0) {
-                if (cur.component.trans.cls.type == 'bool-filter') {
-                    prompt('SHIFT-SPACE to connect <span class="rcname">'
-                        + alt.displayName
-                        + '</span> to the red port of <span class="cname">'
-                        + cur.displayName + "</span>"
-                        + ' or SPACE to connect to the green port');
-                } else {
-                    prompt('SPACE to connect <span class="cname">'
-                        + alt.displayName  + '</span> to <span class="cname">'
-                        + cur.displayName + "</span>");
-                }
-            }
-
-            else  {
-                prompt('');
-            }
+            prompt(promptText);
+            $(".green-conn").on('click', function() {
+                connectComponent(altSelected, curSelected, 'green');
+                prompt("connected");
+            });
+            $(".red-conn").on('click', function() {
+                connectComponent(altSelected, curSelected, 'red');
+                prompt("connected");
+            });
+            $(".orange-conn").on('click', function() {
+                connectComponent(altSelected, curSelected, 'orange');
+                prompt("connected");
+            });
+            $(".blue-conn").on('click', function() {
+                connectComponent(altSelected, curSelected, 'blue');
+                prompt("connected");
+            });
+            $(".del-conn").on('click', function() {
+                disconnectOutputs(altSelected);
+                prompt("disconnected");
+            });
         }
     }
 
+    function hasInputPort(comp, color) {
+        var port = comp.component.trans.ports[color];
+        return port.maxInputs > 0;
+    }
 
     var select = function() {
         var rect = this;
@@ -482,7 +567,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.addClass("edit-param-label");
                 label.attr('title', param.description);
-                var val = component.params[name] ?
+                var val = component.params[name] != null ?
                           component.params[name] : param['default'];
                 var inp = $("<input class='form-control'>").val(val);
                 inp.attr('id', name);
@@ -589,6 +674,11 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
 
         function makeSub(word, component) {
             var key  = word.replace('$', '');
+            var showNegBool = false;
+            if (key.indexOf('!!') == 0) {
+                showNegBool = true;
+                key  = key.replace('!!', '');
+            }
             if (key in component.params) {
                 var keyType = component.trans.cls.params[key].type;
                 if (keyType in types) {
@@ -598,7 +688,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                     if (component.params[key]) {
                         return key;
                     } else {
-                        return "not " + key;
+                        return showNegBool ? "not " + key : "";
                     }
                 } else if (keyType == 'time') {
                     return fmtTime(component.params[key]);
@@ -622,34 +712,31 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         return out.join(' ');
     }
 
-
     function connectComponent(source, dest, connType) {
-        if (dest.component.trans.maxInputs == 0) {
-            return;
-        }
+        if (source && dest && source != dest) {
+          // conn
+          var port = dest.component.trans.ports[connType];
+          if (port.maxInputs == 0) {
+              return;
+          }
 
-        if (source.component.trans.maxOutputs == 0) {
-            return;
-        }
+          if (source.component.trans.maxOutputs == 0) {
+              return;
+          }
 
-        if (dest.component.trans.cls.type != 'bool-filter') {
-            connType = CT_NORMAL;
-        }
+          if (port.maxInputs == 1) {
+              disconnectInput(dest, connType);
+          }
+          disconnectOutputs(source);
 
-        if (dest.component.trans.maxInputs == 1) {
-            disconnectInputs(dest);
-        } else if (dest.component.trans.maxInputs == 2) {
-            disconnectInput(dest, connType);
-        }
-
-        disconnectOutputs(source);
-
-        var edge = addVisualConnection(source, dest, connType);
-        program.addConnection(source.name, dest.name, connType);
+          var edge = addVisualConnection(source, dest, connType);
+          program.addConnection(source.name, dest.name, connType);
+      }
     }
 
     function addVisualConnection(srcRect, destRect, connType) {
-        var color = connType == CT_NORMAL ? spotifyGreen : spotifyRed;
+        // conn
+        var color = colorValues[connType];
         var edge = paper.connection(srcRect, destRect, color);
         connections.push(edge);
         edge.source = srcRect;
@@ -662,6 +749,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
 
 
     function removeEdge(edge) {
+        // conn
         program.removeConnection(edge.source.name, edge.dest.name);
         delete edge.source.outEdges[edge.dest.name]
         delete edge.dest.inEdges[edge.source.name]
@@ -673,17 +761,20 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function disconnectComponent(comp) {
+        // conn
         disconnectInputs(comp);
         disconnectOutputs(comp);
     }
 
     function disconnectInputs(comp) {
+        // conn
         _.each(comp.inEdges, function(edge, destName) {
             removeEdge(edge);
         });
     }
 
     function disconnectInput(comp, compType) {
+        // conn
         _.each(comp.inEdges, function(edge, destName) {
             if (edge.type == compType) {
                 removeEdge(edge);
@@ -692,6 +783,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
     }
 
     function disconnectOutputs(comp) {
+        // conn
         _.each(comp.outEdges, function(edge, destName) {
             removeEdge(edge);
         });
@@ -828,7 +920,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         return dest.name in src.outEdges;
     }
 
-    function addComponent(elem, comp) {
+    function addComponentType(elem, comp) {
         var button = $("<li>")
             .text(comp.display)
             .attr('title', comp.description);
@@ -836,52 +928,50 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         button.on('click', function() {
             var newComponent = addNewComponent(comp);
             if (previousComponent && !isConnected(previousComponent)) {
-                connectComponent(previousComponent,
-                    newComponent,getConnType());
+                connectComponent(previousComponent, newComponent, "green");
             }
             previousComponent = newComponent;
             select.apply(newComponent);
         });
     }
 
+    function showInventoryItem(members, elem) {
+        members.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
+
+        var node = $(elem);
+        _.each(members, function(member) {
+            addComponentType(node, member);
+        });
+    }
+
     function showInventoryUI() {
-        var sourceList = $("#sources");
 
-        sources.sort(function(a,b) {
-            return a.display.localeCompare(b.display);
-        });
-        _.each(sources, function(source) {
-            addComponent(sourceList, source);
-        });
-
-        filters.sort(function(a,b) {
-            return a.display.localeCompare(b.display);
-        });
-        var filterList = $("#filters");
-        _.each(filters, function(filter) {
-            addComponent(filterList, filter);
-        });
-
-        conditionals.sort(function(a,b) {
-            return a.display.localeCompare(b.display);
-        });
-        var conditionalList = $("#conditionals");
-        _.each(conditionals, function(conditional) {
-            addComponent(conditionalList, conditional);
-        });
+        showInventoryItem(sources, "#sources");
+        showInventoryItem(combiners, "#combiners");
+        showInventoryItem(selectors, "#selectors");
+        showInventoryItem(filters, "#filters");
+        showInventoryItem(orders, "#orders");
+        showInventoryItem(conditionals, "#conditionals");
+        showInventoryItem(miscs, "#miscs");
     }
 
     function sortComponents() {
         _.each(inventory, function(component, name) {
             if (component.type == 'filter') {
                 filters.push(component);
-            }
-            else if (component.type == 'multi-in-filter') {
-                filters.push(component);
-            } else if (component.type == 'bool-filter') {
+            } else if (component.type == 'combiner') {
+                combiners.push(component);
+            } else if (component.type == 'selector') {
+                selectors.push(component);
+            } else if (component.type == 'order') {
+                orders.push(component);
+            } else if (component.type == 'conditional') {
                 conditionals.push(component);
-            }
-            else if (component.type == 'source') {
+            } else if (component.type == 'misc') {
+                miscs.push(component);
+            } else if (component.type == 'source') {
                 sources.push(component);
             }
             else {
@@ -954,7 +1044,6 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                     program.run(main, saveToSpotify, function(data) {
                         setRunning(false);
                         if (data) {
-                            console.log(data);
                             if (data.status == 'ok') {
                                 showPlaylist(program.name, data);
                             } else {
@@ -991,6 +1080,11 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
             if (window.confirm('Clear all components from this program?')) {
                 deleteAll();
             }
+        });
+
+        var deleteButton = $("#delete-component-button");
+        deleteButton.on('click', function() {
+            deleteCur();
         });
 
         $("#share-button").on('click', function() {
@@ -1112,6 +1206,27 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         setInfo(false, '');
     }
 
+    function getIncomingConnections(component) {
+        var connections = [];
+        _.each(component.sources, function(source, name) {
+            var type = getConnectionType(component.trans.cls, name);
+            if (_.isArray(source)) {
+                _.each(source, function(src) {
+                  if (src) {
+                    var connection  = [name, src, component.name, type];
+                    connections.push(connection)
+                  }
+                });
+            } else {
+              if (source)  {
+                var connection  = [name, source, component.name, type];
+                connections.push(connection)
+              }
+            }
+        });
+        return connections;
+    }
+
     initEditor();
     return {
         load:function(newProgram) {
@@ -1126,26 +1241,18 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
 
             // add connections
 
+          // conn
             _.each(program.components, function(comp, id) {
-                var destRect = nameToRect[comp.name];
-                if (comp.sources.source) {
-                    var srcRect = nameToRect[comp.sources.source];
-                    addVisualConnection(srcRect, destRect, CT_NORMAL);
-                } else if (comp.sources.source_list) {
-                    _.each(comp.sources.source_list, function(source) {
-                        var srcRect = nameToRect[source];
-                        addVisualConnection(srcRect, destRect, CT_NORMAL);
-                    });
-                } else if (comp.sources.true_source || comp.sources.false_source) {
-                    if (comp.sources.true_source) {
-                        var srcRect = nameToRect[comp.sources.true_source];
-                        addVisualConnection(srcRect, destRect, CT_NORMAL);
-                    }
-                    if (comp.sources.false_source) {
-                        var srcRect = nameToRect[comp.sources.false_source];
-                        addVisualConnection(srcRect, destRect, CT_SHIFTED);
-                    }
-                }
+                var connections = getIncomingConnections(comp);
+                _.each(connections, function(carry) {
+                    var portName = carry[0];
+                    var srcName = carry[1];
+                    var destName = carry[2];
+                    var portType = carry[3];
+                    var srcRect = nameToRect[srcName];
+                    var destRect = nameToRect[destName];
+                    addVisualConnection(srcRect, destRect, portType);
+                });
             });
             // select main
             if (program.main&& program.main in nameToRect) {

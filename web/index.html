@@ -52,7 +52,8 @@
             genres, pre-programmed playlists and filtering and manipulating them
             with a nifty graph-based UI.
         </p>
-        <p class="text-danger"> This is an alpha V2 version. Send feedback to
+        <p class="text-danger"> This is an <span class="version">alpha V3</span> version.
+          Send feedback to
         <a href="http://twitter.com/plamere">@plamere </a></p>
 
         <p><a class="btn btn-default btn-lg" href="examples.html"
@@ -72,6 +73,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
+        SmarterPlaylists <span class="version"></span>
         Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
@@ -84,6 +86,7 @@
 <script>
 
 function initLogin() {
+    updateSystemStatus();
     $("#login").on("click", function() {
         console.log('login');
         loginWithSpotifyForAuth();

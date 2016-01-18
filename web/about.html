@@ -100,6 +100,21 @@
              </li>
 
              <li class="list-group-item">
+                <h3 class="list-group-item-heading">Are there any keyboard shortcuts?</h3>
+                <p class="list-group-item-text">
+                  Yes. Here's the set:
+                    <ul>
+                        <li> <b> Delete key</b> (or backspace on some keyboards) - Delete the currently selected component
+                        <li> <b> g </b> (or space) make a green-port connection between the two components
+                        <li> <b> r </b> make a red-port connection between the two components
+                        <li> <b> o </b> make an orange-port connection between the two components
+                        <li> <b> b </b> make a blue-port connection between the two components
+                        <li> <b> d </b> delete the connection between the two selected components
+                    </ul>
+                </p>
+             </li>
+
+             <li class="list-group-item">
                 <h3 class="list-group-item-heading">Can I schedule my program to
                 run everyday? </h3>
                 <p class="list-group-item-text">
@@ -111,11 +126,15 @@
              </li>
 
              <li class="list-group-item">
-                <h3 class="list-group-item-heading">How come I can only schedule a program to run,
-                  at most, 100 times? </h3>
+                <h3 class="list-group-item-heading">Are there any limits? </h3>
                 <p class="list-group-item-text">
-                    To prevent abusers from abusing the system and the APIs that I rely on.  If
-                    you have a stong need for a larger limit let me know and we can work something out.
+                    Yes, to prevent bad actors  from abusing the system and the APIs that I rely on there
+                    are some builtin limits. If you have a strong need for a larger limit, let me know and
+                    perhaps we can work something out. Current limits:
+                    <ul>
+                        <li> Max number of tracks written to a playlist: 1000 tracks
+                        <li> Max number of times a program can be scheduled to be run: 100 times.
+                    </ul>
                 </p>
              </li>
 
@@ -164,7 +183,8 @@
                 </h3>
                 <p class="list-group-item-text">
                     Tweet your suggestions at <a
-                    href='http://twitter.com/plamere'>@plamere</a>
+                    href='http://twitter.com/plamere'>@plamere</a> with the
+                      hashtag <b> #smarterplaylists </b>
                 </p>
              </li>
 
@@ -227,6 +247,18 @@
     <div class="container-fluid col-sm-offset-2 col-sm-8">
         <h2> Version Info </h2>
 
+        <h3> Alpha V3 - January 17, 2016 </h3>
+        <ul>
+            <li> Improved component interaction</li>
+            <li> Added powerful 'Mixer' component</li>
+            <li> Added release date filter component</li>
+            <li> More refined component categories (combiners, orderers, selectors)</li>
+            <li> Major, under-the-hood refactor to support more
+              generalized port connections (green, red, orange, blue)</li>
+            <li> Added some DB admin tools
+            <li> Automated backups of the user-program database
+            <li> DB restore tested
+        </ul>
         <h3> Alpha V2 - January 4, 2016 </h3>
         <ul>
             <li> New hostname and location</li>
@@ -247,6 +279,7 @@
     <br>
     <div id="footer">
       <div class="container text-center">
+        SmarterPlaylists <span class="version"></span>
         Created by <a href="http://twitter.com/plamere">@plamere</a>
       </div>
     </div>
