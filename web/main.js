@@ -411,6 +411,7 @@ function maintenanceModeCheck() {
             }
         } else {
             alert("The SmarterPlaylists server is offline. Try later");
+            document.location = "maintenance.html"
         }
     });
 }
@@ -431,6 +432,7 @@ function updateSystemStatus() {
             emitMessageOfTheDay(systemStatus.motd, systemStatus.motd_count);
         } else {
             alert("The SmarterPlaylists server is offline. Try later");
+            document.location = "maintenance.html"
         }
     });
 }
