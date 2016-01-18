@@ -1,0 +1,45 @@
+
+Setting up linode
+
+playlistmachinery.com
+
+https://manager.linode.com/linodes/dashboard/linode1573908
+
+
+webserver is nginx
+api server is flask
+
+Use this guide to setup nginxA
+
+https://realpython.com/blog/python/kickstarting-flask-on-ubuntu-setup-and-deployment/
+
+sites-enabled is:
+
+%  more /etc/nginx/sites-available/smarterplaylists
+
+server {
+    location /api {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location / {
+        alias  /home/www/smarterplaylists/;
+    }
+}
+
+
+Get spotipy, pyen and pbl from git, install
+
+(disabled leveldb in pbl to get it to work easily)
+install requests security to avoid SSL warning
+
+% sudo  pip install requests[security]
+
+run pbl tests
+
+sudo pip install -U flask-cors
+sudo pip install redis
+
+install redis 3
+
