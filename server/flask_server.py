@@ -516,7 +516,7 @@ def handle_invalid_usage(error):
     print "error", error
     results = { 
         'status': 'internal_error',
-        "reason": str(error)
+        "message": str(error)
     }
     return jsonify(results)
 

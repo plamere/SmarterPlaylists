@@ -1,21 +1,25 @@
 TODOs before release
 ====================
-* Get names for things like playlists that are specified by uri
-* Add range info and range checking for numeric params
-* add buttons to connect components and to delete components/edges
 * add kitchen sink tests
-* select tracks from a playlist by a date range
 * mixer example
-* Add more refined categories, sources, filters, combiners, conditionals
+* blog post
+  - new mixer component
+  - internal refactoring
 
 More TODOs
 ==========
+* select tracks from a playlist by a date range
 * change the API key
-* DB restore test
 * Admin page
 * UI for reordering inputs for multi-input ports
+* Add a artist follow sampler
 * general stats page
-
+* add mechanism for sending notices
+* scaling of raphael area is not great,
+* better date UI for components that take dates
+* Add range info and range checking for numeric params
+* Get names for things like playlists that are specified by uri
+* add reverse artist filter (only allow tracks by artists that match the filter)
 
 User Suggestions
 ================
@@ -40,3 +44,14 @@ Later on
 Fixed
 ======
 * can't set schedule to never
+
+Done
+====
+* DB restore test
+* track uris needs a strip
+* Add more refined categories, sources, filters, combiners, conditionals
+* figure out how to display 'explicit vs not explicit'
+* add buttons to connect components and to delete components/edges
+* remove debugging output
+* delete a component prompt?
+* maintenance mode
