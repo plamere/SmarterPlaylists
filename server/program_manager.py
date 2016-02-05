@@ -12,7 +12,7 @@ import pbl
 import compiler
 import plugs
 
-debug_exceptions = True
+debug_exceptions = False
 
 
 '''
@@ -276,8 +276,6 @@ class ProgramManager:
                     results['message'] = status
 
         except pbl.PBLException as e:
-            if debug_exceptions:
-                raise
             results['status'] = 'error'
             results['message'] = e.reason
             if e.component:
@@ -285,12 +283,17 @@ class ProgramManager:
             else:
                 cname = e.cname
             results['component'] = cname
-
-        except Exception as e:
+            print 'PBLException', json.dumps(results, indent=4)
+            
             if debug_exceptions:
                 raise
+
+        except Exception as e:
             results['status'] = 'error'
             results['message'] = str(e)
+            print 'General Exception', json.dumps(results, indent=4)
+            if debug_exceptions:
+                raise
 
         pbl.engine.clearEnvData()
         results['time'] = time.time() - start
