@@ -74,7 +74,7 @@ class SpotifyAuth(object):
         now = time.time()
         token['expires_at'] = int(now) + token['expires_in']
         user_info = self._me(token)
-        if user_info:
+        if user_info and 'id' in user_info:
             token['user_id'] = user_info['id']
             token['user_name'] = user_info['display_name']
 
