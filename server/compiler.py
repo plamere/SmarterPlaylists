@@ -1,7 +1,8 @@
 import pbl
 from components import inventory
+import traceback
 
-debug_exceptions = True
+debug_exceptions = False
 OK = 'ok'
 
 '''
@@ -144,6 +145,7 @@ def compile_object(objname, program):
                     hsymbols[obj] = objname
                     return OK, obj
                 except:
+                    traceback.print_exc()
                     if debug_exceptions:
                         raise
                     raise pbl.PBLException(None, "creation failure", objname)

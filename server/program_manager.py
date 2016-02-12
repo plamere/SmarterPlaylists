@@ -11,6 +11,7 @@ import time
 import pbl
 import compiler
 import plugs
+import traceback
 
 debug_exceptions = False
 
@@ -54,6 +55,8 @@ class ProgramManager:
                 },
             }
         '''
+        if debug_exceptions:
+            print "WARNING: debugging exceptions"
 
 
     def add_program(self, user, program):
@@ -285,6 +288,7 @@ class ProgramManager:
             results['component'] = cname
             print 'PBLException', json.dumps(results, indent=4)
             
+            traceback.print_exc()
             if debug_exceptions:
                 raise
 
@@ -292,6 +296,7 @@ class ProgramManager:
             results['status'] = 'error'
             results['message'] = str(e)
             print 'General Exception', json.dumps(results, indent=4)
+            traceback.print_exc()
             if debug_exceptions:
                 raise
 

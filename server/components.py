@@ -68,6 +68,7 @@ inventory = {
             { "name" : "mode", "value" : "audio.mode"},
             { "name" : "time signature", "value" : "audio.time_signature"},
             { "name" : "loudness", "value" : "audio.loudness"},
+            { "name" : "valence", "value" : "audio.valence"},
 
             { "name" : "src", "value" : "src"},
             { "name" : "duration", "value" : "duration"},
@@ -94,6 +95,7 @@ inventory = {
             { "name" : "mode", "value" : "audio.mode"},
             { "name" : "time signature", "value" : "audio.time_signature"},
             { "name" : "loudness", "value" : "audio.loudness"},
+            { "name" : "valence", "value" : "audio.valence"},
 
             { "name" : "artist name ", "value" : "artist"},
             { "name" : "title", "value" : "title"},
