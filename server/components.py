@@ -52,30 +52,205 @@ inventory = {
          ],
 
          "range_attributes" : [
-            { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},
-            { "name" : "artist followers", "value" : "spotify.primary_artist_followers"},
-            { "name" : "album popularity", "value" : "spotify.album_popularity"},
-            { "name" : "track popularity", "value" : "spotify.popularity"},
-
-            { "name" : "speechiness", "value" : "audio.speechiness"},
-            { "name" : "acousticness", "value" : "audio.acousticness"},
-            { "name" : "danceability", "value" : "audio.danceability"},
-            { "name" : "energy", "value" : "audio.energy"},
-            { "name" : "tempo", "value" : "audio.tempo"},
-            { "name" : "instrumentalness", "value" : "audio.instrumentalness"},
-            { "name" : "key", "value" : "audio.key"},
-            { "name" : "liveness", "value" : "audio.liveness"},
-            { "name" : "mode", "value" : "audio.mode"},
-            { "name" : "time signature", "value" : "audio.time_signature"},
-            { "name" : "loudness", "value" : "audio.loudness"},
-            { "name" : "valence", "value" : "audio.valence"},
-
-            { "name" : "src", "value" : "src"},
-            { "name" : "duration", "value" : "duration"},
-
-            { "name" : "popularity", "value" : "spotify.popularity"},
-            { "name" : "track number", "value" : "spotify.track_number"},
-            { "name" : "disc number", "value" : "spotify.disc_number"}
+            { 
+                "name" : "artist popularity", 
+                "value" : "spotify.primary_artist_popularity",
+                "min_value": 0,
+                "max_value": 100,
+                "description": """ A normalized estimation of how popular the
+                primary artist of a track is based on recent streaming."""
+            },
+            { 
+                "name" : "artist followers", 
+                "value" : "spotify.primary_artist_followers",
+                "min_value" : 0,
+                "description": """ The current number of followers for the
+                primary artist of the track."""
+            },
+            { 
+                "name" : "album popularity", 
+                "value" : "spotify.album_popularity",
+                "min_value": 0,
+                "max_value": 100,
+                "description": """ A normalized estimation of how popular the
+                album of a track is based on recent streaming."""
+            },
+            { 
+                "name" : "track popularity", 
+                "value" : "spotify.popularity",
+                "min_value": 0,
+                "max_value": 100,
+                "description": """ A normalized estimation of how popular the
+                track is based on recent streaming."""
+            },
+            { 
+                "name" : "speechiness", 
+                "value" : "audio.speechiness",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Estimates the amount of spoken word in a
+                track. The more exclusively speech-like the track (e.g. talk
+                show, audio book, poetry), the closer to 1.0 the attribute
+                value. Values above 0.66 describe tracks that are probably made
+                entirely of spoken words. Values between 0.33 and 0.66 describe
+                tracks that may contain both music and speech, either in
+                sections or layered, including such cases as rap music. Values
+                below 0.33 most likely represent music and other non-speech-like
+                tracks."""
+            },
+            { 
+                "name" : "acousticness", 
+                "value" : "audio.acousticness",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Estimates the likelihood a recording was
+                created by solely acoustic means such as voice and acoustic
+                instruments as opposed to electronically such as with
+                synthesized, amplified, or effected instruments. Tracks with low
+                acousticness include electric guitars, distortion, synthesizers,
+                auto-tuned vocals, and drum machines, whereas songs with
+                orchestral instruments, acoustic guitars, unaltered voice, and
+                natural drum kits will have acousticness values closer to
+                1.0."""
+            },
+            { 
+                "name" : "danceability", 
+                "value" : "audio.danceability",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Describes how suitable a track is for dancing
+                using a number of musical elements (the more suitable for
+                dancing, the closer to 1.0 the value). The combination of
+                musical elements that best characterize danceability include
+                tempo, rhythm stability, beat strength, and overall
+                regularity."""
+            },
+            { 
+                "name" : "energy", 
+                "value" : "audio.energy",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Represents a perceptual measure of intensity
+                and powerful activity released throughout the track. Typical
+                energetic tracks feel fast, loud, and noisy. For example, death
+                metal has high energy, while a Bach prelude scores low on the
+                scale. Perceptual features contributing to this attribute
+                include dynamic range, perceived loudness, timbre, onset rate,
+                and general entropy."""
+            },
+            { 
+                "name" : "tempo", 
+                "value" : "audio.tempo",
+                "min_value": 30,
+                "max_value": 300,
+                "description": """The overall estimated tempo of a track in
+                beats per minute (BPM). In musical terminology, tempo is the
+                speed or pace of a given piece and derives directly from the
+                average beat duration. """
+            },
+            { 
+                "name" : "instrumentalness", 
+                "value" : "audio.instrumentalness",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Predicts whether a track contains no vocals.
+                "Ooh" and "aah" sounds are treated as instrumental in this
+                context. Rap or spoken word tracks are clearly "vocal". The
+                closer the instrumentalness value is to 1.0, the greater
+                likelihood the track contains no vocal content. Values above 0.5
+                are intended to represent instrumental tracks, but confidence is
+                higher as the value approaches 1.0."""
+            },
+            { 
+                "name" : "key", 
+                "value" : "audio.key",
+                "min_value": 0,
+                "max_value": 12,
+                "description": """The key the track is in. Integers map to
+                pitches using standard Pitch Class notation. E.g. 0 = C, 1 =
+                C#, 2 = D, and so on."""
+            },
+            { 
+                "name" : "liveness", 
+                "value" : "audio.liveness",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """ Detects the presence of an audience in the
+                recording. The more confident that the track is live, the closer
+                to 1.0 the attribute value. A value above 0.8 provides strong
+                likelihood that the track is live."""
+            },
+            { 
+                "name" : "mode", 
+                "value" : "audio.mode",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """Indicates the modality (major or minor)
+                of a track, the type of scale from which its melodic content is
+                derived. Major is represented by 1 and minor is 0."""
+            },
+            { 
+                "name" : "time signature", 
+                "value" : "audio.time_signature",
+                "min_value": 1,
+                "max_value": 10,
+                "description": """Estimates of the overall time signature of a
+                track. The time signature (meter) is a notational convention to
+                specify how many beats are in each bar (or measure)."""
+            },
+            { 
+                "name" : "loudness", 
+                "value" : "audio.loudness",
+                "min_value": -60,
+                "max_value": 5, "description": """The overall loudness of a track in decibels (dB).
+                Loudness values are averaged across the entire track and are
+                useful for comparing relative loudness of tracks. Loudness is
+                the quality of a sound that is the primary psychological
+                correlate of physical strength (amplitude)."""
+            },
+            { 
+                "name" : "valence", 
+                "value" : "audio.valence",
+                "min_value": 0,
+                "max_value": 1,
+                "description": """A measure from 0.0 to 1.0 describing the
+                musical "positiveness" conveyed by a track. Tracks with high
+                valence sound more positive (e.g., happy, cheerful, euphoric),
+                while tracks with low valence sound more negative (e.g. sad,
+                depressed, angry)."""
+            },
+            { 
+                "name" : "duration", 
+                "value" : "duration",
+                "min_value": 0,
+                "max_value": 10000,
+                "description": "The duration of the track, in seconds"
+            },
+            { 
+                "name" : "popularity", 
+                "value" : "spotify.popularity",
+                "min_value": 0,
+                "max_value": 100,
+                "description": """A normalized estimation of how popular the
+                track is based on recent streaming."""
+            },
+            { 
+                "name" : "track number", 
+                "value" : "spotify.track_number",
+                "min_value": 0,
+                "max_value": 100,
+                "description": """The position of the track on its album. If an 
+                album has several discs, the track number is the number on the specified
+                disc."""
+            },
+            { 
+                "name" : "disc number", 
+                "value" : "spotify.disc_number",
+                "min_value": 1,
+                "max_value": 100,
+                "description": """The disc number (usually 1 unless the album
+                consists of more than one disc)."""
+            }
          ],
          "sort_attributes" : [
             { "name" : "artist popularity", "value" : "spotify.primary_artist_popularity"},

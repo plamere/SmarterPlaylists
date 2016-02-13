@@ -151,6 +151,16 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         program.trans.needsSave = true;
     }
 
+    function getRangeInfo(val) {
+        var rinfo = null;
+        _.each(types.range_attributes, function(rattr) {
+            if (rattr.value === val) {
+              rinfo = rattr;
+            }
+        });
+        return rinfo;
+    }
+
     function convertType(type, val)  {
         var typeConverters = {
             'string': function(val) {
@@ -479,8 +489,30 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         var curParams = {};
 
         function addParam(pdiv, name, param) {
-            var div = $("<div class='form-group'>");
+            var sel = null;
+            function addDescription() {
+                if (sel) {
+                  console.log('selected', sel.val());
+                  var rinfo = getRangeInfo(sel.val());
+                  console.log('rinfo', rinfo);
+                  if (rinfo && rinfo.description) {
+                    var text = rinfo.description;
+                    if (rinfo.min_value !== undefined && rinfo.max_value !== undefined) {
+                        text += " Valid range: " + rinfo.min_value + " to "
+                          + rinfo.max_value;
+                    } else if (rinfo.min_value !== undefined) {
+                        text += " Valid range: " + rinfo.min_value + " and up"
+                    } else if (rinfo.max_value !== undefined) {
+                        text += " Valid range: Up to" + rinfo.max_value
+                    }
+                    description.html(text);
+                  } else {
+                    description.empty();
+                  }
+                }
+            }
 
+            var div = $("<div class='form-group'>");
             if (false && 'default' in param) {
                 curParams[name] = param['default'];
             }
@@ -505,11 +537,16 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 });
                 sel.attr('id', name);
 
+                var description = $("<div class='param-description'>");
+
                 sel.on('change', function() {
+                    addDescription();
                     curParams[name] = convertType(param.stype, sel.val());
                 });
                 div.append(label);
                 div.append(sel);
+                div.append(description)
+                addDescription();
             }
             else if (param.type  == 'string' || param.type == 'uri') {
 
