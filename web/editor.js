@@ -566,7 +566,7 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 div.append(label);
                 div.append(inp);
             }
-            if (param.type  == 'uri_list') {
+            else if (param.type  == 'uri_list') {
                 var label =  $('<label for="' + name + '">').text(dname + opt);
                 label.attr('title', param.description);
                 label.addClass("edit-param-label");
@@ -651,6 +651,62 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                 label.attr('title', param.description);
                 div.append(label);
                 div.append(inp);
+            } else if (param.type == 'optional_date') {
+                  var val = component.params[name];
+                  var ndiv = $("<div>");
+                  ndiv.append(
+                    $("<label>").text(dname).attr('title', param.description));
+                  var datePicker = $("<span>");
+                  datePicker.addClass("ncol-sm-4 input-group date");
+                  var inp = $("<input>")
+                    .attr("type", 'text')
+                    .addClass('form-control');
+
+                  inp.on('change', function() {
+                      var state = $(inp).is(':checked');
+                      var val = inp.val();
+                      console.log('input changed, val is', val);
+                  });
+
+
+                  datePicker.append(inp);
+
+
+                  var btn = $("<span>")
+                    .addClass("input-group-addon")
+                    .append($("<span>").addClass("glyphicon glyphicon-calendar"))
+
+                  datePicker.append(btn);
+                  ndiv.append(datePicker);
+                  div.append(ndiv);
+
+                  datePicker.datetimepicker({
+                      "useCurrent" :true,
+                      "format": 'lll',
+                      sideBySide: false,
+                  });
+                  console.log('val', val);
+                  var dateData = datePicker.data('DateTimePicker');
+                  datePicker.on("dp.change", function(e) {
+                      console.log("dp.change", e);
+                      if (e.date == false) {
+                        curParams[name] = -1;
+                      } else {
+                        curParams[name] = e.date.unix();
+
+                      }
+                      console.log("date changed", e);
+                  });
+                  var date = "";
+                  if (val == -1) {
+                      date = null;
+                  } else {
+                    date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                    date.setUTCSeconds(val);
+                  }
+                  dateData.date(date);
+            } else {
+              console.log("Unknown param type", param.type)
             }
             if (div.children().length > 0) {
                 pdiv.append(div);
