@@ -936,6 +936,37 @@ def get_day_of_week():
     day = now().weekday()
     return days[day]
 
+class ArtistDeDup(object):
+    '''
+        Remove any duplicate artists in the stream
+        :param source: the stream source
+
+    '''
+
+    def __init__(self, source):
+        self.name = 'artist dedupped ' + source.name
+        self.source = source
+        self.history = set()
+
+    def next_track(self):
+        track = None
+        while True:
+            track = self.source.next_track()
+            if track:
+                tinfo = pbl.tlib.get_track(track)
+                artist_name = '(none)'
+                if 'artist' in tinfo:
+                    artist_name = tinfo['artist']
+
+                if artist_name in self.history:
+                    continue
+                else:
+                    self.history.add(artist_name)
+                    break
+            else:
+                break
+        return track
+
 if __name__ == '__main__':
 
     def date_to_epoch(date):
@@ -951,9 +982,19 @@ if __name__ == '__main__':
         save = PlaylistSaveToNew(p1, 'test', 'day-of-month')
         pbl.show_source(save)
 
-    dec1 = date_to_epoch("2015-12-01")
-    src = DatedPlaylistSource("extender test", None, 'plamere',
-        order_by_date_added=False, 
-        tracks_added_since=-1, tracks_added_before=dec1)
+    if False:
+        dec1 = date_to_epoch("2015-12-01")
+        src = DatedPlaylistSource("extender test", None, 'plamere',
+            order_by_date_added=False, 
+            tracks_added_since=-1, tracks_added_before=dec1)
+        pbl.show_source(src)
 
-    pbl.show_source(src)
+    if True:
+        print 'with dedup'
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = ArtistDeDup(src)
+        pbl.show_source(src)
+
+        print 'no dedup'
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        pbl.show_source(src)

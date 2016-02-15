@@ -347,6 +347,24 @@ inventory = {
             }
         },
         {
+            "name" : "ArtistDeDup",
+            "display": "artist de-dup",
+            "class": plugs.ArtistDeDup,
+            "type" : "filter",
+            "description": "Ensure only unique artists appear in the track stream",
+            "help" : """ This component will remove any tracks with duplicate
+            artists from the stream. """,
+            "params": {
+                "source": {
+                    "type" : "port",
+                    "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
+                    "description": "the source of the tracks",
+                },
+            }
+        },
+        {
             "name" : "comment",
             "display": "comment",
             "class": plugs.Comment,
