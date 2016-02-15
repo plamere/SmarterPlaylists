@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link type="text/css" href="styles.css" rel="stylesheet" />
+    <link href="https://sp-bootstrap.global.ssl.fastly.net/5.2.0/sp-bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="images/favicon.png">
+    <title>Smarter Playlists</title>
+    <!-- Custom styles for this template -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+      .about-title {
+        font-size:24px;
+        font-weight:bolder;
+      }
+
+      .comp-description {
+        margin-left:18px;
+        font-size:24px;
+      }
+      .comp-help {
+        font-size:24px;
+      }
+
+      .ctype-div {
+        font-size:24px;
+      }
+
+      #comp-top {
+          margin-top:70px;
+      }
+
+      .param-description {
+        font-size:22px;
+
+      }
+    </style>
+    </style>
+  </head>
+
+  <body >
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.html">
+            <span class="navbar-logo">Spotify</span>
+            <span class="navbar-title">Smarter Playlists</span>
+          </a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li class=""> <a href="imports.html">Imports</a> </li>
+          <li class=""> <a href="examples.html">Examples</a> </li>
+          <li class="active"> <a href="about.html">About</a> </li>
+        </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div id='comp-top' class="njumbotron">
+      <div class="text-left container-fluid col-sm-offset-2 col-sm-8" id="jumbo-dialog">
+          <h2 class='cname'> </h2>
+          <div class='comp-description'> </div>
+          <div class='comp-help'> </div>
+          <h3 class=''> Parameters </h3>
+          <ul class='parameters'> </ul>
+          <div class='ctype-div'> <b> Type:</b> <span class="ctype"> </span> </div>
+      </div>
+    </div>
+
+    <br>
+    <div id="footer">
+      <div class="container text-center">
+        SmarterPlaylists <span class="version"></span>
+        Created by <a href="http://twitter.com/plamere">@plamere</a>
+        For support visit the
+        <a href="https://groups.google.com/forum/#!forum/smarterplaylists">SmarterPlaylists
+        google group. </a>
+      </div>
+    </div>
+    <script src="lib/jquery-1.11.1.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="lib/underscore-min.js"></script>
+    <script src="main.js"></script>
+
+    <script id="comp-template" type="text/template">
+      <li>  <b> <%= display %> </b> - <%= description %>
+      </li>
+    </script>
+<script>
+
+
+var compTemplate = _.template($("#comp-template").text());
+
+function parseParams() {
+    var params = {};
+    var q = document.URL.split('?')[1];
+    if(q != undefined){
+        q = q.split('&');
+        for(var i = 0; i < q.length; i++){
+            var pv = q[i].split('=');
+            var p = pv[0];
+            var v = pv[1];
+            params[p] = urldecode(v);
+        }
+    }
+    return params;
+}
+
+function initApp() {
+    var params = parseParams();
+    var cname = ('component' in params) ? params['component'] : null;
+
+    fetchInventory(function(cmap, types) {
+        if (cname in cmap) {
+            var component = cmap[cname];
+            $(".cname").text(component.display);
+            $(".comp-description").html($.trim(component.description));
+            $(".comp-help").html($.trim(component.help));
+            if (_.size(component.params) > 0) {
+            _.each(component.params, function(param, name) {
+                var li = $("<li>");
+                var div = $("<div>");
+                var pname = param.display ? param.display : name;
+
+                var title = $("<div>");
+                var ttext = $("<span class='about-title'>").text(pname);
+                var optional = $("<span>").text(param.optional ? " (optional)" : "");
+                var type = $("<span>").text("type:" + param.type);
+                var description = $("<p class='param-description'>").html(param.description);
+                title.append(ttext);
+                title.append(optional);
+
+                div.append(title);
+                div.append(type);
+                div.append(optional);
+                div.append(description);
+                div.append($("<hr>"));
+                $(".ctype").text(component.type);
+
+                $(".parameters").append(div);
+
+            });
+          } else {
+            $(".parameters").append("(none)");
+          }
+        } else {
+        }
+          /*
+          <h2 class='cname'> </h2>
+          <div class='lead description'> </div>
+          <h3 class=''> </h2>
+          <div class='help'> </div>
+          <h3 class=''> Parameters </h3>
+          <ul class='parameters'>
+          </ul>
+          */
+
+        /*
+        var clist = [];
+        _.each(cmap, function(component, name) {
+            clist.push(component);
+        });
+
+        clist.sort(function(a,b) {
+            return a.display.localeCompare(b.display);
+        });
+
+        var list = $("#components");
+        list.empty();
+        _.each(clist, function(component) {
+            var el = $(compTemplate(component))
+            list.append(el);
+        });
+        */
+    });
+}
+$(document).ready(
+    function() {
+        initApp();
+    }
+);
+</script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-3675615-11', 'auto');
+  ga('send', 'pageview');
+
+</script>
+  </body>
+</html>

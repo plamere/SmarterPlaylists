@@ -43,7 +43,6 @@
     <div id='top' class="jumbotron">
       <div class="container-fluid col-sm-offset-2 col-sm-8" id="jumbo-dialog">
         <h1>About Smarter Playlists </h1>
-
         <p  class="intro-lead">
             Smarter Playlists is a web app that lets you build complex programs
             by assembling simple components.
@@ -184,8 +183,8 @@
                 <p class="list-group-item-text">
                     Tweet your suggestions at <a
                     href='http://twitter.com/plamere'>@plamere</a> with the
-                      hashtag <b> #smarterplaylists </b>, or visit  the 
-                      <a href="https://groups.google.com/forum/#!forum/smarterplaylists"> 
+                      hashtag <b> #smarterplaylists </b>, or visit  the
+                      <a href="https://groups.google.com/forum/#!forum/smarterplaylists">
                       SmarterPlaylists Google group</a>
                       https://groups.google.com/forum/#!forum/smarterplaylists
                 </p>
@@ -250,6 +249,11 @@
     <div class="container-fluid col-sm-offset-2 col-sm-8">
         <h2> Version Info </h2>
 
+        <h3> Alpha V3.3 - February 15, 2016 </h3>
+        <ul>
+            <li> Added component detail page (accessible via the about page)
+            </li>
+        </ul>
         <h3> Alpha V3.2 - February 14, 2016 </h3>
         <ul>
             <li> Added <b>playlist (abs date)</b> support, allowing for
@@ -297,6 +301,9 @@
       <div class="container text-center">
         SmarterPlaylists <span class="version"></span>
         Created by <a href="http://twitter.com/plamere">@plamere</a>
+        For support visit the
+        <a href="https://groups.google.com/forum/#!forum/smarterplaylists">SmarterPlaylists
+        google group. </a>
       </div>
     </div>
     <script src="lib/jquery-1.11.1.min.js"></script>
@@ -305,7 +312,7 @@
     <script src="main.js"></script>
 
     <script id="comp-template" type="text/template">
-      <li>  <b> <%= display %> </b> - <%= description %>
+      <li>  <b> <a href="info.html?component=<%= name %>"> <%= display %> </a> </b> - <%= description %>
             <!--<div class="comp-help"> <%= help %> </div> -->
       </li>
     </script>
