@@ -371,7 +371,7 @@ inventory = {
             "type" : "filter",
             "description": "Enforces a specified separation of artists in the track stream",
             "help" : """ This component will guarantee that artists will not
-            appear closer together than the given <b>min separation</b> in the
+            appear closer together than the given <b>minimum artist separation</b> in the
             track stream. If <b>reorder</b> is set, then tracks may be reordered
             to enforce the separation, otherwise, if <b>reorder</b> is not set,
             then offending tracks are removed from the stream.""",
@@ -395,7 +395,7 @@ inventory = {
                     "optional" : True,
                     "default" : True,
                     "display": "reorder",
-                    "description": "if true, tracks may be reordered to enforce artist separation, otherwise, offendind tracks are simply deleted from the stream",
+                    "description": "if true, tracks may be reordered to enforce artist separation, otherwise, offending tracks are simply omitted  from the stream",
                 },
             }
         },
