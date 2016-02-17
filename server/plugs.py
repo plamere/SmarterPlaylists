@@ -967,6 +967,66 @@ class ArtistDeDup(object):
                 break
         return track
 
+class ArtistSeparation(object):
+    '''
+        enforces a minimum separation of artists
+    '''
+
+    def __init__(self, source, min_separation=4, reorder=True):
+        self.name = 'artist separated ' + source.name
+        self.source = source
+        self.history = []
+        self.lookaside = []
+        self.min_separation = min_separation
+        self.reorder = reorder
+
+    def _separation(self, artist):
+        for i, partist in enumerate(reversed(self.history)):
+            if artist == partist:
+                return i
+        return -1
+
+    def _get_artist_name(self, track):
+        tinfo = pbl.tlib.get_track(track)
+        artist_name = '(none)'
+        if 'artist' in tinfo:
+            artist_name = tinfo['artist']
+        return artist_name
+
+    def _check_from_lookaside(self):
+        for track in self.lookaside:
+            artist_name = self._get_artist_name(track)
+            sep = self._separation(artist_name)
+            if sep >= self.min_separation or sep == -1:
+                self.lookaside.remove(track)
+                return track
+        return None
+
+        
+    def _next_track(self):
+        track = self._check_from_lookaside()
+        if track == None:
+            track = self.source.next_track()
+        return track
+
+    def next_track(self):
+        track = None
+        while True:
+            track = self._next_track()
+            if track:
+                artist_name = self._get_artist_name(track)
+                sep = self._separation(artist_name)
+                if sep >= self.min_separation or sep == -1:
+                    self.history.append(artist_name)
+                    break
+                else:
+                    if self.reorder:
+                        self.lookaside.append(track)
+                    continue
+            else:
+                break
+        return track
+
 if __name__ == '__main__':
 
     def date_to_epoch(date):

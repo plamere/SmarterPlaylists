@@ -365,6 +365,41 @@ inventory = {
             }
         },
         {
+            "name" : "ArtistSeparation",
+            "display": "artist separation",
+            "class": plugs.ArtistSeparation,
+            "type" : "filter",
+            "description": "Enforces a specified separation of artists in the track stream",
+            "help" : """ This component will guarantee that artists will not
+            appear closer together than the given <b>min separation</b> in the
+            track stream. If <b>reorder</b> is set, then tracks may be reordered
+            to enforce the separation, otherwise, if <b>reorder</b> is not set,
+            then offending tracks are removed from the stream.""",
+            "params": {
+                "source": {
+                    "type" : "port",
+                    "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
+                    "description": "the source of the tracks",
+                },
+                "min_separation": {
+                    "type" : "number",
+                    "optional" : True,
+                    "default" : 4,
+                    "display" : "minimum artist separation",
+                    "description": "minimum number of tracks between tracks by the same artist"
+                },
+                "reorder": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : True,
+                    "display": "reorder",
+                    "description": "if true, tracks may be reordered to enforce artist separation, otherwise, offendind tracks are simply deleted from the stream",
+                },
+            }
+        },
+        {
             "name" : "comment",
             "display": "comment",
             "class": plugs.Comment,
