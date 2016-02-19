@@ -782,6 +782,140 @@ class DatedPlaylistSource(object):
         else:
             return None
 
+class RelativeDatedPlaylistSource(object):
+    '''
+        A PBL source that generates a stream of tracks from the given Spotify
+        playlist with tracks potentially ordered and filtered by the relative
+        date they were added to the playlist. If only a name is provided, the playlist 
+        will be searched for.  Search success can be improved if the owner of 
+        the playlist is also provided.
+
+        :param name: the name of the playlist
+        :param uri: the uri of the playlist
+        :param user: the owner of the playlist
+        :param order_by_date_added: if true, tracks are ordered by the date they were added to the playlist
+        :param tracks_added_since: if not None, only tracks added after this
+        relative time (given in seconds in the past from now)
+        :param tracks_added_before: if not None, only tracks added before this
+        relative time (given in seconds in the past from now)
+
+    '''
+
+    def __init__(self, name, uri=None, user=None, 
+        order_by_date_added=False, 
+        tracks_added_since=None,
+        tracks_added_before=None):
+
+        self.name = name
+        self.uri = spotify_plugs.normalize_uri(uri)
+        self.user = user
+        self.order_by_date_added = order_by_date_added
+
+        if tracks_added_before != None:
+            delta_tracks_added_before = datetime.timedelta(seconds=abs(tracks_added_before))
+            self.tracks_added_before = date_to_epoch(now() - delta_tracks_added_before)
+        else:
+            self.tracks_added_before = -1
+
+        if tracks_added_since != None:
+            delta_tracks_added_since = datetime.timedelta(seconds=abs(tracks_added_since))
+            self.tracks_added_since = date_to_epoch(now() - delta_tracks_added_since)
+        else:
+            self.tracks_added_since = -1
+
+        self.next_offset = 0
+        self.limit = 100
+
+        self.tracks = []
+        self.total = 1
+        self.cur_index = 0
+        self.track_count = 0
+
+
+    def _get_uri_from_name(self, name):
+        results = get_spotify().search(q=name, type='playlist')
+        if len(results['playlists']['items']) > 0:
+            return results['playlists']['items'][0]['uri']
+        else:
+            return None
+
+    def _get_uri_from_name_and_user(self, name, user):
+        results = get_spotify().user_playlists(user)
+        while results:
+            for playlist in results['items']:
+                if playlist['name'].lower() == name.lower():
+                    return playlist['uri']
+            if results['next']:
+                results = get_spotify().next(results)
+            else:
+                results = None
+        return None
+
+    def _parse_date(self, sdate):
+        try:
+            date = datetime.datetime.strptime(sdate, "%Y-%m-%dT%H:%M:%SZ")
+            return int(date.strftime("%s"))
+        except ValueError:
+            return -1
+        except:
+            return -1
+
+    def _get_more_tracks(self):
+        _,_,user,_,playlist_id = self.uri.split(':')
+        try:
+            results = get_spotify().user_playlist_tracks(user, playlist_id,
+                limit=self.limit, offset=self.next_offset)
+        except spotipy.SpotifyException as e:
+            raise engine.PBLException(self, e.msg)
+
+        self.total = results['total']
+        for item in results['items']:
+            self.track_count += 1
+            good_track = True
+            ts = self._parse_date(item['added_at'])
+            if self.tracks_added_before >= 0 and ts >= 0 and ts > self.tracks_added_before:
+                good_track = False
+            if self.tracks_added_since >=0 and ts >=0 and ts  < self.tracks_added_since:
+                good_track = False
+            track = item['track']
+            if good_track and ts >= 0 and track and 'id' in track:
+                self.tracks.append( (track['id'], ts) )
+                spotify_plugs._add_track(self.name, track)
+        self.next_offset += self.limit
+
+    def _get_all_tracks(self):
+        while self.track_count < self.total:
+            self._get_more_tracks()
+
+    def order_tracks_by_date_added(self):
+        self.tracks.sort(key=lambda t:t[1])
+        
+    def next_track(self):
+        if self.uri == None:
+            if self.user:
+                self.uri = self._get_uri_from_name_and_user(self.name, self.user)
+            else:
+                self.uri = self._get_uri_from_name(self.name)
+
+            if not self.uri:
+                msg = "Can't find playlist named " + self.name
+                if self.user:
+                    msg += ' for user ' + self.user
+                raise engine.PBLException(self, msg)
+
+        if self.uri and self.cur_index >= len(self.tracks)  and self.track_count < self.total:
+            if self.order_by_date_added:
+                self._get_all_tracks()
+                self.order_tracks_by_date_added()
+            else:
+                self._get_more_tracks()
+
+        if self.cur_index < len(self.tracks):
+            track, date = self.tracks[self.cur_index]
+            self.cur_index += 1
+            return track
+        else:
+            return None
 
 class MixIn(object):
     '''
@@ -976,7 +1110,7 @@ class ArtistSeparation(object):
         self.name = 'artist separated ' + source.name
         self.source = source
         self.history = []
-        self.lookaside = []
+        
         self.min_separation = min_separation
         self.reorder = reorder
 
@@ -1027,11 +1161,49 @@ class ArtistSeparation(object):
                 break
         return track
 
+class WeightedShuffler(object):
+    ''' A weighted shuffles the tracks in the stream
+
+        :param source: the source of tracks
+        :param factor: 1 pure random, 0, pure ordered
+    '''
+    def __init__(self, source, factor):
+        self.name = 'shuffled ' + source.name
+        self.source = source
+        self.buffer = []
+        self.factor = factor
+
+        self.filling = True
+
+    def shuffle(self):
+        out = []
+        for i, t in enumerate(self.buffer):
+            r = random.random() * len(self.buffer)
+            w = (len(self.buffer) - i)
+            weight = r * self.factor + w * (1.0 - self.factor)
+            out.append( (weight, t) )
+            # print i,r,w,weight
+        out.sort()
+        self.buffer = [ t for w,t in out]
+
+    def next_track(self):
+        while self.filling:    
+            track = self.source.next_track()
+            if track:
+                self.buffer.append(track)
+            else:
+                self.filling = False
+                self.shuffle()
+        if len(self.buffer) > 0:
+            return self.buffer.pop()
+        else:
+            return None
+
+def date_to_epoch(date):
+    return date - datetime.datetime(1970,1,1).total_seconds()
+
 if __name__ == '__main__':
 
-    def date_to_epoch(date):
-        dt = datetime.datetime.strptime(date, "%Y-%m-%d")
-        return int(dt.strftime("%s"))
 
     import sys
     if False:
@@ -1049,7 +1221,7 @@ if __name__ == '__main__':
             tracks_added_since=-1, tracks_added_before=dec1)
         pbl.show_source(src)
 
-    if True:
+    if False:
         print 'with dedup'
         src = pbl.PlaylistSource("extender test", None, 'plamere')
         src = ArtistDeDup(src)
@@ -1057,4 +1229,32 @@ if __name__ == '__main__':
 
         print 'no dedup'
         src = pbl.PlaylistSource("extender test", None, 'plamere')
+        pbl.show_source(src)
+
+    if True:
+        print 'weighted source'
+
+        print 'factor', 1
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = WeightedShuffler(src, 1)
+        pbl.show_source(src)
+
+        print 'factor', 0
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = WeightedShuffler(src, 0)
+        pbl.show_source(src)
+
+        print 'factor', .5
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = WeightedShuffler(src, .5)
+        pbl.show_source(src)
+
+        print 'factor', .1
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = WeightedShuffler(src, .1)
+        pbl.show_source(src)
+
+        print 'factor', .01
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = WeightedShuffler(src, .01)
         pbl.show_source(src)

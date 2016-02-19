@@ -1232,6 +1232,39 @@ inventory = {
             }
         },
         {
+            "name" : "Weighted Shuffler",
+            "class": plugs.WeightedShuffler,
+            "type" : "order",
+            "title" : "Weighted shuffle",
+            "display" : "Weighted shuffle",
+            "description": "performs a weighted shuffle of  the tracks in the stream",
+
+            "help" : """
+                This component will randomly re-order the input tracks. The
+                amount of re-ordering is controlled by an 
+                <b>amount of randomness</b> factor. This factor
+                is a number between zero and one. The closer the factor is to
+                one, the more random the resulting track order, while the closer
+                the factor is to zero, the more the original track order is
+                retained.  A factor of .1 will lightly shuffle the input tracks""",
+            "params": {
+                "source": {
+                    "type" : "port",
+                    "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
+                    "description": "the source of the tracks",
+                },
+                "factor": {
+                    "display" : "amount of randomness",
+                    "type" : "number",
+                    "optional" : False,
+                    "default": .1,
+                    "description": "controls the amount of randomness used in shuffling the tracks"
+                },
+            }
+        },
+        {
             "name" : "SeparateArtists",
             "class": plugs.SeparateArtists,
             "type" : "order",
