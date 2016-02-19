@@ -1110,6 +1110,7 @@ class ArtistSeparation(object):
         self.name = 'artist separated ' + source.name
         self.source = source
         self.history = []
+        self.lookaside = []
         
         self.min_separation = min_separation
         self.reorder = reorder
