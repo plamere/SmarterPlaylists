@@ -104,7 +104,7 @@ class TrackFilter(object):
         produces tracks on the true source that are not on the false source
     '''
     def __init__(self, true_source, false_source, invert=False):
-        prep = ' that are also in ' if invert else 'that are not in '
+        prep = ' that are also in ' if invert else ' that are not in '
         self.name = 'tracks in ' + true_source.name  + prep + \
             false_source.name
         self.true_source = true_source
@@ -140,7 +140,8 @@ class ArtistFilter(object):
         produces tracks on the true source that are not by artists the false source
     '''
     def __init__(self, true_source, false_source, invert=False):
-        self.name = 'tracks in ' + true_source.name  + ' that are not by ' + \
+        prep = ' that are by ' if invert else ' that are not by '
+        self.name = 'tracks in ' + true_source.name  + prep + \
             'artists in' + false_source.name
         self.true_source = true_source
         self.false_source = false_source
