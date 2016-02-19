@@ -424,8 +424,13 @@ inventory = {
             "type" : "filter",
             "description": "removes track from a stream",
             "help": """ This component takes two input streams. It produces a
-            stream of tracks that consist of the tracks on the green input
-            stream with the tracks on the red input stream removed""",
+            stream of tracks from the green input
+            stream with the tracks on the red input stream removed.  If the 
+            <b>invert</b> flag is set, the filter is inverted, that is, it will
+            produce a stream of tracks that consist of the tracks on the green
+            input stream with the tracks that are <b> not </b> on the red
+            stream.
+            """,
             "params": {
                 "true_source": {
                     "type" : "port",
@@ -441,6 +446,12 @@ inventory = {
                     "max_inputs" : 1,
                     "description": "the tracks to be removed",
                 },
+                "invert": {
+                    "type": "bool",
+                    "default": False,
+                    "optional" : True,
+                    "description": "if set, only tracks on both input streams will be passed through"
+                },
             }
         },
         {
@@ -452,7 +463,9 @@ inventory = {
             "help": """ This component takes two input streams. It produces a
             stream of tracks that consist of the tracks on the green input
             stream with the tracks by artists of the tracks on the red input
-            stream removed""",
+            stream removed. If the <b>invert</b> parameter is set, the sense of
+            the filter is reverse, i.e. the component will produce only tracks 
+            from the green stream that are by artists on the red stream """,
             "params": {
                 "true_source": {
                     "type" : "port",
@@ -467,6 +480,12 @@ inventory = {
                     "port": "red",
                     "max_inputs" : 1,
                     "description": "the tracks (by artist) to be removed",
+                },
+                "invert": {
+                    "type": "bool",
+                    "default": False,
+                    "optional" : True,
+                    "description": "if set, only tracks by artists on the red stream will be passed through"
                 },
             }
         },

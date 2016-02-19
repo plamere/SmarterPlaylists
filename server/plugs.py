@@ -103,12 +103,15 @@ class TrackFilter(object):
     '''
         produces tracks on the true source that are not on the false source
     '''
-    def __init__(self, true_source, false_source):
-        self.name = 'tracks in ' + true_source.name  + ' that are not in ' + \
+    def __init__(self, true_source, false_source, invert=False):
+        prep = ' that are also in ' if invert else 'that are not in '
+        self.name = 'tracks in ' + true_source.name  + prep + \
             false_source.name
         self.true_source = true_source
         self.false_source = false_source
         self.bad_tracks = set()
+        self.invert = invert
+        self.debug = False
 
     def next_track(self):
         while True:
@@ -121,8 +124,13 @@ class TrackFilter(object):
         while True:
             track = self.true_source.next_track()
             if track:
-                if track not in self.bad_tracks:
+                if self.invert and (track in self.bad_tracks):
                     return track
+                elif (not self.invert) and (track not in self.bad_tracks):
+                    return track
+                else:
+                    if self.debug:
+                        print 'filtered out', tlib.get_tn(track)
             else:
                 break
         return None
@@ -131,12 +139,14 @@ class ArtistFilter(object):
     '''
         produces tracks on the true source that are not by artists the false source
     '''
-    def __init__(self, true_source, false_source):
+    def __init__(self, true_source, false_source, invert=False):
         self.name = 'tracks in ' + true_source.name  + ' that are not by ' + \
             'artists in' + false_source.name
         self.true_source = true_source
         self.false_source = false_source
         self.bad_artists = set()
+        self.invert = invert
+        self.debug = False
 
     def next_track(self):
         while True:
@@ -151,8 +161,13 @@ class ArtistFilter(object):
             track = self.true_source.next_track()
             if track:
                 tinfo = pbl.tlib.get_track(track)
-                if tinfo['artist'] not in self.bad_artists:
+                if self.invert and (tinfo['artist'] in self.bad_artists):
                     return track
+                elif (not self.invert) and (tinfo['artist'] not in self.bad_artists):
+                    return track
+                else:
+                    if self.debug:
+                        print 'filtered out', tlib.get_tn(track)
             else:
                 break
         return None
