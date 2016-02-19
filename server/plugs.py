@@ -142,7 +142,7 @@ class ArtistFilter(object):
     def __init__(self, true_source, false_source, invert=False):
         prep = ' that are by ' if invert else ' that are not by '
         self.name = 'tracks in ' + true_source.name  + prep + \
-            'artists in' + false_source.name
+            'artists in ' + false_source.name
         self.true_source = true_source
         self.false_source = false_source
         self.bad_artists = set()
