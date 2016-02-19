@@ -97,7 +97,6 @@ function fmtTime(secs) {
 
 
 function checkForBadUser(data) {
-    console.log('cfbu', data);
     if (data.status == 'error' && data.msg == 'no authorized user') {
         clear_auth_code();
         document.location = 'index.html';
@@ -165,11 +164,9 @@ function showBuilder() {
 function showDirectoryTable(dir) {
     var body = $("#dir-body");
     body.empty();
-    /*
     dir.sort(function(a, b) {
         return b.last_run - a.last_run;
     });
-    */
 
     _.each(dir, function(entry, i) {
         var tr = $("<tr>");
