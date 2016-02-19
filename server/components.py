@@ -326,7 +326,8 @@ inventory = {
             "type" : "filter",
             "description": "Remove any duplicate tracks in the stream",
             "help" : """ This component will remove any duplicate tracks from
-            the stream.  If <b> By Name </b> is set, then tracks dedupped by
+            the stream.  
+            If <b> By Name </b> is set, then tracks dedupped by
             artist and title, otherwise, they are dedupped based upon their
             track id""",
             "params": {
@@ -430,6 +431,8 @@ inventory = {
             produce a stream of tracks that consist of the tracks on the green
             input stream with the tracks that are <b> not </b> on the red
             stream.
+            If <b> By Name </b> is set, then tracks are matched by name in
+            addition to the regular ID match
             """,
             "params": {
                 "true_source": {
@@ -451,6 +454,13 @@ inventory = {
                     "default": False,
                     "optional" : True,
                     "description": "if set, only tracks on both input streams will be passed through"
+                },
+                "by_name": {
+                    "display" : "By name",
+                    "type" : "bool",
+                    "optional" : True,
+                    "default": False,
+                    "description": " if True also match by name in addition to the regular ID match",
                 },
             }
         },

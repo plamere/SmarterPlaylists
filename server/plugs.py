@@ -103,7 +103,7 @@ class TrackFilter(object):
     '''
         produces tracks on the true source that are not on the false source
     '''
-    def __init__(self, true_source, false_source, invert=False):
+    def __init__(self, true_source, false_source, invert=False, by_name=False):
         prep = ' that are also in ' if invert else ' that are not in '
         self.name = 'tracks in ' + true_source.name  + prep + \
             false_source.name
@@ -112,25 +112,34 @@ class TrackFilter(object):
         self.bad_tracks = set()
         self.invert = invert
         self.debug = False
+        self.by_name = by_name
 
     def next_track(self):
         while True:
             bad_track = self.false_source.next_track()
+            self.bad_tracks.add(bad_track)
             if bad_track:
-                self.bad_tracks.add(bad_track)
+                if self.by_name:
+                    bad_track_name = pbl.tlib.get_tn(bad_track).lower()
+                    self.bad_tracks.add(bad_track_name)
             else:
                 break
 
         while True:
             track = self.true_source.next_track()
             if track:
-                if self.invert and (track in self.bad_tracks):
+                if self.by_name:
+                    track_name = pbl.tlib.get_tn(track).lower()
+                else:
+                    track_name = track
+
+                if self.invert and ((track in self.bad_tracks) or (track_name in self.bad_tracks)):
                     return track
-                elif (not self.invert) and (track not in self.bad_tracks):
+                elif (not self.invert) and ((track not in self.bad_tracks) and (track_name not in self.bad_tracks)):
                     return track
                 else:
                     if self.debug:
-                        print 'filtered out', tlib.get_tn(track)
+                        print 'filtered out', pbl.tlib.get_tn(track)
             else:
                 break
         return None
@@ -168,7 +177,7 @@ class ArtistFilter(object):
                     return track
                 else:
                     if self.debug:
-                        print 'filtered out', tlib.get_tn(track)
+                        print 'filtered out', pbl.tlib.get_tn(track)
             else:
                 break
         return None
