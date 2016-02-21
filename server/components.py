@@ -1,4 +1,4 @@
-import pbl
+emport pbl
 import plugs
 import copy
 import pyen
@@ -868,7 +868,7 @@ inventory = {
             page</a>
             """,
 
-            "title": "$name (rel date filtered)",
+            "title": "$name",
             "params": {
                 "name": {
                     "type" : "string",
