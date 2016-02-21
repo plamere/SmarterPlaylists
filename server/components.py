@@ -1054,7 +1054,7 @@ inventory = {
             "class": plugs.PlaylistSave,
             "type" : "misc",
             "title" : "save to Spotify",
-            "display": "save to Spotify",
+            "display": "save to $playlist_name",
             "description": "save the tracks to a spotify playlist",
 
             "help": """ This filter will save all the tracks that pass through
