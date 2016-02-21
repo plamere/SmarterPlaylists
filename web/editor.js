@@ -326,6 +326,22 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         return parseTime(val);
     }
 
+    function secsToRelativeTimeString(secs) {
+        if (secs == -1) {
+          return "";
+        } else {
+          return secs.toString();
+        }
+    }
+
+    function relativeTimeStringToSecs(val) {
+        if (val.length == 0) {
+          return -1;
+        } else {
+          return parseInt(val);
+        }
+    }
+
     function clearComponentErrors() {
         $("#errors").empty(200);
         _.each(nameToRect, function(rect, name) {

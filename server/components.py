@@ -837,6 +837,79 @@ inventory = {
             }
         },
         {
+            "name" : "RelativeDatedSpotifyPlaylist",
+            "class": plugs.RelativeDatedPlaylistSource,
+            "type" : "source",
+            "display": "playlist (rel date)",
+            "description": "loads tracks from the given spotify playlist, potentially ordered and filtered by the relative track added date",
+
+            "help" : """ This component will generate a stream of tracks from the given Spotify
+            playlist.  If you specify a Spotify playlist <b>URI</b>, that playlist will
+            be loaded. If you omit the URI but specify a <b>user</b> and a
+            <b>name</b>, the user's public playlists will be searched for the playlist with the
+            given name. If no user is specified, the most popular playlist with
+            the given <b>name</b> will be used.
+            <p>
+            By default tracks are generated in playlist order. If <b>Order by
+            date added</b> is set, tracks are returned in order of the date they
+            were added to the playlist.
+            <p>
+            By setting relative dates <b>tracks added before</b> and/or <b> tracks added since</b>
+            you can restrict tracks generated to just those that were added in
+            the given period. 
+            <p> Examples of relative dates: 
+            <ul>
+                <li> 5 days
+                <li> 1 year, 2 months and 3 days
+                <li> last week
+                <li> two weeks ago
+            </ul> 
+            More examples can be found on the <a href="about.html"> about
+            page</a>
+            """,
+
+            "title": "$name (rel date filtered)",
+            "params": {
+                "name": {
+                    "type" : "string",
+                    "optional" : False,
+                    "description": "the name of the playlist",
+                    "default" : "Your favorite coffeehouse"
+                },
+                "user": {
+                    "type" : "string",
+                    "optional" : True,
+                    "description": "the owner of the playlist",
+                },
+                "uri": {
+                    "type" : "string",
+                    "optional" : True,
+                    "description": "the uri of the playlist",
+                },
+                "order_by_date_added": {
+                    "type" : "bool",
+                    "optional" : True,
+                    "default" : False,
+                    "display": "Order by date added",
+                    "description": "if true, tracks are ordered by the date added to the playlist",
+                },
+                "tracks_added_since": {
+                    "type" : "string",
+                    "display": "Include only tracks added since",
+                    "optional" : True,
+                    "default" : "",
+                    "description": "If set, only tracks added since this relative date are generated",
+                },
+                "tracks_added_before": {
+                    "type" : "string",
+                    "display": "Include only tracks added before",
+                    "optional" : True,
+                    "default" : "",
+                    "description": "If set, only tracks added before this relative date are generated",
+                },
+            }
+        },
+        {
             "name" : "DatedSpotifyPlaylist",
             "class": plugs.DatedPlaylistSource,
             "type" : "source",
@@ -1886,7 +1959,8 @@ def check_components():
 
 def is_valid_param_type(type):
     valid_types = set(['number', 'string', 'port', 'bool', 
-    'uri', 'uri_list', 'string_list', 'time', 'any', 'optional_date'])
+    'uri', 'uri_list', 'string_list', 'time', 'any', 'optional_date', 
+    'optional_rel_date'])
     if type in valid_types:
         return True
     if type in inventory['types']:

@@ -6,6 +6,7 @@ from werkzeug.contrib.cache import SimpleCache
 from pbl import spotify_plugs
 import simplejson as json
 import time
+import reltime
 
 cache = SimpleCache()
 
@@ -741,15 +742,6 @@ class DatedPlaylistSource(object):
                 results = None
         return None
 
-    def _parse_date(self, sdate):
-        try:
-            date = datetime.datetime.strptime(sdate, "%Y-%m-%dT%H:%M:%SZ")
-            return int(date.strftime("%s"))
-        except ValueError:
-            return -1
-        except:
-            return -1
-
     def _get_more_tracks(self):
         _,_,user,_,playlist_id = self.uri.split(':')
         try:
@@ -762,7 +754,7 @@ class DatedPlaylistSource(object):
         for item in results['items']:
             self.track_count += 1
             good_track = True
-            ts = self._parse_date(item['added_at'])
+            ts = parse_date(item['added_at'])
             if self.tracks_added_before >= 0 and ts >= 0 and ts > self.tracks_added_before:
                 good_track = False
             if self.tracks_added_since >=0 and ts >=0 and ts  < self.tracks_added_since:
@@ -819,34 +811,41 @@ class RelativeDatedPlaylistSource(object):
         :param uri: the uri of the playlist
         :param user: the owner of the playlist
         :param order_by_date_added: if true, tracks are ordered by the date they were added to the playlist
-        :param tracks_added_since: if not None, only tracks added after this
-        relative time (given in seconds in the past from now)
-        :param tracks_added_before: if not None, only tracks added before this
-        relative time (given in seconds in the past from now)
+        :param tracks_added_since: if not None or empty, only tracks added after this
+        relative time are generated
+        :param tracks_added_before: if not None or empty, only tracks added before this
+        relative time are generated
 
     '''
 
-    def __init__(self, name, uri=None, user=None, 
-        order_by_date_added=False, 
-        tracks_added_since=None,
-        tracks_added_before=None):
+    def __init__(self, name, uri=None, user=None, order_by_date_added=False, 
+        tracks_added_since=None, tracks_added_before=None):
 
         self.name = name
         self.uri = spotify_plugs.normalize_uri(uri)
         self.user = user
         self.order_by_date_added = order_by_date_added
 
-        if tracks_added_before != None:
-            delta_tracks_added_before = datetime.timedelta(seconds=abs(tracks_added_before))
-            self.tracks_added_before = date_to_epoch(now() - delta_tracks_added_before)
+        if tracks_added_before != None and len(tracks_added_before) > 0:
+            try:
+                delta = reltime.parse_to_rel_time(tracks_added_before) 
+                self.tracks_added_before = date_to_epoch(now()) - delta
+            except ValueError as e:
+                raise pbl.PBLException('bad relative time format', str(e))
         else:
             self.tracks_added_before = -1
 
-        if tracks_added_since != None:
-            delta_tracks_added_since = datetime.timedelta(seconds=abs(tracks_added_since))
-            self.tracks_added_since = date_to_epoch(now() - delta_tracks_added_since)
+        if tracks_added_since != None and len(tracks_added_since) > 0:
+            try:
+                delta = reltime.parse_to_rel_time(tracks_added_since) 
+                self.tracks_added_since = date_to_epoch(now()) - delta
+            except ValueError as e:
+                raise pbl.PBLException(self, 'bad relative time format ' + str(e))
         else:
             self.tracks_added_since = -1
+
+        #print "since", tracks_added_since, self.tracks_added_since, date_to_epoch(now())
+        #print "before", tracks_added_before, self.tracks_added_before, date_to_epoch(now())
 
         self.next_offset = 0
         self.limit = 100
@@ -876,14 +875,6 @@ class RelativeDatedPlaylistSource(object):
                 results = None
         return None
 
-    def _parse_date(self, sdate):
-        try:
-            date = datetime.datetime.strptime(sdate, "%Y-%m-%dT%H:%M:%SZ")
-            return int(date.strftime("%s"))
-        except ValueError:
-            return -1
-        except:
-            return -1
 
     def _get_more_tracks(self):
         _,_,user,_,playlist_id = self.uri.split(':')
@@ -897,12 +888,13 @@ class RelativeDatedPlaylistSource(object):
         for item in results['items']:
             self.track_count += 1
             good_track = True
-            ts = self._parse_date(item['added_at'])
+            ts = parse_date(item['added_at'])
             if self.tracks_added_before >= 0 and ts >= 0 and ts > self.tracks_added_before:
                 good_track = False
-            if self.tracks_added_since >=0 and ts >=0 and ts  < self.tracks_added_since:
+            if self.tracks_added_since >= 0 and ts >=0 and ts  < self.tracks_added_since:
                 good_track = False
             track = item['track']
+            # print good_track, ts, self.tracks_added_before, self.tracks_added_since, track['name']
             if good_track and ts >= 0 and track and 'id' in track:
                 self.tracks.append( (track['id'], ts) )
                 spotify_plugs._add_track(self.name, track)
@@ -1087,8 +1079,6 @@ class SeparateArtists(object):
         else:
             return None
 
-def now():
-    return datetime.datetime.now()
 
 def get_day_of_week():
     days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'monday']
@@ -1225,8 +1215,23 @@ class WeightedShuffler(object):
         else:
             return None
 
+def now():
+    return datetime.datetime.now()
+
 def date_to_epoch(date):
-    return date - datetime.datetime(1970,1,1).total_seconds()
+    return (date - datetime.datetime(1970,1,1)).total_seconds()
+
+def parse_date(sdate):
+    try:
+        date = datetime.datetime.strptime(sdate, "%Y-%m-%dT%H:%M:%SZ")
+        return date_to_epoch(date)
+    except ValueError:
+        return -1
+    except:
+        return -1
+
+
+
 
 if __name__ == '__main__':
 
@@ -1257,7 +1262,7 @@ if __name__ == '__main__':
         src = pbl.PlaylistSource("extender test", None, 'plamere')
         pbl.show_source(src)
 
-    if True:
+    if False:
         print 'weighted source'
 
         print 'factor', 1
@@ -1283,4 +1288,26 @@ if __name__ == '__main__':
         print 'factor', .01
         src = pbl.PlaylistSource("extender test", None, 'plamere')
         src = WeightedShuffler(src, .01)
+        pbl.show_source(src)
+
+    if True:
+        sixmonths = 60 * 60 * 24 * 30 * 6
+        onemonth = 60 * 60 * 24 * 30 * 1
+
+        print "older than six months"
+        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+            order_by_date_added=False, 
+            tracks_added_since=None, tracks_added_before="6 months")
+        pbl.show_source(src)
+
+        print "new than six months"
+        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+            order_by_date_added=False, 
+            tracks_added_since="six mnths", tracks_added_before="")
+        pbl.show_source(src)
+
+        print "new than six months, older than one month"
+        src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
+            order_by_date_added=False, 
+            tracks_added_since="six months", tracks_added_before="1 month")
         pbl.show_source(src)

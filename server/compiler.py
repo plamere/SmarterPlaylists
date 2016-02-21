@@ -53,6 +53,8 @@ def convert_val_to_type(val, type, program):
         return OK, val
     elif type == 'optional_date':
         return OK, val
+    elif type == 'optional_rel_date':
+        return OK, val
     elif type == 'uri':
         return OK, str(val)
     elif type == 'uri_list':
@@ -146,6 +148,10 @@ def compile_object(objname, program):
                     symbols[objname] = obj
                     hsymbols[obj] = objname
                     return OK, obj
+                except pbl.PBLException as e:
+                    #traceback.print_exc()
+                    print 'e reason', e.reason
+                    raise pbl.PBLException(None, e.reason, objname)
                 except:
                     traceback.print_exc()
                     if debug_exceptions:

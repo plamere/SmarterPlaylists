@@ -245,7 +245,7 @@ class ProgramManager:
                 pbl.engine.setEnv('spotify_user_id', token['user_id'])
 
                 print 'executing', user, pid
-                #print 'executing', json.dumps(program, indent=4)
+                print '# executing', json.dumps(program, indent=4)
                 status, obj = compiler.compile(program)
                 print 'compiled in', time.time() - start, 'secs'
 
@@ -281,13 +281,12 @@ class ProgramManager:
         except pbl.PBLException as e:
             results['status'] = 'error'
             results['message'] = e.reason
-            if e.component:
-                cname = program['hsymbols'][e.component]
+            if e.component and e.component.name in program['hsymbols']:
+                cname = program['hsymbols'][e.component.name]
             else:
                 cname = e.cname
             results['component'] = cname
             print 'PBLException', json.dumps(results, indent=4)
-            
             traceback.print_exc()
             if debug_exceptions:
                 raise
