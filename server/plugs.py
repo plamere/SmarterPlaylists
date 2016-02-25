@@ -786,11 +786,9 @@ class DatedPlaylistSource(object):
                 raise engine.PBLException(self, msg)
 
         if self.uri and self.cur_index >= len(self.tracks)  and self.track_count < self.total:
+            self._get_all_tracks()
             if self.order_by_date_added:
-                self._get_all_tracks()
                 self.order_tracks_by_date_added()
-            else:
-                self._get_more_tracks()
 
         if self.cur_index < len(self.tracks):
             track, date = self.tracks[self.cur_index]
@@ -920,12 +918,11 @@ class RelativeDatedPlaylistSource(object):
                     msg += ' for user ' + self.user
                 raise engine.PBLException(self, msg)
 
+        # print 'next_track', self.cur_index, self.track_count, self.total
         if self.uri and self.cur_index >= len(self.tracks)  and self.track_count < self.total:
+            self._get_all_tracks()
             if self.order_by_date_added:
-                self._get_all_tracks()
                 self.order_tracks_by_date_added()
-            else:
-                self._get_more_tracks()
 
         if self.cur_index < len(self.tracks):
             track, date = self.tracks[self.cur_index]
