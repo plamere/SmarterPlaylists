@@ -7,6 +7,7 @@ from pbl import spotify_plugs
 import simplejson as json
 import time
 import reltime
+import re
 
 cache = SimpleCache()
 
@@ -179,6 +180,35 @@ class ArtistFilter(object):
                 else:
                     if self.debug:
                         print 'filtered out', pbl.tlib.get_tn(track)
+            else:
+                break
+        return None
+
+class TextFilter(object):
+    '''
+        produces tracks from the stream based on track title match
+    '''
+    def __init__(self, source, text, ignore_case=False, invert=False):
+        prep = ' that do not match ' if invert else ' that match '
+        self.name = 'tracks in ' + source.name  + prep + '"' + text + '"'
+        self.source = source
+        self.invert = invert
+        flags = re.UNICODE
+        if ignore_case:
+            flags |= re.IGNORECASE
+        self.regex = re.compile(text, flags)
+
+    def next_track(self):
+        while True:
+            track = self.source.next_track()
+            if track:
+                tinfo = pbl.tlib.get_track(track)
+                title = tinfo['title']
+                does_match = self.regex.search(title) != None
+                if does_match == self.invert:
+                    continue
+                else:
+                    return track
             else:
                 break
         return None
@@ -1212,6 +1242,7 @@ class WeightedShuffler(object):
         else:
             return None
 
+
 def now():
     return datetime.datetime.now()
 
@@ -1287,7 +1318,7 @@ if __name__ == '__main__':
         src = WeightedShuffler(src, .01)
         pbl.show_source(src)
 
-    if True:
+    if False:
         sixmonths = 60 * 60 * 24 * 30 * 6
         onemonth = 60 * 60 * 24 * 30 * 1
 
@@ -1307,4 +1338,45 @@ if __name__ == '__main__':
         src = RelativeDatedPlaylistSource("extender test", None, 'plamere',
             order_by_date_added=False, 
             tracks_added_since="six months", tracks_added_before="1 month")
+        pbl.show_source(src)
+
+    if False:
+        print 'std'
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = TextFilter(src, 'the', True, False)
+        print src.name 
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = TextFilter(src, 'the', False, False)
+        print src.name 
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource("extender test", None, 'plamere')
+        src = TextFilter(src, 'the', True, True)
+        print src.name 
+        pbl.show_source(src)
+
+    if True:
+        print 'std'
+        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+        src = TextFilter(src, 'mix', True, False)
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+        src = TextFilter(src, '^M', True, False)
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+        src = TextFilter(src, 'mix|the', True, False)
+        pbl.show_source(src)
+
+        src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
+        src = TextFilter(src, '-', True, False)
         pbl.show_source(src)

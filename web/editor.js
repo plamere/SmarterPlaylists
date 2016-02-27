@@ -784,7 +784,21 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
         function makeSub(word, component) {
             var key  = word.replace('$', '');
             var showNegBool = false;
-            if (key.indexOf('!!') == 0) {
+            var flexiState = false;
+            var trueVal = '';
+            var falseVal = '';
+            if (key.indexOf('?') == 0) {
+                //?val:true-text:false-text
+                var vals = key.split(':')
+                if (vals.length == 3) {
+                    trueVal = vals[1].replace('-', ' ')
+                    falseVal = vals[2].replace('-', ' ')
+                    key  = vals[0].replace('?', '')
+                    flexiState = true;
+                    console.log('flexi', key, trueVal, falseVal);
+                }
+            }
+            else if (key.indexOf('!!') == 0) {
                 showNegBool = true;
                 key  = key.replace('!!', '');
             }
@@ -794,7 +808,14 @@ var createEditor = function(canvasElem, inventory, types, isReadOnly) {
                     key = findTypeName(component.params[key], types[keyType]);
                     return key;
                 } else if (keyType == 'bool') {
-                    if (component.params[key]) {
+                    if (flexiState) {
+                        if (component.params[key]) {
+                            return trueVal;
+                        } else {
+                            return falseVal;
+                        }
+                    }
+                    else if (component.params[key]) {
                         return key;
                     } else {
                         return showNegBool ? "not " + key : "";

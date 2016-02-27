@@ -1797,6 +1797,52 @@ inventory = {
             }
         },
         {
+            "name" : "TextFilter",
+            "class": plugs.TextFilter,
+            "type" : "filter",
+            "title" : "title $?invert:not-matching:matching  $text",
+            "display": "title filter",
+            "description": "filters tracks with titles that match a given string",
+
+            "help" : """ This component will pass through tracks that have
+            a title that matches the given text string.  The sense of the filter
+            can be inverted by settting the <b>invert</b> parameter. To ignore
+            case when matching set the  <b>ignore case</b> flag.  Note that
+            the matching text is a <a
+            href="http://www.regular-expressions.info">regular expression</a>
+            allowing for very sophisticated matching logic.""",
+
+            "params": {
+                "source": {
+                    "type" : "port",
+                    "optional" : False,
+                    "port": "green",
+                    "max_inputs": 1,
+                    "description": "the source of the tracks",
+                },
+                "text": {
+                    "type" : "string",
+                    "optional" : False,
+                    "display": "match",
+                    "default" : "",
+                    "description": "regular expression to match track title"
+                },
+                "ignore_case": {
+                    "type" : "bool",
+                    "optional" : False,
+                    "display": "ignore case",
+                    "default" : True,
+                    "description": "if true, matches ignore letter case"
+                },
+                "invert": {
+                    "type" : "bool",
+                    "optional" : False,
+                    "default" : False,
+                    "description": "if true, the filter is reversed"
+                }
+            }
+        },
+        {
             "name" : "Spoken Word",
             "class": plugs.SpokenWord,
             "type" : "filter",
