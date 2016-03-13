@@ -5,6 +5,7 @@ import spotify_auth
 import simplejson as json
 import time
 import datetime
+import collections
 
 class SmarterPlaylistsAdmin(cmd.Cmd):
     job_queue = 'sched-job-queue'
@@ -86,7 +87,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
             total, progs = self.pm.directory(user, 0, 1000)
             print user, total, 'programs'
             for prog in progs:
-                print '   ', prog['pid'], prog['name']
+                print '   ', prog['pid'], prog['name'], '-', prog['description']
                 prog_total += 1
 
         print prog_total, 'programs, for', len(users), 'users'
@@ -97,6 +98,33 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
             for key, val in info.items():
                 print '   ', key, val
             print
+
+    def do_top_components(self, line):
+        if len(line) == 0:
+            users = []
+            for key in self.my_redis.keys("directory:*"):
+                users.append(key.split(':')[1])
+            users.sort()
+        else:
+            users = line.strip().split()
+
+        counter = collections.Counter()
+        for i, user in enumerate(users):
+            total, progs = self.pm.directory(user, 0, 1000)
+            print i, user, total, 'programs'
+            for prog in progs:
+                #print '   ', prog['pid'], prog['name'], '-', prog['description']
+                program = self.pm.get_program(prog['owner'], prog['pid'])
+                #print json.dumps(program, indent=4)
+                for name, comp in program['components'].items():
+                    type = comp['type']
+                    counter[type] += 1
+
+        print
+        print "most common components"
+        print
+        for type, cnt in counter.most_common():
+            print cnt, type
 
     def do_pstats(self, line):
         for pid in line.strip().split():
