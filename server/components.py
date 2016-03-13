@@ -1034,7 +1034,8 @@ inventory = {
                     "type": "time_range",
                     "optional": True,
                     "default": "medium_term",
-                    "description": "the time period of interest"
+                    "description": "the time period of interest",
+                    "display": "time range"
                 }
             }
         },
