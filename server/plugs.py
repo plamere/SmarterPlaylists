@@ -1242,6 +1242,52 @@ class WeightedShuffler(object):
         else:
             return None
 
+class MyTopTracks(object):
+    ''' returns the your top tracks for a given perioed
+
+        :param time_range time_range - Over what time frame are the tracks are
+                returned  Valid-values: short_term, medium_term, long_term
+
+    '''
+    def __init__(self, time_range):
+        self.name = 'My Top Tracks'
+        self.time_range = time_range
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+                limit = 50
+                offset = 0
+                total = 50
+
+                while offset < total:
+                    results = sp.current_user_top_tracks(time_range = self.time_range,
+                        limit = limit, offset = offset)
+                    for item in results['items']:
+                        track = item
+                        if track and 'id' in track:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                        else:
+                            raise pbl.engine.PBLException(self, 'bad track')
+                    offset += limit
+                    total = results['total']
+                # print self.name, len(self.buffer), offset, total
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            tid =  self.buffer.pop(0)
+            # print 'ret', self.name, tid
+            return tid
+        else:
+            # print 'ret', self.name, 'empty'
+            return None
+
+
 
 def now():
     return datetime.datetime.now()
@@ -1360,7 +1406,7 @@ if __name__ == '__main__':
         print src.name 
         pbl.show_source(src)
 
-    if True:
+    if False:
         print 'std'
         src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
         pbl.show_source(src)
@@ -1379,4 +1425,8 @@ if __name__ == '__main__':
 
         src = pbl.PlaylistSource('trap music', uri = 'spotify:user:spotify:playlist:4Ha7Qja6HY3AgvNBgWz87p')
         src = TextFilter(src, '-', True, False)
+        pbl.show_source(src)
+     
+    if True:
+        src = MyTopTracks(time_range='short_term')
         pbl.show_source(src)

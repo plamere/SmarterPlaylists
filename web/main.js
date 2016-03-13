@@ -440,6 +440,8 @@ function loginWithSpotifyForAuth() {
     scopes += " playlist-modify-public playlist-modify-private"
     scopes += " user-library-read"
     scopes += " user-follow-read"
+    scopes += " user-follow-read"
+    scopes += " user-top-read"
 
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
         '&response_type=code&show_dialog=false' +

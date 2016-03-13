@@ -51,6 +51,12 @@ inventory = {
             { "name" : "all", "value" : 4 },
          ],
 
+         "time_range": [
+            { "name": "short term", "value": "short_term" },
+            { "name": "medium term", "value": "medium_term" },
+            { "name": "long term", "value": "long_term" }
+         ],
+
          "range_attributes" : [
             { 
                 "name" : "artist popularity", 
@@ -981,7 +987,10 @@ inventory = {
             "description": "produces a list of tracks from the current user's saved albums",
 
             "help" : """ This component will generate a stream of tracks from the
-            current user's saved albums
+            current user's saved albums.
+            <br>
+            <span class="label label-warning"> Warning </span> This component may fail if you have a large number
+            of saved albums.  Someday, this will be fixed.
             """,
             "title": "My Saved albums",
             "params": { }
@@ -995,9 +1004,39 @@ inventory = {
 
             "help" : """ This component will generate a stream of tracks from the
             current user's saved tracks
+            <br>
+            <span class="label label-warning"> Warning </span> This component may fail if you have a large number
+            of saved tracks.  Someday, this will be fixed.
             """,
             "title": "My Saved tracks",
             "params": { }
+        },
+        {
+            "name" : "MyTopTracks",
+            "class": plugs.MyTopTracks,
+            "type" : "source",
+            "display": "my top tracks",
+            "description": "produces a list of the current user's recent top tracks",
+
+            "help" : """ This component will generate a stream of tracks from the
+            current user's recent top tracks. As a user's behavior is likely to
+            shift over time, this the top tracks are available over three time
+            spans: 
+            <ul>
+                <li><b>short term</b> - the last month or so </li>
+                <li><b>medium term</b> - the last half year or so </li>
+                <li><b>long term</b> - the last several years </li>
+            </ul>
+            """,
+            "title": "My $time_range Top tracks",
+            "params": { 
+                "time_range" : {
+                    "type": "time_range",
+                    "optional": True,
+                    "default": "medium_term",
+                    "description": "the time period of interest"
+                }
+            }
         },
         {
             "name" : "MyFollowedArtists",
