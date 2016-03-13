@@ -444,7 +444,8 @@ function loginWithSpotifyForAuth() {
     scopes += " user-top-read"
 
     var url = 'https://accounts.spotify.com/authorize?client_id=' + client_id +
-        '&response_type=code&show_dialog=false' +
+        '&response_type=code' +
+        '&show_dialog=true' + 
         '&scope=' + scopes +
         '&redirect_uri=' + encodeURIComponent(auth_redirect_uri);
 
