@@ -1018,10 +1018,9 @@ inventory = {
             "display": "my top tracks",
             "description": "produces a list of the current user's recent top tracks",
 
-            "help" : """ This component will generate a stream of tracks from the
-            current user's recent top tracks. As a user's behavior is likely to
-            shift over time, this the top tracks are available over three time
-            spans: 
+            "help" : """ This component will generate a stream of your
+            most listened to tracks from your listening history.  
+            The top tracks are available over three time spans: 
             <ul>
                 <li><b>short term</b> - the last month or so </li>
                 <li><b>medium term</b> - the last half year or so </li>
