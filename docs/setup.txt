@@ -5,6 +5,10 @@ playlistmachinery.com
 
 https://manager.linode.com/linodes/dashboard/linode1573908
 
+setup subdomains at
+
+https://manager.linode.com/dns/domain/playlistmachinery.com
+
 
 webserver is nginx
 api server is flask
@@ -27,6 +31,8 @@ server {
         alias  /home/www/smarterplaylists/;
     }
 }
+
+
 
 
 Get spotipy, pyen and pbl from git, install

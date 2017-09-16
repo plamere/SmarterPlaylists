@@ -1,5 +1,9 @@
 source credentials.sh
 export PBL_CACHE=REDIS
 #python flask_server.py
-gunicorn -w 4 flask_server:app -b localhost:5000
+
+until gunicorn -w 4 flask_server:app -b localhost:5000; do
+    echo "unicorn server crashed with exit code $?.  Respawning.." >&2
+    sleep 1
+done
 

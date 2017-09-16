@@ -25,3 +25,24 @@ server {
         alias  /home/www/playlistmachinery/;
     }
 }
+
+server {
+    server_name tweets.playlistmachinery.com;
+    location /api {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location /TweetMon {
+        proxy_set_header X-Forward-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+
+        # proxy_set_header Host $host;
+        # proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://localhost:5001;
+    }
+    location / {
+        alias  /home/www/tweets/;
+    }
+}

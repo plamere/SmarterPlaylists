@@ -9,7 +9,7 @@ exported_inventory = None
 en = pyen.Pyen()
 en.debug=True
 
-genres_enabled = True
+genres_enabled = False
 
 
 inventory = {

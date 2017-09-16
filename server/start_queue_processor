@@ -1,3 +1,8 @@
 source credentials.sh
 export PBL_CACHE=REDIS
-python scheduler.py
+#python scheduler.py
+
+until python scheduler.py; do
+    echo "queue processor'' crashed with exit code $?.  Respawning.." >&2
+    sleep 1
+done

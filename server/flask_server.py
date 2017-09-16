@@ -170,6 +170,7 @@ def directory():
         token = auth.get_fresh_token(auth_code)
         if token:
             user = token['user_id']
+            print "directory", user
             total, dir = pm.directory(user, start, count)
 
             if len(dir) > 0:
