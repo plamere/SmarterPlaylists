@@ -768,7 +768,8 @@ inventory = {
 
             "title" : "$artist radio",
             "params": {
-                "artist": {
+                "seed_artist_name_or_uri": {
+                    "display" : "artist",
                     "type" : "string",
                     "optional" : False,
                     "description": "the seed artist",
@@ -2140,6 +2141,7 @@ check_components()
 if __name__ == '__main__':
     import json
     #get_genres()
-    print json.dumps(exported_inventory, indent=4)
-    print ""
+    if False:
+        print json.dumps(exported_inventory, indent=4)
+        print ""
 
