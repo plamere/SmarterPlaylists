@@ -729,6 +729,7 @@ inventory = {
             "name" : "EchoNestGenreRadio",
             "class": pbl.EchoNestGenreRadio,
             "type" : "source",
+            'disabled': True,
             "display": "genre radio",
             "description": "generates a series of tracks in the given genre",
 
@@ -807,6 +808,7 @@ inventory = {
             "name" : "EchoNestArtist",
             "class": pbl.EchoNestArtistPlaylist,
             "type" : "source",
+            'disabled': True,
             "display": "artist tracks",
             "description": "tracks by the given artist",
 

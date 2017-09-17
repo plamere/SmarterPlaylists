@@ -1298,7 +1298,7 @@ class MyTopTracks(object):
             return None
 
 class SpotifyArtistRadio(object):
-    ''' returns tracks given a seed artist
+    ''' returns artist radio tracks given a seed artist
 
         :param seed_artist_name_or_uri the name or uri of the seed artist
 
@@ -1321,6 +1321,47 @@ class SpotifyArtistRadio(object):
 
                 if seed_uri:
                     results = sp.recommendations(seed_artists=[seed_uri], limit=100)
+                    for track in results['tracks']:
+                        if track and 'id' in track:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                        else:
+                            raise pbl.engine.PBLException(self, 'bad track')
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            tid =  self.buffer.pop(0)
+            return tid
+        else:
+            return None
+
+class SpotifyArtistTracks(object):
+    ''' returns top tracks given a seed artist
+
+        :param seed_artist_name_or_uri the name or uri of the seed artist
+
+    '''
+    def __init__(self, seed_artist_name_or_uri):
+        self.name = 'Artist Top Tracks'
+        self.seed_artist_name_or_uri = seed_artist_name_or_uri
+        self.buffer = None
+
+    # TODO: this just returns the top 10 tracks, need to add more 
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+
+                if is_uri(self.seed_artist_name_or_uri):
+                    seed_uri = self.seed_artist_name_or_uri
+                else:
+                    seed_uri = get_artist_uri(self.seed_artist_name_or_uri)
+
+                if seed_uri:
+                    results = sp.artist_top_tracks(seed_uri)
                     for track in results['tracks']:
                         if track and 'id' in track:
                             self.buffer.append(track['id'])
