@@ -36,6 +36,8 @@ server {
 
 
 Get spotipy, pyen and pbl from git, install
+sudo pip install werkzeug
+sudo pip install simplejson
 
 (disabled leveldb in pbl to get it to work easily)
 install requests security to avoid SSL warning

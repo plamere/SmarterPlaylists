@@ -756,6 +756,7 @@ inventory = {
         {
             "name" : "EchoNestArtistRadio",
             "class": pbl.EchoNestArtistRadio,
+            'disabled': True,
             "type" : "source",
             "display": "artist radio",
 
@@ -777,6 +778,26 @@ inventory = {
                     "optional" : True,
                     "default" : 20,
                     "description": "The number of tracks to generate",
+                },
+            }
+        },
+        {
+            "name" : "SpotifyArtistRadio",
+            "class": plugs.SpotifyArtistRadio,
+            "type" : "source",
+            "display": "artist radio",
+
+            "description": "tracks by the given artist and similar artists",
+
+            "help" : """ This component generates a stream of tracks by the
+            given artist or similar artists """,
+
+            "title" : "$artist radio",
+            "params": {
+                "artist": {
+                    "type" : "string",
+                    "optional" : False,
+                    "description": "the seed artist (as a name or artist uri)",
                 },
             }
         },
@@ -2023,8 +2044,14 @@ inventory = {
 def export_inventory():
     inventory['types']['genre'] = get_genres()
     inv = copy.deepcopy(inventory)
+
+    enabled_components = []
     for component in inv['components']:
+        if 'disabled' in component and component['disabled']:
+            continue
         del component['class']
+        enabled_components.append(component)
+    inv['components'] = enabled_components
     return inv
 
 def get_genres():
@@ -2111,7 +2138,8 @@ exported_inventory = export_inventory()
 check_components()
 
 if __name__ == '__main__':
-    #import json
+    import json
     #get_genres()
-    #print json.dumps(exported_inventory, indent=4)
+    print json.dumps(exported_inventory, indent=4)
     print ""
+

@@ -365,6 +365,16 @@ def get_user():
 def get_spotify():
     return pbl.spotify_plugs._get_spotify()
 
+
+def get_artist_uri(artist_name):
+    sp = get_spotify()
+    if sp:
+        results = sp.search(artist_name, limit=5, type='artist')
+        if 'artists' in results and 'items' in results['artists'] and len(results['artists']['items']) > 0:
+            return results['artists']['items'][0]['uri']
+    else:
+        return None
+
 class PlaylistSave(object):
     ''' A PBL Sink that saves the source stream of tracks to the given playlist
         :param source: the source of tracks to be saved
@@ -895,7 +905,7 @@ class RelativeDatedPlaylistSource(object):
         results = get_spotify().user_playlists(user)
         while results:
             for playlist in results['items']:
-                if playlist['name'].lower() == name.lower():
+                if 'name' in playlist and playlist['name'] and playlist['name'].lower() == name.lower():
                     return playlist['uri']
             if results['next']:
                 results = get_spotify().next(results)
@@ -1287,7 +1297,49 @@ class MyTopTracks(object):
             # print 'ret', self.name, 'empty'
             return None
 
+class SpotifyArtistRadio(object):
+    ''' returns tracks given a seed artist
 
+        :param seed_artist_name_or_uri the name or uri of the seed artist
+
+    '''
+    def __init__(self, seed_artist_name_or_uri):
+        self.name = 'Artist Radio'
+        self.seed_artist_name_or_uri = seed_artist_name_or_uri
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+
+                if is_uri(self.seed_artist_name_or_uri):
+                    seed_uri = self.seed_artist_name_or_uri
+                else:
+                    seed_uri = get_artist_uri(self.seed_artist_name_or_uri)
+
+                if seed_uri:
+                    results = sp.recommendations(seed_artists=[seed_uri], limit=100)
+                    for track in results['tracks']:
+                        if track and 'id' in track:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                        else:
+                            raise pbl.engine.PBLException(self, 'bad track')
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            tid =  self.buffer.pop(0)
+            return tid
+        else:
+            return None
+
+
+def is_uri(s):
+    fields = s.split(':')
+    return len(fields) >= 3 and fields[0] == 'spotify'
 
 def now():
     return datetime.datetime.now()
@@ -1305,13 +1357,11 @@ def parse_date(sdate):
         return -1
 
 
-
-
 if __name__ == '__main__':
 
 
     import sys
-    if False:
+    if True:
         p1 = pbl.ArtistTopTracks(name='Ravenscry')
         #p2 = pbl.ArtistTopTracks(name='weezer')
         #mi = MixIn(p1, p2, 2,1,1, True)
