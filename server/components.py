@@ -793,9 +793,10 @@ inventory = {
             "help" : """ This component generates a stream of tracks by the
             given artist or similar artists """,
 
-            "title" : "$artist radio",
+            "title" : "$seed_artist_name_or_uri radio",
             "params": {
-                "artist": {
+                "seed_artist_name_or_uri": {
+                    "display" : "artist",
                     "type" : "string",
                     "optional" : False,
                     "description": "the seed artist (as a name or artist uri)",
