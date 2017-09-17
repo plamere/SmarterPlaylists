@@ -1303,9 +1303,10 @@ class SpotifyArtistRadio(object):
         :param seed_artist_name_or_uri the name or uri of the seed artist
 
     '''
-    def __init__(self, seed_artist_name_or_uri):
+    def __init__(self, name, uri):
         self.name = 'Artist Radio'
-        self.seed_artist_name_or_uri = seed_artist_name_or_uri
+        self.artist_name = name
+        self.artist_uri = uri
         self.buffer = None
 
     def next_track(self):
@@ -1314,10 +1315,10 @@ class SpotifyArtistRadio(object):
             try:
                 sp = get_spotify()
 
-                if is_uri(self.seed_artist_name_or_uri):
-                    seed_uri = self.seed_artist_name_or_uri
+                if self.artist_uri:
+                    seed_uri = self.artist_uri
                 else:
-                    seed_uri = get_artist_uri(self.seed_artist_name_or_uri)
+                    seed_uri = spotify_plugs._find_artist_by_name(sp, self.artist_name)
 
                 if seed_uri:
                     results = sp.recommendations(seed_artists=[seed_uri], limit=100)
