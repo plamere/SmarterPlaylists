@@ -1282,7 +1282,8 @@ class MyTopTracks(object):
                             self.buffer.append(track['id'])
                             spotify_plugs._add_track(self.name, track)
                         else:
-                            raise pbl.engine.PBLException(self, 'bad track')
+                            continue
+                            #raise pbl.engine.PBLException(self, 'bad track')
                     offset += limit
                     total = results['total']
                 # print self.name, len(self.buffer), offset, total
