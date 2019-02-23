@@ -30,6 +30,15 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
         print ' '.join(users)
         print "total users:", len(users)
 
+    def do_dir(self, line):
+        users = line.strip().split()
+        for user in users:
+            total, directory = self.pm.directory(user, 0, 10000)
+            print 
+            print "total programs", total
+            for entry in directory:
+                print json.dumps(entry, indent=4)
+
     def do_gstats(self, line):
         stats = self.my_redis.hgetall("global_stats")
         skeys = [key for key in stats.keys()]
@@ -37,6 +46,15 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
 
         for key in skeys:
             print '  ', key, stats[key]
+
+    def do_redis_stats(self, line):
+        print json.dumps(self.my_redis.info(), indent=2)
+        print
+        for key, val  in self.my_redis.info().items():
+            if "memory" in key:
+                print "%32.32s %s" % (key, str(val))
+        print
+        print "dbsize", self.my_redis.dbsize()
 
     def do_system_status(self, line):
         admin = self.my_redis.hgetall("system-status")
@@ -92,6 +110,96 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
 
         print prog_total, 'programs, for', len(users), 'users'
 
+    def do_save_progs(self, line):
+        """ this command was used exactly once to move all
+            progs from redis to the file based kvstore
+        """
+        prog_total = 0
+        if len(line) == 0:
+            users = []
+            for key in self.my_redis.keys("directory:*"):
+                users.append(key.split(':')[1])
+            users.sort()
+        else:
+            users = line.strip().split()
+
+        for user in users:
+            total, progs = self.pm.directory(user, 0, 1000)
+            print user, total, 'programs'
+            for prog in progs:
+                print '   ', prog['pid'], prog['name'], '-', prog['description']
+                program = self.pm.get_program(user, prog['pid'])
+                if program:
+                    self.pm.save_program_to_disk(user, program)
+                prog_total += 1
+
+        print prog_total, 'programs, for', len(users), 'users'
+
+    def do_purge_progs(self, line):
+        """ this command was used exactly once to remove all
+            progs from redis (they are now stored on disk)
+        """
+        purge_total = 0
+        if len(line) == 0:
+            users = []
+            for key in self.my_redis.keys("directory:*"):
+                users.append(key.split(':')[1])
+            users.sort()
+        else:
+            users = line.strip().split()
+
+        for user in users:
+            total, progs = self.pm.directory(user, 0, 1000)
+            print user, total, 'programs'
+            for prog in progs:
+                pid = prog['pid']
+                pkey = program_manager.mkprogkey(user, pid)
+                print '   ', prog['pid'], prog['name'], '-', prog['description'], pkey
+                self.my_redis.delete(pkey)
+                purge_total += 1
+
+        print "purged", purge_total, 'programs, for', len(users), 'users'
+
+    def do_show_all_keys(self, line):
+        cursor = 0
+        which = 0
+        while True:
+            cursor, keys = self.my_redis.scan(cursor)
+            for key in keys:
+                # print which, key
+                print key
+                which += 1
+            if cursor == 0:
+                break
+
+    def do_purge_info(self, line):
+        """ this command was used exactly once to remove all
+            progs from redis (they are now stored on disk)
+        """
+        purge_total = 0
+        if len(line) == 0:
+            users = []
+            for key in self.my_redis.keys("directory:*"):
+                users.append(key.split(':')[1])
+            users.sort()
+        else:
+            users = line.strip().split()
+
+        found = 0
+        bytes = 0
+        for user in users:
+            total, progs = self.pm.directory(user, 0, 1000)
+            print user, total, 'programs'
+            for prog in progs:
+                pid = prog['pid']
+                pkey = program_manager.mkprogkey(user, pid)
+                data = self.my_redis.get(pkey)
+                if data:
+                    found +=1
+                    bytes += len(data)
+                print '   ', found, bytes, prog['pid'], prog['name'], '-', prog['description'], pkey
+        print "found", found, "progs, with", bytes, "bytes"
+
     def do_pinfo(self, line):
         for pid in line.strip().split():
             info = self.pm.get_info(pid)
@@ -114,6 +222,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
             print i, user, total, 'programs'
             for prog in progs:
                 #print '   ', prog['pid'], prog['name'], '-', prog['description']
+                # print json.dumps(prog)
                 program = self.pm.get_program(prog['owner'], prog['pid'])
                 #print json.dumps(program, indent=4)
                 for name, comp in program['components'].items():
@@ -143,7 +252,7 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
     def do_published(self, line):
         for pid in self.pm.get_published_programs():
             info = self.pm.get_info(pid)
-            if info:
+            if info and 'owner' in info and 'name' in info:
                 print pid, info['owner'],  info['name']
         print
 

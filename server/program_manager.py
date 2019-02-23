@@ -12,6 +12,7 @@ import pbl
 import compiler
 import plugs
 import traceback
+import kvstore
 
 debug_exceptions = False
 
@@ -32,6 +33,7 @@ debug_exceptions = False
 class ProgramManager:
 
     def __init__(self, auth, r = None):
+        self.use_file_store_for_programs = True
         self.auth = auth
         if r:
             self.r = r
@@ -71,8 +73,8 @@ class ProgramManager:
         pid = make_pid(program)
         program['pid'] = pid
         program['uri']  = None
-        pkey = mkprogkey(user, pid)
-        self.r.set(pkey, json.dumps(program))
+
+        self.save_program(user, program)
 
         dirkey = mkkey('directory', user)
         self.r.rpush(dirkey, pid)
@@ -84,53 +86,76 @@ class ProgramManager:
 
         return pid
 
-    def directory(self, user, start, count):
-        dirkey = mkkey('directory', user)
-        pids = self.r.lrange(dirkey, start, count - 1)
-        pipe = self.r.pipeline()
-        for pid in pids:
+    def save_program(self, user, program):
+        if self.use_file_store_for_programs:
+            self.save_program_to_disk(user, program)
+        else:
+            pid = program['pid']
             pkey = mkprogkey(user, pid)
-            pipe.get(pkey)
-        programs = pipe.execute()
-        out = []
-        total  = self.r.llen(dirkey)
-        for p, pid in zip(programs, pids):
-            program = json.loads(p)
-            if 'description' in program:
-                desc = program['description']
-            else:
-                desc = ""
-            info = {
-                'name': program['name'],
-                'description': desc,
-                'pid': pid,
-                'ncomponents': len(program['components']),
-                'shared' : False
-            }
-            info.update(program['extra'])
-            info.update(self.get_stats(pid))
-            info.update(self.get_info(pid))
-            info['shared'] = info['shared'] == 'True'
-            out.append(info)
-        out.sort(key=lambda x:x['name'].lower())
-        return total, out
-
+            self.r.set(pkey, json.dumps(program))
 
     def get_program(self, user, pid):
-        pkey = mkprogkey(user, pid)
-        val = self.r.get(pkey)
-        if val:
-            program = json.loads(val)
+        if self.use_file_store_for_programs:
+            program = self.load_program_from_disk(user, pid)
+        else:
+            pkey = mkprogkey(user, pid)
+            val = self.r.get(pkey)
+            if val:
+                program = json.loads(val)
+            else:
+                program = None
+        return program
+
+
+    def save_program_to_disk(self, user, program):
+        pid = program['pid']
+        fkey = mkfilekey(user, pid)
+        kvstore.put(fkey, json.dumps(program))
+
+    def load_program_from_disk(self, user, pid):
+        fkey = mkfilekey(user, pid)
+        prog_js = kvstore.get(fkey)
+        if prog_js:
+            program = json.loads(prog_js)
         else:
             program = None
         return program
 
+    def directory(self, user, start, count):
+        dirkey = mkkey('directory', user)
+        pids = self.r.lrange(dirkey, start, count - 1)
+
+        programs = [self.get_program(user, pid) for pid in pids]
+
+        out = []
+        total  = self.r.llen(dirkey)
+        for program, pid in zip(programs, pids):
+            if program:
+                if 'description' in program:
+                    desc = program['description']
+                else:
+                    desc = ""
+                info = {
+                    'name': program['name'],
+                    'description': desc,
+                    'pid': pid,
+                    'ncomponents': len(program['components']),
+                    'shared' : False
+                }
+                info.update(program['extra'])
+                info.update(self.get_stats(pid))
+                info.update(self.get_info(pid))
+                info['shared'] = info['shared'] == 'True'
+                if "owner" not in info:
+                    info["owner"] = user
+                    print "directory:patched owner", user
+                out.append(info)
+        out.sort(key=lambda x:x['name'].lower())
+        return total, out
+
     def copy_program(self, user, pid):
-        pkey = mkprogkey(user, pid)
-        val = self.r.get(pkey)
-        pid = None
-        if val:
-            program = json.loads(val)
+        program = self.get_program(user, pid)
+        if program:
             program['name'] = 'copy of ' + program['name']
             pid = self.add_program(user, program)
         return program
@@ -165,18 +190,19 @@ class ProgramManager:
         dirkey = mkkey('directory', user)
         removed_count = self.r.lrem(dirkey, 1, pid)
         if removed_count >= 1:
-            pkey = mkprogkey(user, pid)
-            self.r.delete(pkey)
+            if self.use_file_store_for_programs:
+                fkey = mkfilekey(user, pid)
+                kvstore.delete(fkey)
+            else:
+                pkey = mkprogkey(user, pid)
+                self.r.delete(pkey)
             self.del_info(pid)
             self.inc_global_counter("program_deletes")
         return removed_count >= 1
 
     def update_program(self, user, program):
+        self.save_program(user, program)
         pid = program['pid']
-        pkey = mkprogkey(user, pid)
-        self.r.set(pkey, json.dumps(program))
-
-
         dirkey = mkkey('directory', user)
         self.r.lrem(dirkey, 1, pid)
         self.r.rpush(dirkey, pid)
@@ -245,7 +271,7 @@ class ProgramManager:
                 pbl.engine.setEnv('spotify_user_id', token['user_id'])
 
                 print 'executing', user, pid
-                print '# executing', json.dumps(program, indent=4)
+                # print '# executing', json.dumps(program, indent=4)
                 status, obj = compiler.compile(program)
                 print 'compiled in', time.time() - start, 'secs'
 
@@ -333,6 +359,9 @@ def mkkey(type, id):
 
 def mkprogkey(user, id):
     return 'program:' + user + ':' + id
+
+def mkfilekey(user, id):
+    return id.encode("UTF-8") + "." + user
 
 def make_pid(program):
     salt = random.randint(0, 1000000)

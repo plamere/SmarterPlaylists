@@ -18,6 +18,7 @@ import redis
 import scheduler
 import sys
 import random
+import traceback
 
 app = Flask(__name__)
 app.debug = False
@@ -51,9 +52,7 @@ def save():
         auth_code = js['auth_code']
         token = auth.get_fresh_token(auth_code)
         user = token['user_id']
-        print 'got program', json.dumps(program, indent=4)
-        if 'pid' in program:
-            print 'got pid', program['pid']
+        # print 'got program', json.dumps(program, indent=4)
         if is_valid_program(program):
             if 'pid' in program:
                 pid = program['pid']
@@ -515,6 +514,7 @@ def force_error():
 @app.errorhandler(Exception)
 def handle_invalid_usage(error):
     print "error", error
+    traceback.print_stack()
     results = { 
         'status': 'internal_error',
         "message": str(error)
