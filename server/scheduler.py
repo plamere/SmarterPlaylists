@@ -4,7 +4,7 @@ import program_manager
 import time
 import simplejson as json
 import threading
-from datetime import datetime
+from datetime import datetime,date
 
 class Scheduler(object):
     '''
@@ -25,7 +25,8 @@ class Scheduler(object):
         self.wait_queue = 'sched-wait-queue'
         self.max_time = 1000000
         self.max_cerrors = 3
-        self.max_retained_results = 10
+        self.max_retained_results = 5
+        self.max_age_results = 30 * 24 * 60 * 60
 
     def schedule(self, auth_code, user, pid, when, delta, total):
         # as a pipleline
@@ -211,9 +212,11 @@ class Scheduler(object):
         results['oinfo'] = 'generated ' + str(ntracks) + ' tracks'
         rkey = mk_sched_key('results', user, pid)
         jresults = json.dumps(results, indent=2)
-        print jresults
+        # print jresults
         self.r.lpush(rkey, jresults)
         self.r.ltrim(rkey, 0, self.max_retained_results - 1)
+        self.r.expire(rkey, self.max_age_results)
+        show_results(results)
 
 
     def now(self):
@@ -255,6 +258,26 @@ class Scheduler(object):
         print 'job queue has', count, 'jobs'
 
         
+def show_results(result):
+    try:
+        print "%s %s %.2f" % (result['status'], fmt_date(result['runtime']), result['time'])
+        print result['oinfo']
+        print result['info']
+        if result['status'] == 'ok':
+            print result['name']
+            print result['uri']
+        else:
+            print result['message']
+        print
+    except:
+        raise
+        print "trouble showing formatted result"
+        print json.dumps(result, indent=2)
+        print
+
+def fmt_date(ts):
+    the_date = date.fromtimestamp(ts)
+    return the_date.strftime("%Y-%m-%d")
         
         
 def mk_sched_key(op, user, pid):
