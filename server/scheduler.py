@@ -26,7 +26,7 @@ class Scheduler(object):
         self.max_time = 1000000
         self.max_cerrors = 3
         self.max_retained_results = 5
-        self.max_age_results = 30 * 24 * 60 * 60
+        self.max_age_results = 40 * 24 * 60 * 60
 
     def schedule(self, auth_code, user, pid, when, delta, total):
         # as a pipleline
