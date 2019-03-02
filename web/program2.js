@@ -12,11 +12,19 @@ Program = function(inventory, name) {
     this.portTypes = ['green', 'blue', 'red', 'orange'];
 }
 
+
 Program.prototype = {
 
     constructor: Program,
 
     createComponent: function(name, type, params, extra) {
+        console.log("cc", name, type, params, extra);
+        if (!(type in this.inventory)) {
+            console.log("missing type", type, "converting to El Scorcho");
+            type = "TrackSourceByName";
+            params = {title: "el scorcho"};
+        }
+
         var component = {
             name: name,
             type: type,
@@ -34,6 +42,8 @@ Program.prototype = {
         _.each(this.portTypes, function(port) {
             component.trans.ports[port] = {name:null, maxInputs:0};
         });
+
+        // console.log('cc', component);
 
         if ('max_outputs' in component.trans.cls) {
           component.trans.maxOutputs = component.trans.cls.max_outputs;
@@ -72,8 +82,10 @@ Program.prototype = {
         if (name in this.components) {
             // console.log('dup cname', name);
         }
-        this.components[name] = c;
-        this.trans.needsSave = true;
+        if (c) {
+            this.components[name] = c;
+            this.trans.needsSave = true;
+        }
         return c;
     },
 
@@ -265,7 +277,7 @@ Program.prototype = {
 
         _.each(this.components, function(comp, id) {
             var cc = {};
-            cc = _.extendOwn(cc, comp);
+            cc = _.extend(cc, comp);
             delete cc['trans'];
             obj.components[id] = cc;
         });
@@ -304,7 +316,7 @@ function removeProgram(pid, callback) {
 
 function loadProgramFromJSON(inventory, sprog) {
     var program = new Program(inventory, sprog.name);
-    program = _.extendOwn(program, sprog);
+    program = _.extend(program, sprog);
     program.trans.needsSave = false;
     program.components = {}
     _.each(sprog.components, function(comp, name) {
