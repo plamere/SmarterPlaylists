@@ -418,17 +418,10 @@ class PlaylistSave(object):
         # should cache?
         if self.playlist_uri:
             uri = self.playlist_uri
-            puser = get_user_from_playlist_uri(uri)
             pid = get_pid_from_playlist_uri(uri)
 
             if not user:
                 raise pbl.PBLException(self, "bad uri")
-
-            # it is an error if we don't own the playlist
-            # TBD - what about collab playlists?
-
-            if user != puser:
-                raise pbl.PBLException(self, "Can't save to that playlist")
 
             if not pid:
                 raise pbl.PBLException(self, "bad uri")
@@ -530,19 +523,18 @@ class PlaylistSaveToNew(object):
 
 def get_pid_from_playlist_uri(uri):
  # spotify:user:plamere:playlist:5pjUedV8eoCJUiYzyo79eq
+ # or spotify:playlist:5pjUedV8eoCJUiYzyo79eq
     split_uri = uri.split(':')
     if len(split_uri) == 5:
         return split_uri[4]
+    elif len(split_uri) == 3:
+        return split_uri[2]
     else:
         return None
 
 def get_user_from_playlist_uri(uri):
- # spotify:user:plamere:playlist:5pjUedV8eoCJUiYzyo79eq
-    split_uri = uri.split(':')
-    if len(split_uri) == 5:
-        return split_uri[2]
-    else:
-        return None
+    # username no longer in playlist uri
+    return None
 
 def find_playlist_by_name(sp, user, name):
     key = user + ':::' + name
@@ -565,6 +557,7 @@ def save_to_playlist(title, uri, tids):
 
     if not uri:
         response = sp.user_playlist_create(user, title)
+        print "create playlist", json.dumps(response, indent=4)
         if 'uri' in response:
             uri = response['uri']
         else:
@@ -783,7 +776,8 @@ class DatedPlaylistSource(object):
         return None
 
     def _get_more_tracks(self):
-        _,_,user,_,playlist_id = self.uri.split(':')
+        playlist_id = get_pid_from_playlist_uri(self.uri)
+        user = get_user()
         try:
             results = get_spotify().user_playlist_tracks(user, playlist_id,
                 limit=self.limit, offset=self.next_offset)
@@ -915,7 +909,8 @@ class RelativeDatedPlaylistSource(object):
 
 
     def _get_more_tracks(self):
-        _,_,user,_,playlist_id = self.uri.split(':')
+        playlist_id = get_pid_from_playlist_uri(self.uri)
+        user = get_user()
         try:
             results = get_spotify().user_playlist_tracks(user, playlist_id,
                 limit=self.limit, offset=self.next_offset)

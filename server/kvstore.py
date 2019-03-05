@@ -14,7 +14,7 @@ def put(pid, contents):
 
 def delete(pid):
     path = get_path(pid)
-    if os.path.exits(path):
+    if os.path.exists(path):
         os.remove(path)
 
 def get(pid):
