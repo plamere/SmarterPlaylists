@@ -1326,7 +1326,6 @@ class MyRecentTracks(object):
                             continue
                             #raise pbl.engine.PBLException(self, 'bad track')
                     offset += limit
-                    total = results['total']
                 # print self.name, len(self.buffer), offset, total
             except spotipy.SpotifyException as e:
                 raise pbl.engine.PBLException(self, e.msg)
