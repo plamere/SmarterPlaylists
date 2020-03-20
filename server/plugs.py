@@ -1298,6 +1298,47 @@ class MyTopTracks(object):
             # print 'ret', self.name, 'empty'
             return None
 
+class MyRecentTracks(object):
+    ''' returns the your recent tracks for a given perioed
+
+    '''
+    def __init__(self):
+        self.name = 'My Recent Tracks'
+        self.buffer = None
+
+    def next_track(self):
+        if self.buffer == None:
+            self.buffer = []
+            try:
+                sp = get_spotify()
+                limit = 50
+                offset = 0
+                total = 50
+
+                while offset < total:
+                    results = sp.current_user_recently_played(limit = limit)
+                    for item in results['items']:
+                        track = item['track']
+                        if track and 'id' in track:
+                            self.buffer.append(track['id'])
+                            spotify_plugs._add_track(self.name, track)
+                        else:
+                            continue
+                            #raise pbl.engine.PBLException(self, 'bad track')
+                    offset += limit
+                    total = results['total']
+                # print self.name, len(self.buffer), offset, total
+            except spotipy.SpotifyException as e:
+                raise pbl.engine.PBLException(self, e.msg)
+
+        if len(self.buffer) > 0:
+            tid =  self.buffer.pop(0)
+            # print 'ret', self.name, tid
+            return tid
+        else:
+            # print 'ret', self.name, 'empty'
+            return None
+
 class SpotifyArtistRadio(object):
     ''' returns artist radio tracks given a seed artist
 
