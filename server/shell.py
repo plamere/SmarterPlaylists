@@ -9,6 +9,7 @@ import collections
 
 class SmarterPlaylistsAdmin(cmd.Cmd):
     job_queue = 'sched-job-queue'
+    proc_queue = 'sched-proc-queue'
     prompt = "sp% "
     my_redis = redis.StrictRedis(host='localhost', port=6379, db=0)
     auth = spotify_auth.SpotifyAuth(r=my_redis)
@@ -109,6 +110,28 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
                 prog_total += 1
 
         print prog_total, 'programs, for', len(users), 'users'
+
+    def do_sprogs(self, line):
+        """ simple list of progs and descriptions """
+        prog_total = 0
+        if len(line) == 0:
+            users = []
+            for key in self.my_redis.keys("directory:*"):
+                users.append(key.split(':')[1])
+            users.sort()
+        else:
+            users = line.strip().split()
+
+        for user in users:
+            total, progs = self.pm.directory(user, 0, 1000)
+            for prog in progs:
+                name = prog['name']
+                description = prog['description'] if prog['description'] != "my description" else ""
+                if "import of" in name:
+                    continue
+                if "untitled" in name:
+                    continue
+                print "%s\t%s" %(name, description)
 
     def do_save_progs(self, line):
         """ this command was used exactly once to move all
@@ -260,8 +283,11 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
         now = time.time()
         print "Jobs in queue", self.my_redis.zcard(self.job_queue)
         long_form = line == '-l'
+        count = 1000
+        if line:
+            count = int(line)
 
-        items = self.my_redis.zrange(self.job_queue, 0,1000,withscores=True,score_cast_func=int)
+        items = self.my_redis.zrange(self.job_queue, 0, count,withscores=True,score_cast_func=int)
         for item in items:
             skey, next_time = item
             print fmt_delta(next_time - now), skey
@@ -271,7 +297,28 @@ class SmarterPlaylistsAdmin(cmd.Cmd):
                         print "   ", key, val
                 print
         print 'total jobs', len(items)
-                
+
+    def do_proc_queue(self, line):
+        now = time.time()
+        print "Jobs in proc queue", self.my_redis.llen(self.proc_queue)
+        long_form = line == '-l'
+        count = 1000
+        if line:
+            count = int(line)
+
+        items = self.my_redis.lrange(self.proc_queue, 0, count)
+        for item in items:
+            print(json.dumps(item, indent=4))
+
+    def do_purge_proc_queue(self, line):
+        now = time.time()
+        print "Jobs in proc queue", self.my_redis.llen(self.proc_queue)
+
+        while True:
+            val = self.my_redis.lpop(self.proc_queue)
+            print("popped", val)
+            if val is None:
+                break
     
 def fmt_delta(delta):
     return str(datetime.timedelta(seconds=delta))
