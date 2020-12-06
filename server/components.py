@@ -1072,6 +1072,16 @@ inventory = {
             }
         },
         {
+            "name": "MyRecentTracks",
+            "class": plugs.MyRecentTracks,
+            "type": "source",
+            "display": "my recent tracks",
+            "description": "produces a list of the current user's recently played tracks",
+            "help": """ This component will generate a stream of your
+            recently played tracks. 
+            """
+        },
+        {
             "name" : "MyFollowedArtists",
             "class": plugs.MyFollowedArtists,
             "type" : "source",
