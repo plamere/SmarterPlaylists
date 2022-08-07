@@ -169,9 +169,16 @@ function showDirectoryTable(dir) {
     });
 
     _.each(dir, function(entry, i) {
+        // Create new row for entry
         var tr = $("<tr>");
+        
+        // Assuming layout is in such order:
+        // ID, Title, DateCreation, DateLastRun, TotalRunsAmount, ComponentsAmount, ShareLink, ScheduleInfo, Actions
 
+        // #1: ID
         tr.append( $("<td>").text( (i + 1) ));
+        
+        // #2: Title
         if (entry.uri) {
             tr.append(
                 $("<td>").append(
@@ -184,9 +191,20 @@ function showDirectoryTable(dir) {
         } else {
             tr.append( $("<td>").text( entry.name ));
         }
+        
+        // #3: Date of creation
+        tr.append( $("<td>").text( fmtDate(entry.creation_date) ));
+        
+        // #4: Last run
         tr.append( $("<td>").text( fmtDate(entry.last_run) ));
+        
+        // #5: Total runs
         tr.append( $("<td>").text( entry.runs ));
+        
+        // #6: Amount of components
+        tr.append( $("<td>").text( entry.ncomponents ));
 
+        // #7: Share link 
         if (entry.shared) {
             var anchor = $("<a>")
                 .text('shareable link')
@@ -196,6 +214,7 @@ function showDirectoryTable(dir) {
             tr.append( $("<td>").text(''));
         }
 
+        // #8: Schedule info
         // show schedule status
         {
             var status = '';
@@ -209,6 +228,8 @@ function showDirectoryTable(dir) {
             }
             tr.append( $("<td>").text(status));
         }
+        
+        // #9: Actions
         if (true) {
             var controls = $("<td>");
 
